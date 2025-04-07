@@ -1,1 +1,16 @@
+body {
+  text-align: center;
+}
 
+img{
+  border-radius: 50%;;
+}
+
+h1{
+  color: black;
+  margin-top: 10 px;
+}
+
+p{
+  color: black;
+}
