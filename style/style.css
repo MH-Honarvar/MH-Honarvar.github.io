@@ -4,6 +4,8 @@ body {
 
 img{
   border-radius: 50%;;
+
+  border: 5px black solid;
 }
 
 h1{
