@@ -1,3 +1,4 @@
+
 body {
   text-align: center;
 }
@@ -6,6 +7,16 @@ img{
   border-radius: 50%;;
 
   border: 5px black solid;
+}
+
+.header {
+  background-image: url("https://picsum.photos/id/4/500/300");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.heder .heder-inner {
+  background-color: rgb(100,0,0);
 }
 
 h1{
