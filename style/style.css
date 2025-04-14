@@ -1,52 +1,63 @@
 .sbin{
-  border-radius: 50%;
-  border: 5px white solid;
-}
+    border-radius: 50%;
+    border: 5px white solid;
+  }
+  
+  .header {
+    text-align: center;
+    background-image: url("https://picsum.photos/id/4/500/300");
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  
+  .header .heder-inner {
+    padding: 5% 0%;
+    background-color: rgba(49, 42, 39, 60%);
+    display: block;
+  }
+  
+  a svg {
+    fill: currentColor;
+    color: white;
+  }
 
-.header {
+  a svg:hover {
+    color: black;
+  }
+
+  h1{
+    color: white;
+    margin-top: 10px;
+  }
+  
+  body {
+    margin: 0px;
+  }
+  
+  .portfolio {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    padding-top: 5%;
+    padding-bottom: 20px;
+  }
+  
+  .portfolio img {
+    border-radius: 10%;
+    width: 27%;
+    height: 14%;
+    margin-bottom: 5%;
+    box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
+  }
+  
+  .portfolio img:hover {
+    filter: brightness(50%);
+  }
+  footer {
+  height: 50px;
+  background: rgb(49,42,39);
+  background: linear-gradient(90deg, rgba(49,42,39,0.6) 0%, rgba(136,96,79,1) 50%, rgba(49,42,39,0.6) 100%);
   text-align: center;
-  background-image: url("https://picsum.photos/id/4/500/300");
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.header .heder-inner {
-  padding: 4% 0%;
-  background-color: rgba(49, 42, 39, 60%);
-  display: block;
-}
-
-a svg {
-  fill: currentColor;
-  color: white;
-}
-
-h1{
-  color: white;
-  margin-top: 10px;
-}
-
-body {
-  margin: 0px;
-}
-
-.portfolio {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  padding-top: 5%;
-  padding-bottom: 20px;
-}
-
-.portfolio img {
-  border-radius: 10%;
-  width: 27%;
-  height: 14%;
-  margin-bottom: 5%;
-  box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
-}
-
-.portfolio img:hover {
-  filter: brightness(50%);
-  transition: 400ms;
-}
+  font-size: ;
+  height: 100%;
+  }
