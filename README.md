@@ -1,5 +1,7 @@
-# MH-Honarvar.github.io
+# mh-honarvar.github.io
 
-Public personal page for **Mohammad Honarvar**.
+Public personal site of **Mohammad Honarvar**.
 
 Live: https://mh-honarvar.github.io/
+
+This repository is the public showcase. Client projects are not stored here.
