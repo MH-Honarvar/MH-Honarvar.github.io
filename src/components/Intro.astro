@@ -1,0 +1,106 @@
+---
+import { SITE } from '../config';
+import type { Lang } from '../i18n/ui';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE.name.fa];
+---
+
+<div id="intro" data-lines={JSON.stringify(lines)} aria-hidden="true">
+  <canvas></canvas>
+</div>
+<script is:inline>
+  if (sessionStorage.getItem('intro-seen') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.getElementById('intro').remove();
+  }
+</script>
+
+<style>
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: var(--bg);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+  }
+  #intro.out {
+    opacity: 0;
+    transform: scale(1.08);
+    pointer-events: none;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  const root = document.getElementById('intro');
+  if (root) {
+    sessionStorage.setItem('intro-seen', '1');
+    const lines: string[] = JSON.parse(root.dataset.lines!);
+    const canvas = root.querySelector('canvas')!;
+    const ctx = canvas.getContext('2d')!;
+    const dpr = Math.min(devicePixelRatio, 2);
+    const W = innerWidth,
+      H = innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+    const css = getComputedStyle(document.documentElement);
+    const c1 = css.getPropertyValue('--accent').trim();
+    const c2 = css.getPropertyValue('--accent2').trim();
+
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = H;
+    const o = off.getContext('2d', { willReadFrequently: true })!;
+    const big = Math.min(W / 7, 120);
+    const family = '"Vazirmatn Variable", "Inter Variable", sans-serif';
+    o.fillStyle = '#fff';
+    o.textAlign = 'center';
+    o.textBaseline = 'middle';
+
+    const run = () => {
+      const data = o.getImageData(0, 0, W, H).data;
+      const step = W < 700 ? 4 : 5;
+      const pts: { x: number; y: number; tx: number; ty: number; c: string; d: number }[] = [];
+      for (let y = 0; y < H; y += step)
+        for (let x = 0; x < W; x += step)
+          if (data[(y * W + x) * 4 + 3] > 128)
+            pts.push({ x: Math.random() * W, y: Math.random() * H, tx: x, ty: y, c: Math.random() > 0.5 ? c1 : c2, d: Math.random() * 0.5 });
+
+      const start = performance.now();
+      const tick = (now: number) => {
+        const t = (now - start) / 1000;
+        ctx.clearRect(0, 0, W, H);
+        for (const p of pts) {
+          const k = Math.min(Math.max((t - p.d) / 1.4, 0), 1);
+          const e = 1 - Math.pow(1 - k, 4);
+          const x = p.x + (p.tx - p.x) * e;
+          const y = p.y + (p.ty - p.y) * e;
+          ctx.fillStyle = p.c;
+          ctx.fillRect(x, y, step * 0.6, step * 0.6);
+        }
+        if (t < 2.6) requestAnimationFrame(tick);
+        else {
+          root.classList.add('out');
+          setTimeout(() => root.remove(), 1000);
+        }
+      };
+      requestAnimationFrame(tick);
+    };
+    Promise.all(lines.map((l) => document.fonts.load(`800 40px ${family}`, l)))
+      .catch(() => {})
+      .then(() => {
+        o.font = `800 ${big}px ${family}`;
+        o.fillText(lines[0], W / 2, H / 2 - big * 0.4);
+        o.font = `600 ${big * 0.42}px ${family}`;
+        o.fillText(lines[1], W / 2, H / 2 + big * 0.55);
+        run();
+      });
+    root.addEventListener('click', () => root.classList.add('out'));
+  }
+</script>

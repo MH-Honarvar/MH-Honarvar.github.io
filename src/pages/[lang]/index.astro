@@ -1,0 +1,148 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+import { languages, t, type Lang } from '../../i18n/ui';
+import { getPosts } from '../../lib/blog';
+import { getRepos, getContributions } from '../../lib/github';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const posts = (await getPosts(lang)).slice(0, 4);
+const repos = await getRepos();
+const { total } = await getContributions();
+const stars = repos.reduce((s, r) => s + r.stargazers_count, 0);
+const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
+---
+
+<Base lang={lang} intro scene="hero">
+  <section class="hero container">
+    <p class="eyebrow">{tr('hero.eyebrow')}</p>
+    <h1 data-split>{tr('hero.title')}</h1>
+    <p class="lede reveal">{tr('hero.lede')}</p>
+    <div class="actions reveal">
+      <a class="btn primary" href={`/${lang}/blog/`}>{tr('hero.cta')}</a>
+      <a class="btn" href={`/${lang}/projects/`}>{tr('hero.cta2')}</a>
+    </div>
+    <dl class="stats reveal">
+      <div><dt>{num(repos.length)}</dt><dd>{tr('projects.repos')}</dd></div>
+      <div><dt>{num(stars)}</dt><dd>{tr('projects.stars')}</dd></div>
+      <div><dt>{num(total)}</dt><dd>{tr('projects.contribs')}</dd></div>
+    </dl>
+    <div class="scroll-hint" aria-hidden="true"><span></span></div>
+  </section>
+
+  <section class="section container">
+    <div class="head">
+      <h2 class="section-title reveal">{tr('home.latest')}</h2>
+      <a href={`/${lang}/blog/`} class="all">{tr('home.all')}</a>
+    </div>
+    <div class="grid">
+      {posts.map((post) => <PostCard post={post} lang={lang} />)}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    min-height: calc(100vh - 6rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+  .eyebrow {
+    color: var(--accent2);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2.4rem, 7vw, 5.2rem);
+    line-height: 1.1;
+    margin: 0.6rem 0 1.4rem;
+    max-width: 14ch;
+    font-weight: 800;
+  }
+  :global(.split-word) {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.08em;
+  }
+  :global(.split-word > span) {
+    display: inline-block;
+  }
+  .lede {
+    color: var(--muted);
+    font-size: 1.15rem;
+    max-width: 50ch;
+    margin: 0 0 2rem;
+  }
+  .actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .stats {
+    display: flex;
+    gap: 2.5rem;
+    margin: 3rem 0 0;
+  }
+  .stats dt {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(100deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .stats dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    margin-left: -12px;
+    width: 24px;
+    height: 40px;
+    border: 2px solid var(--border);
+    border-radius: 999px;
+  }
+  .scroll-hint span {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 4px;
+    height: 8px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--accent);
+    animation: drop 1.6s infinite;
+  }
+  @keyframes drop {
+    to {
+      transform: translateY(14px);
+      opacity: 0;
+    }
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2rem;
+  }
+  .all {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 1.25rem;
+  }
+</style>

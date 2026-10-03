@@ -1,0 +1,71 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PostCard from '../../../components/PostCard.astro';
+import { languages, t, type Lang } from '../../../i18n/ui';
+import { getPosts } from '../../../lib/blog';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const posts = await getPosts(lang);
+const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+---
+
+<Base lang={lang} title={tr('blog.title')} description={tr('blog.lede')}>
+  <section class="section container">
+    <h1 class="section-title" data-split>{tr('blog.title')}</h1>
+    <p class="section-lede">{tr('blog.lede')}</p>
+
+    <div id="search" class="glass" data-lang={lang} data-placeholder={tr('blog.search')}></div>
+
+    {tags.length > 0 && <div class="tags">{tags.map((tg) => <a class="tag" href={`/${lang}/blog/tags/${tg}/`}>#{tg}</a>)}</div>}
+
+    <div class="grid">
+      {posts.length ? posts.map((post) => <PostCard post={post} lang={lang} />) : <p>{tr('blog.empty')}</p>}
+    </div>
+  </section>
+</Base>
+
+<style>
+  #search {
+    padding: 0.4rem;
+    margin-bottom: 1.5rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 1.25rem;
+  }
+  :global(#search .pagefind-ui) {
+    --pagefind-ui-scale: 0.9;
+    --pagefind-ui-primary: var(--accent);
+    --pagefind-ui-text: var(--fg);
+    --pagefind-ui-background: transparent;
+    --pagefind-ui-border: var(--border);
+    --pagefind-ui-tag: var(--glass);
+    --pagefind-ui-border-radius: 14px;
+    --pagefind-ui-font: inherit;
+  }
+</style>
+
+<script>
+  const el = document.getElementById('search')!;
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = '/pagefind/pagefind-ui.css';
+  const js = document.createElement('script');
+  js.src = '/pagefind/pagefind-ui.js';
+  js.onload = () => {
+    // @ts-expect-error injected by pagefind-ui.js
+    new window.PagefindUI({ element: el, showSubResults: true, showImages: false, translations: { placeholder: el.dataset.placeholder } });
+  };
+  js.onerror = () => el.remove();
+  document.head.append(css, js);
+</script>

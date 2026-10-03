@@ -1,0 +1,215 @@
+---
+import '../styles/global.css';
+import { t, other, ui, type Lang } from '../i18n/ui';
+import { SITE } from '../config';
+import { getPosts, postUrl } from '../lib/blog';
+import Scene3D from '../components/Scene3D.astro';
+import Cursor from '../components/Cursor.astro';
+import CommandPalette from '../components/CommandPalette.astro';
+import Intro from '../components/Intro.astro';
+
+interface Props {
+  lang: Lang;
+  title?: string;
+  description?: string;
+  image?: string;
+  altPath?: string;
+  intro?: boolean;
+  scene?: 'hero' | 'ambient';
+}
+
+const { lang, title, description, image = '/og/default.png', altPath, intro = false, scene = 'ambient' } = Astro.props;
+const tr = t(lang);
+const name = SITE.name[lang];
+const fullTitle = title ? `${title} — ${name}` : name;
+const desc = description ?? tr('hero.lede');
+const path = Astro.url.pathname;
+const switchHref = altPath ?? path.replace(/^\/(fa|en)\//, `/${other(lang)}/`);
+const nav = [
+  { href: `/${lang}/`, label: tr('nav.home') },
+  { href: `/${lang}/blog/`, label: tr('nav.blog') },
+  { href: `/${lang}/projects/`, label: tr('nav.projects') },
+  { href: `/${lang}/about/`, label: tr('nav.about') },
+];
+
+const index = [];
+for (const l of ['fa', 'en'] as const) {
+  const lt = t(l);
+  index.push(
+    { title: lt('nav.home'), url: `/${l}/`, kind: 'page', lang: l },
+    { title: lt('nav.blog'), url: `/${l}/blog/`, kind: 'page', lang: l },
+    { title: lt('nav.projects'), url: `/${l}/projects/`, kind: 'page', lang: l },
+    { title: lt('nav.about'), url: `/${l}/about/`, kind: 'page', lang: l },
+  );
+  for (const p of await getPosts(l)) index.push({ title: p.data.title, url: postUrl(p), kind: 'post', lang: l });
+}
+---
+
+<!doctype html>
+<html lang={lang} dir={ui[lang].dir} data-theme="neon">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <meta name="theme-color" content="#07060d" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={new URL(path, Astro.site)} />
+    <link rel="alternate" hreflang={other(lang)} href={new URL(switchHref, Astro.site)} />
+    <link rel="alternate" type="application/rss+xml" title={name} href={`/${lang}/rss.xml`} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:url" content={new URL(path, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      (() => {
+        const t = localStorage.getItem('theme');
+        if (t) document.documentElement.dataset.theme = t;
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('no-motion');
+      })();
+    </script>
+  </head>
+  <body>
+    {intro && <Intro lang={lang} />}
+    <Scene3D mode={scene} />
+    <Cursor />
+
+    <header class="site-header">
+      <div class="container bar glass">
+        <a href={`/${lang}/`} class="logo" data-magnetic>
+          <span class="gradient-text">{lang === 'fa' ? 'م.ه' : 'M.H'}</span>
+        </a>
+        <nav>
+          {nav.map((n) => <a href={n.href} class:list={{ active: n.href === path || (n.href !== `/${lang}/` && path.startsWith(n.href)) }}>{n.label}</a>)}
+        </nav>
+        <div class="tools">
+          <button class="icon" id="cmd-open" dir="ltr" aria-label="Search" title={tr('cmd.hint')}>⌘K</button>
+          <button class="icon" id="theme-btn" aria-label={tr('theme')} title={tr('theme')}>◐</button>
+          <a class="icon lang" href={switchHref} hreflang={other(lang)}>{tr('switch')}</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer container">
+      <p>© {new Date().getFullYear()} {name}</p>
+      <p class="links">
+        <a href={`https://github.com/${SITE.githubUser}`}>GitHub</a>
+        <a href={`https://t.me/${SITE.telegram}`}>Telegram</a>
+        <a href={`/${lang}/rss.xml`}>RSS</a>
+      </p>
+      <p class="hint">{tr('cmd.hint')}</p>
+    </footer>
+
+    <CommandPalette lang={lang} index={index} />
+  </body>
+</html>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0.8rem;
+    z-index: 50;
+    padding-top: 0.8rem;
+  }
+  main {
+    position: relative;
+    z-index: 1;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.55rem 0.8rem 0.55rem 1.1rem;
+    border-radius: 999px;
+  }
+  .logo {
+    font-weight: 800;
+    font-size: 1.15rem;
+    text-decoration: none;
+  }
+  nav {
+    display: flex;
+    gap: 0.25rem;
+    margin-inline: auto;
+  }
+  nav a {
+    text-decoration: none;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    color: var(--muted);
+    transition: color 0.2s, background 0.2s;
+  }
+  nav a:hover,
+  nav a.active {
+    color: var(--fg);
+    background: var(--glass);
+  }
+  .tools {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .icon {
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--fg);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .icon:hover {
+    border-color: var(--accent);
+  }
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 3rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+  .site-footer p {
+    margin: 0;
+  }
+  .links {
+    display: flex;
+    gap: 1rem;
+  }
+  .hint {
+    opacity: 0.6;
+  }
+  @media (max-width: 720px) {
+    nav {
+      position: fixed;
+      bottom: 1rem;
+      inset-inline: 1rem;
+      justify-content: space-around;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem;
+    }
+    .bar {
+      justify-content: space-between;
+    }
+    #cmd-open {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/motion';
+  import '../scripts/theme';
+  import '../scripts/konami';
+</script>

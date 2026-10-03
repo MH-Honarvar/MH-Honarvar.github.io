@@ -1,0 +1,143 @@
+---
+import { t, type Lang } from '../i18n/ui';
+interface Props {
+  lang: Lang;
+  index: { title: string; url: string; kind: string; lang: string }[];
+}
+const { lang, index } = Astro.props;
+const tr = t(lang);
+---
+
+<script type="application/json" id="site-index" set:html={JSON.stringify(index)} />
+
+<dialog id="cmd" class="glass" data-lang={lang}>
+  <input id="cmd-input" type="text" placeholder={tr('cmd.placeholder')} autocomplete="off" />
+  <ul id="cmd-list"></ul>
+  <p class="foot">↑↓ · Enter · Esc</p>
+</dialog>
+
+<dialog id="term" dir="ltr" data-lang={lang}>
+  <div class="term-head"><span></span><span></span><span></span><b>guest@mh-honarvar: ~</b></div>
+  <div id="term-out"></div>
+  <form id="term-form"><label>$</label><input id="term-input" autocomplete="off" spellcheck="false" /></form>
+</dialog>
+
+<style>
+  dialog {
+    color: var(--fg);
+    padding: 0;
+    border: 1px solid var(--border);
+    width: min(620px, 92vw);
+    margin-top: 14vh;
+    background: color-mix(in srgb, var(--bg2) 82%, transparent);
+    box-shadow: var(--shadow);
+  }
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+  }
+  #cmd-input {
+    width: 100%;
+    font: inherit;
+    font-size: 1.1rem;
+    padding: 1.1rem 1.3rem;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+    outline: none;
+  }
+  #cmd-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem;
+    max-height: 50vh;
+    overflow: auto;
+  }
+  #cmd-list :global(a) {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.7rem;
+    text-decoration: none;
+  }
+  #cmd-list :global(a.sel) {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  #cmd-list :global(small) {
+    color: var(--muted);
+  }
+  .foot {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  #term {
+    background: #0a0a0f;
+    color: #c8ffd8;
+    font-family: ui-monospace, 'SF Mono', Menlo, 'Vazirmatn Variable', monospace;
+    font-size: 0.9rem;
+    border-radius: 0.8rem;
+    width: min(760px, 94vw);
+  }
+  .term-head {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background: #15151d;
+  }
+  .term-head span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #ff5f57;
+  }
+  .term-head span:nth-child(2) {
+    background: #febc2e;
+  }
+  .term-head span:nth-child(3) {
+    background: #28c840;
+  }
+  .term-head b {
+    margin-inline-start: auto;
+    font-weight: 400;
+    color: #888;
+    font-size: 0.8rem;
+  }
+  #term-out {
+    padding: 0.9rem 1rem 0;
+    height: 50vh;
+    overflow: auto;
+    white-space: pre-wrap;
+  }
+  #term-out :global(a) {
+    color: #7dd3fc;
+  }
+  #term-out :global(.cmd) {
+    color: #a78bfa;
+  }
+  #term-form {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem 1rem;
+  }
+  #term-form label {
+    color: #10f5a0;
+  }
+  #term-input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+</style>
+
+<script>
+  import { initPalette } from '../scripts/palette';
+  initPalette();
+</script>

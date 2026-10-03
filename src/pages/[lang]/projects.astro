@@ -1,0 +1,168 @@
+---
+import Base from '../../layouts/Base.astro';
+import { languages, t, type Lang } from '../../i18n/ui';
+import { getRepos, getContributions, languageStats } from '../../lib/github';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const repos = await getRepos();
+const { days, total } = await getContributions();
+const langs = languageStats(repos).slice(0, 6);
+const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
+---
+
+<Base lang={lang} title={tr('projects.title')} description={tr('projects.lede')}>
+  <section class="section container">
+    <h1 class="section-title" data-split>{tr('projects.title')}</h1>
+    <p class="section-lede">{tr('projects.lede')}</p>
+
+    {
+      langs.length > 0 && (
+        <div class="langs glass reveal">
+          <h2>{tr('projects.langs')}</h2>
+          <div class="bar">
+            {langs.map((l, i) => (
+              <span style={`flex:${l.pct};--h:${i * 50}`} title={`${l.name} ${l.pct}%`} />
+            ))}
+          </div>
+          <ul>
+            {langs.map((l, i) => (
+              <li style={`--h:${i * 50}`}>
+                <i />
+                {l.name} <small>{num(l.pct)}{lang === 'fa' ? '٪' : '%'}</small>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <div class="grid">
+      {
+        repos.map((r) => (
+          <a href={r.html_url} class="repo glass reveal" data-tilt>
+            <h3 dir="ltr">{r.name}</h3>
+            <p>{r.description ?? '—'}</p>
+            <div class="foot" dir="ltr">
+              {r.language && <span>● {r.language}</span>}
+              <span>★ {r.stargazers_count}</span>
+              <span>⑂ {r.forks_count}</span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    days.length > 0 && (
+      <section class="section container">
+        <h2 class="section-title reveal">{tr('projects.city')}</h2>
+        <p class="section-lede reveal">
+          {tr('projects.cityLede')}
+          <br />
+          <b class="gradient-text">{num(total)}</b> {tr('projects.contribs')}
+        </p>
+        <div class="city glass reveal">
+          <canvas id="city" data-days={JSON.stringify(days.map((d) => d.count))} />
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .langs {
+    padding: 1.4rem;
+    margin-bottom: 2rem;
+  }
+  .langs h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+  }
+  .bar {
+    display: flex;
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    gap: 3px;
+  }
+  .bar span,
+  .langs i {
+    background: hsl(calc(270 + var(--h)) 85% 62%);
+  }
+  .langs ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+  }
+  .langs i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .langs small {
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 1.25rem;
+  }
+  .repo {
+    display: flex;
+    flex-direction: column;
+    padding: 1.4rem;
+    text-decoration: none;
+    transition: transform 0.2s ease-out, border-color 0.3s;
+    background-image: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%);
+  }
+  .repo:hover {
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  .repo h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.1rem;
+    text-align: start;
+  }
+  .repo p {
+    color: var(--muted);
+    margin: 0 0 1.2rem;
+    flex: 1;
+  }
+  .foot {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .city {
+    height: min(60vh, 520px);
+    overflow: hidden;
+  }
+  #city {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+  }
+</style>
+
+<script>
+  const canvas = document.getElementById('city') as HTMLCanvasElement | null;
+  if (canvas) {
+    const io = new IntersectionObserver(async ([e]) => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      const { initCity } = await import('../../scripts/city');
+      initCity(canvas, JSON.parse(canvas.dataset.days!));
+    });
+    io.observe(canvas);
+  }
+</script>

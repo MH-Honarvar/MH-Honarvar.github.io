@@ -1,0 +1,82 @@
+<div class="cursor-dot" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<style is:global>
+  .cursor-dot,
+  .cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 50%;
+    display: none;
+  }
+  .has-cursor .cursor-dot,
+  .has-cursor .cursor-ring {
+    display: block;
+  }
+  .has-cursor,
+  .has-cursor a,
+  .has-cursor button {
+    cursor: none;
+  }
+  .cursor-dot {
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    background: var(--accent2);
+  }
+  .cursor-ring {
+    width: 38px;
+    height: 38px;
+    margin: -19px 0 0 -19px;
+    border: 1.5px solid var(--accent);
+    transition: width 0.25s, height 0.25s, margin 0.25s, background 0.25s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring.hover {
+    width: 64px;
+    height: 64px;
+    margin: -32px 0 0 -32px;
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+</style>
+
+<script>
+  const fine = matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (fine) {
+    document.documentElement.classList.add('has-cursor');
+    const dot = document.querySelector<HTMLElement>('.cursor-dot')!;
+    const ring = document.querySelector<HTMLElement>('.cursor-ring')!;
+    let x = innerWidth / 2,
+      y = innerHeight / 2,
+      rx = x,
+      ry = y;
+    addEventListener('pointermove', (e) => {
+      x = e.clientX;
+      y = e.clientY;
+      dot.style.transform = `translate(${x}px, ${y}px)`;
+    });
+    const loop = () => {
+      rx += (x - rx) * 0.18;
+      ry += (y - ry) * 0.18;
+      ring.style.transform = `translate(${rx}px, ${ry}px)`;
+      requestAnimationFrame(loop);
+    };
+    loop();
+
+    document.addEventListener('pointerover', (e) => {
+      const el = (e.target as HTMLElement).closest('a, button, [data-tilt]');
+      ring.classList.toggle('hover', !!el);
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-magnetic], .btn').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.25}px, ${(e.clientY - r.top - r.height / 2) * 0.35}px)`;
+      });
+      el.addEventListener('pointerleave', () => (el.style.transform = ''));
+    });
+  }
+</script>

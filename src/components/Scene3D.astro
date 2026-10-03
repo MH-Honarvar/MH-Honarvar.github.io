@@ -1,0 +1,42 @@
+---
+interface Props {
+  mode: 'hero' | 'ambient';
+}
+const { mode } = Astro.props;
+---
+
+<div class="scene-fallback" aria-hidden="true"></div>
+<canvas id="scene" data-mode={mode} aria-hidden="true"></canvas>
+
+<style>
+  #scene,
+  .scene-fallback {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .scene-fallback {
+    z-index: -2;
+    background:
+      radial-gradient(60% 50% at 70% 30%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(50% 40% at 20% 80%, color-mix(in srgb, var(--accent2) 14%, transparent), transparent 70%),
+      var(--bg);
+    transition: background 0.4s;
+  }
+  #scene {
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  #scene.ready {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  import { initScene } from '../scripts/scene';
+  const canvas = document.getElementById('scene') as HTMLCanvasElement;
+  initScene(canvas, canvas.dataset.mode as 'hero' | 'ambient');
+</script>

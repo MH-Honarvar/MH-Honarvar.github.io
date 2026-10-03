@@ -1,0 +1,91 @@
+---
+import Base from '../../layouts/Base.astro';
+import { languages, t, type Lang } from '../../i18n/ui';
+import { SITE } from '../../config';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const skills = ['HTML', 'CSS', 'JavaScript', 'TypeScript', 'Astro', 'Three.js', 'GSAP', 'UI Design', 'Typography'];
+---
+
+<Base lang={lang} title={tr('about.title')}>
+  <section class="section container about">
+    <h1 class="section-title" data-split>{tr('about.title')}</h1>
+    <div class="card glass reveal">
+      <img src={`https://github.com/${SITE.githubUser}.png?size=240`} alt={SITE.name[lang]} width="120" height="120" />
+      <div>
+        <h2 class="gradient-text">{SITE.name[lang]}</h2>
+        <p>{tr('about.body')}</p>
+      </div>
+    </div>
+
+    <h2 class="sub reveal">{tr('about.skills')}</h2>
+    <ul class="skills reveal" dir="ltr">
+      {skills.map((s) => <li class="glass">{s}</li>)}
+    </ul>
+
+    <h2 class="sub reveal">{tr('about.contact')}</h2>
+    <div class="contact reveal">
+      <a class="btn primary" href={`https://t.me/${SITE.telegram}`}>Telegram @{SITE.telegram}</a>
+      <a class="btn" href={`https://github.com/${SITE.githubUser}`}>GitHub</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .card {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    padding: 2rem;
+    margin: 2rem 0 3rem;
+  }
+  .card img {
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+  }
+  .card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+  }
+  .card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+  .sub {
+    font-size: 1.4rem;
+    margin: 2.5rem 0 1rem;
+  }
+  .skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    justify-content: flex-start;
+  }
+  :global([dir='rtl']) .skills {
+    justify-content: flex-end;
+  }
+  .skills li {
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+  }
+  .contact {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 600px) {
+    .card {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>
