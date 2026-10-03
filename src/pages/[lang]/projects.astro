@@ -41,17 +41,25 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 
     <div class="grid">
       {
-        repos.map((r) => (
-          <a href={r.html_url} class="repo glass reveal" data-tilt>
-            <h3 dir="ltr">{r.name}</h3>
-            <p>{r.description ?? '—'}</p>
-            <div class="foot" dir="ltr">
-              {r.language && <span>● {r.language}</span>}
-              <span>★ {r.stargazers_count}</span>
-              <span>⑂ {r.forks_count}</span>
-            </div>
-          </a>
-        ))
+        repos.map((r) =>
+          r.private ? (
+            <article class="repo glass reveal private">
+              <h3 dir="ltr">{r.name}</h3>
+              <p class="lock">{tr('projects.private')}</p>
+              <div class="foot" dir="ltr">{r.language && <span>● {r.language}</span>}</div>
+            </article>
+          ) : (
+            <a href={r.html_url} class="repo glass reveal" data-tilt>
+              <h3 dir="ltr">{r.name}</h3>
+              <p>{r.description ?? '—'}</p>
+              <div class="foot" dir="ltr">
+                {r.language && <span>● {r.language}</span>}
+                <span>★ {r.stargazers_count}</span>
+                <span>⑂ {r.forks_count}</span>
+              </div>
+            </a>
+          ),
+        )
       }
     </div>
   </section>
@@ -135,6 +143,12 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     color: var(--muted);
     margin: 0 0 1.2rem;
     flex: 1;
+  }
+  .lock {
+    align-self: flex-start;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.7rem;
   }
   .foot {
     display: flex;

@@ -11,6 +11,7 @@ export interface Repo {
   topics?: string[];
   fork: boolean;
   pushed_at: string;
+  private: boolean;
 }
 
 export interface Day {
@@ -20,15 +21,35 @@ export interface Day {
 }
 
 const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
-if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+const token = process.env.GH_PAT || process.env.GITHUB_TOKEN;
+if (token) headers.Authorization = `Bearer ${token}`;
+
+function scrub(repo: Repo): Repo {
+  if (!repo.private) return { ...repo, private: false };
+  return {
+    name: repo.name,
+    description: null,
+    html_url: '',
+    homepage: null,
+    language: repo.language,
+    stargazers_count: 0,
+    forks_count: 0,
+    fork: false,
+    pushed_at: '',
+    private: true,
+  };
+}
 
 let reposCache: Promise<Repo[]> | undefined;
 let daysCache: Promise<{ days: Day[]; total: number }> | undefined;
 
 export function getRepos() {
-  reposCache ??= fetch(`https://api.github.com/users/${SITE.githubUser}/repos?per_page=100&sort=pushed`, { headers })
+  const url = process.env.GH_PAT
+    ? 'https://api.github.com/user/repos?per_page=100&sort=pushed&affiliation=owner'
+    : `https://api.github.com/users/${SITE.githubUser}/repos?per_page=100&sort=pushed`;
+  reposCache ??= fetch(url, { headers })
     .then((r) => (r.ok ? r.json() : []))
-    .then((list: Repo[]) => list.filter((r) => !r.fork))
+    .then((list: Repo[]) => list.filter((r) => !r.fork).map(scrub))
     .catch(() => []);
   return reposCache;
 }
