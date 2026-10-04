@@ -45,7 +45,7 @@ void main(){
 }`;
 
 const finishShader = {
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAmount: { value: 0.006 }, uGrain: { value: 0.04 } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAmount: { value: 0.0025 }, uGrain: { value: 0.018 } },
   vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */ `
     uniform sampler2D tDiffuse; uniform float uTime; uniform float uAmount; uniform float uGrain;
@@ -177,8 +177,8 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     const glow = Math.min(1, Math.max(0.3, 0.22 / ((lum(uniforms.uA.value) + lum(uniforms.uB.value)) / 2)));
     uniforms.uGlow.value = glow;
     if (blob) blob.material.attenuationColor = uniforms.uA.value.clone().lerp(new THREE.Color(0xffffff), 0.2);
-    if (bloom) bloom.strength = (isLight() ? 0.18 : 0.6) * (0.5 + 0.5 * glow);
-    if (finish) finish.uniforms.uGrain.value = isLight() ? 0.02 : 0.04;
+    if (bloom) bloom.strength = (isLight() ? 0.1 : 0.32) * (0.55 + 0.45 * glow);
+    if (finish) finish.uniforms.uGrain.value = isLight() ? 0.01 : 0.018;
   };
 
   const applyTier = () => {
@@ -207,9 +207,11 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     camera.aspect = w / h;
     uAspect.value = w / h;
     camera.updateProjectionMatrix();
-    const wide = w / h > 1.15;
-    basePos.set(wide ? (document.dir === 'rtl' ? -1 : 1) * Math.min(2.2, 1.1 * (w / h)) : 0, wide ? 0 : 1.75, 0);
-    baseScale = wide ? Math.min(1, 0.55 + 0.3 * (w / h)) : 0.5;
+    const side = w >= 860;
+    const wide = w >= 1180;
+    const dir = document.dir === 'rtl' ? -1 : 1;
+    basePos.set(side ? dir * (wide ? Math.min(2.35, 0.95 * (w / h)) : 2.15) : 0, side ? 0.15 : 1.7, 0);
+    baseScale = wide ? Math.min(0.9, 0.4 + 0.22 * (w / h)) : side ? 0.36 : 0.32;
   };
   applyTheme();
   if (hero) applyTier();

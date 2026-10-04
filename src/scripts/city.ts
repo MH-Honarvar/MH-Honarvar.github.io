@@ -31,7 +31,7 @@ export function initCity(canvas: HTMLCanvasElement, counts: number[]) {
   const b = cssColor('--accent2');
   const base = new THREE.Color(0x2a2540);
   const c = new THREE.Color();
-  const heights = counts.map((n) => (n === 0 ? 0.15 : 0.6 + Math.log2(1 + n) * 1.6));
+  const heights = counts.map((n) => (n === 0 ? 0.42 : 1.1 + Math.log2(1 + n) * 2.2));
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   counts.forEach((n, i) => {
