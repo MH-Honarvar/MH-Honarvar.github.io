@@ -6,26 +6,56 @@ gsap.registerPlugin(ScrollTrigger);
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Split by words, not letters: per-letter spans break Persian glyph joining.
+document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
+  const words = (el.textContent ?? '').trim().split(/\s+/);
+  const hl = el.dataset.highlight;
+  el.textContent = '';
+  el.setAttribute('aria-label', words.join(' '));
+  for (const w of words) {
+    const outer = document.createElement('span');
+    outer.className = 'split-word';
+    outer.setAttribute('aria-hidden', 'true');
+    const inner = document.createElement('span');
+    inner.textContent = w;
+    if (hl && w.replace(/[.,،]/g, '') === hl) inner.className = 'hl';
+    outer.append(inner);
+    el.append(outer, ' ');
+  }
+});
+
+document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
+  const end = Number(el.dataset.count);
+  if (reduced || !end) return;
+  const fmt = new Intl.NumberFormat(document.documentElement.lang === 'fa' ? 'fa-IR' : 'en-US');
+  const state = { v: 0 };
+  el.textContent = fmt.format(0);
+  gsap.to(state, {
+    v: end,
+    duration: 1.8,
+    ease: 'power3.out',
+    delay: 0.4,
+    onUpdate: () => (el.textContent = fmt.format(Math.round(state.v))),
+    scrollTrigger: { trigger: el, start: 'top 95%' },
+  });
+});
+
+const depth = document.querySelector<HTMLElement>('[data-depth]');
+if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
+  addEventListener('pointermove', (e) => {
+    const x = e.clientX / innerWidth - 0.5;
+    const y = e.clientY / innerHeight - 0.5;
+    depth.style.transform = `translate3d(${-x * 14}px, ${-y * 10}px, 0)`;
+  });
+}
+
 if (!reduced) {
   const lenis = new Lenis({ lerp: 0.1 });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
-  // Split by words, not letters: per-letter spans break Persian glyph joining.
   document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
-    const words = (el.textContent ?? '').trim().split(/\s+/);
-    el.textContent = '';
-    el.setAttribute('aria-label', words.join(' '));
-    for (const w of words) {
-      const outer = document.createElement('span');
-      outer.className = 'split-word';
-      outer.setAttribute('aria-hidden', 'true');
-      const inner = document.createElement('span');
-      inner.textContent = w;
-      outer.append(inner);
-      el.append(outer, ' ');
-    }
     gsap.from(el.querySelectorAll('.split-word > span'), {
       yPercent: 110,
       opacity: 0,

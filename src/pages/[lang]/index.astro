@@ -3,34 +3,48 @@ import Base from '../../layouts/Base.astro';
 import PostCard from '../../components/PostCard.astro';
 import { languages, t, type Lang } from '../../i18n/ui';
 import { getPosts } from '../../lib/blog';
-import { getRepos, getContributions } from '../../lib/github';
+import { getRepos, getContributions, languageStats } from '../../lib/github';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
 const lang = Astro.params.lang as Lang;
 const tr = t(lang);
-const posts = (await getPosts(lang)).slice(0, 4);
+const allPosts = await getPosts(lang);
+const posts = allPosts.slice(0, 4);
 const repos = await getRepos();
 const { total } = await getContributions();
-const stars = repos.reduce((s, r) => s + r.stargazers_count, 0);
+const langCount = languageStats(repos).length;
 const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
+const stats = [
+  [repos.length, tr('projects.repos')],
+  [allPosts.length, tr('hero.posts')],
+  [langCount, tr('hero.langs')],
+  [total, tr('projects.contribs')],
+].filter(([n]) => n > 0) as [number, string][];
+const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS', 'Node.js', 'Git', 'UI Design', 'Typography', 'Motion'];
 ---
 
 <Base lang={lang} intro scene="hero">
   <section class="hero container">
-    <p class="eyebrow">{tr('hero.eyebrow')}</p>
-    <h1 data-split>{tr('hero.title')}</h1>
-    <p class="lede reveal">{tr('hero.lede')}</p>
-    <div class="actions reveal">
-      <a class="btn primary" href={`/${lang}/blog/`}>{tr('hero.cta')}</a>
-      <a class="btn" href={`/${lang}/projects/`}>{tr('hero.cta2')}</a>
+    <div class="copy" data-depth>
+      <p class="status"><span class="dot"></span>{tr('hero.status')}</p>
+      <p class="eyebrow">{tr('hero.eyebrow')}</p>
+      <h1 data-split data-highlight={tr('hero.word')}>{tr('hero.title')}</h1>
+      <p class="lede reveal">{tr('hero.lede')}</p>
+      <div class="actions reveal">
+        <a class="btn primary" href={`/${lang}/blog/`}>{tr('hero.cta')}</a>
+        <a class="btn" href={`/${lang}/projects/`}>{tr('hero.cta2')}</a>
+      </div>
+      <dl class="stats glass reveal">
+        {stats.map(([n, label]) => <div><dt data-count={n}>{num(n)}</dt><dd>{label}</dd></div>)}
+      </dl>
     </div>
-    <dl class="stats reveal">
-      <div><dt>{num(repos.length)}</dt><dd>{tr('projects.repos')}</dd></div>
-      <div><dt>{num(stars)}</dt><dd>{tr('projects.stars')}</dd></div>
-      <div><dt>{num(total)}</dt><dd>{tr('projects.contribs')}</dd></div>
-    </dl>
-    <div class="scroll-hint" aria-hidden="true"><span></span></div>
+    <div class="marquee" aria-hidden="true">
+      <div class="track">
+        {[...skills, ...skills].map((s) => <span>{s}</span>)}
+      </div>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span class="line"></span>{tr('hero.scroll')}</div>
   </section>
 
   <section class="section container">
@@ -51,6 +65,7 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     flex-direction: column;
     justify-content: center;
     position: relative;
+    padding-bottom: 7.5rem;
   }
   .eyebrow {
     color: var(--accent2);
@@ -85,14 +100,78 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     gap: 0.8rem;
     flex-wrap: wrap;
   }
+  .copy {
+    max-width: min(100%, 52%);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform;
+  }
+  :global(html.hero-stacked) .hero {
+    justify-content: flex-end;
+    padding-top: 36vh;
+  }
+  :global(html.hero-stacked) .copy {
+    max-width: 100%;
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 1.1rem;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    backdrop-filter: blur(10px);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 0 rgb(34 197 94 / 0.6);
+    animation: ping 1.8s infinite;
+  }
+  @keyframes ping {
+    70% {
+      box-shadow: 0 0 0 8px rgb(34 197 94 / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
+    }
+  }
+  :global(.hl) {
+    background: linear-gradient(100deg, var(--accent), var(--accent2), var(--accent));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: sheen 5s linear infinite;
+  }
+  @keyframes sheen {
+    to {
+      background-position: -200% 0;
+    }
+  }
   .stats {
-    display: flex;
-    gap: 2.5rem;
-    margin: 3rem 0 0;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 0 2rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 2.6rem 0 0;
+    padding: 1rem 1.5rem;
+    border-radius: 18px;
+  }
+  .stats div + div {
+    border-inline-start: 1px solid var(--border);
+    padding-inline-start: 2rem;
   }
   .stats dt {
-    font-size: 2rem;
+    font-size: 1.9rem;
     font-weight: 800;
+    font-variant-numeric: tabular-nums;
     background: linear-gradient(100deg, var(--accent), var(--accent2));
     -webkit-background-clip: text;
     background-clip: text;
@@ -101,33 +180,94 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
   .stats dd {
     margin: 0;
     color: var(--muted);
+    font-size: 0.8rem;
+  }
+  @media (max-width: 640px) {
+    .stats {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(2, auto);
+      gap: 0.9rem 1.5rem;
+    }
+    .stats div + div {
+      border: 0;
+      padding: 0;
+    }
+  }
+  .marquee {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 4.6rem;
+    overflow: hidden;
+    direction: ltr;
+    mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+    opacity: 0.6;
+  }
+  .track {
+    display: flex;
+    gap: 2.4rem;
+    width: max-content;
+    animation: slide 40s linear infinite;
+  }
+  .track span {
     font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .track span::before {
+    content: '◆';
+    margin-inline-end: 2.4rem;
+    color: var(--accent);
+    font-size: 0.6em;
+    vertical-align: middle;
+  }
+  @keyframes slide {
+    to {
+      transform: translateX(-50%);
+    }
   }
   .scroll-hint {
     position: absolute;
-    bottom: 1.5rem;
+    bottom: 1rem;
     left: 50%;
-    margin-left: -12px;
-    width: 24px;
-    height: 40px;
-    border: 2px solid var(--border);
-    border-radius: 999px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
   }
-  .scroll-hint span {
+  .line {
+    position: relative;
+    width: 1px;
+    height: 36px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .line::after {
+    content: '';
     position: absolute;
-    top: 6px;
-    left: 50%;
-    width: 4px;
-    height: 8px;
-    margin-left: -2px;
-    border-radius: 2px;
-    background: var(--accent);
-    animation: drop 1.6s infinite;
+    inset: 0;
+    background: linear-gradient(transparent, var(--accent));
+    animation: fall 1.8s cubic-bezier(0.6, 0, 0.3, 1) infinite;
   }
-  @keyframes drop {
+  @keyframes fall {
+    from {
+      transform: translateY(-100%);
+    }
     to {
-      transform: translateY(14px);
-      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .track,
+    .line::after,
+    .dot,
+    :global(.hl) {
+      animation: none;
     }
   }
   .head {
