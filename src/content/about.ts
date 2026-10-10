@@ -1,0 +1,59 @@
+import type { Lang } from '../i18n/ui';
+
+type L = Record<Lang, string>;
+
+export const story: L = {
+  fa: 'صفحه برای من از حروف و فاصله شروع می‌شود، نه از افکت. اگر فارسی و راست‌به‌چپ همان اول در طرح نباشد، بعداً وصله می‌شود و وصله دیده می‌شود. بیشتر وقتم صرف همین است: رابطی که در هر دو زبان خوانا بماند، حرکت اضافه نداشته باشد، و زود باز شود. کار مشتری‌ها این‌جا نمی‌آید. این سایت سمت عمومی من است؛ جایی که ابزار را امتحان می‌کنم و همان را، ساده، می‌نویسم.',
+  en: 'A page starts with type and space, not with an effect. If Persian and right-to-left are not in the layout from the first day, they get patched in later, and the patch shows. Most of my time goes there: an interface that stays readable in both languages, skips extra motion, and opens quickly. Client work does not appear here. This site is the public side, where I try the tools and write the result down plainly.',
+};
+
+export const values: { icon: string; title: L; body: L }[] = [
+  {
+    icon: 'M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z',
+    title: { fa: 'جزئیات مهم‌اند', en: 'Details matter' },
+    body: { fa: 'فاصله‌ی یک پیکسل، وزن یک فونت، زمان یک انیمیشن؛ همین‌ها حس کار را می‌سازند.', en: 'A pixel of spacing, a font weight, an animation curve — these are what make a thing feel right.' },
+  },
+  {
+    icon: 'M13 2L4 14h7l-1 8 9-12h-7z',
+    title: { fa: 'سریع و سبک', en: 'Fast and light' },
+    body: { fa: 'زیبایی نباید کندی بیاورد. اول کارایی، بعد افکت.', en: "Beauty shouldn't cost speed. Performance first, effects second." },
+  },
+  {
+    icon: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3',
+    title: { fa: 'دو زبانه از پایه', en: 'Bilingual by design' },
+    body: { fa: 'راست‌به‌چپ یک وصله نیست؛ از روز اول در طراحی است.', en: 'Right-to-left is not a patch; it is part of the design from day one.' },
+  },
+  {
+    icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9 12l2 2 4-4',
+    title: { fa: 'صادق و ساده', en: 'Honest and simple' },
+    body: { fa: 'کد خوانا، نوشته‌ی روشن و قول‌هایی که عملی‌اند.', en: 'Readable code, clear writing and promises that are actually kept.' },
+  },
+];
+
+export const toolbox: { name: string; level: number; icon: string }[] = [
+  { name: 'HTML / CSS', level: 92, icon: 'M4 3l1.5 16L12 21l6.5-2L20 3zM8 8h8l-.5 5-3.5 1-3.5-1' },
+  { name: 'TypeScript', level: 80, icon: 'M3 3h18v18H3zM8 11h6M11 11v7M19 12a2 2 0 0 0-4 0c0 2 4 1 4 3.5a2 2 0 0 1-4 .5' },
+  { name: 'Astro', level: 82, icon: 'M9 17c-1 2 0 4 3 4s4-2 3-4M7 15l5-12 5 12c-3-1-7-1-10 0z' },
+  { name: 'Three.js / GLSL', level: 70, icon: 'M12 2l9 5v10l-9 5-9-5V7zM12 22V12M21 7l-9 5-9-5' },
+  { name: 'GSAP / Motion', level: 75, icon: 'M3 17c4 0 4-10 9-10s5 10 9 10' },
+  { name: 'Figma / UI', level: 78, icon: 'M9 3h6a3 3 0 0 1 0 6H9a3 3 0 0 1 0-6zM9 9h6a3 3 0 1 1 0 6H9M9 15a3 3 0 1 0 3 3v-9' },
+];
+
+export const faq: { q: L; a: L }[] = [
+  {
+    q: { fa: 'پروژه‌ی سفارشی هم قبول می‌کنی؟', en: 'Do you take on custom projects?' },
+    a: { fa: 'بله، اگر وقت و موضوع جور باشد. در تلگرام بنویس چه در ذهن داری.', en: 'Yes, when the timing and subject fit. Tell me on Telegram what you have in mind.' },
+  },
+  {
+    q: { fa: 'چرا بعضی پروژه‌ها خصوصی‌اند؟', en: 'Why are some projects private?' },
+    a: { fa: 'کار مشتری‌ها و چیزهایی که هنوز آماده نیستند. فقط اینکه وجود دارند را اینجا می‌بینی.', en: "Client work and things that aren't ready yet. Here you only see that they exist." },
+  },
+  {
+    q: { fa: 'این سایت با چه ساخته شده؟', en: 'What is this site built with?' },
+    a: { fa: 'Astro، TypeScript و Three.js؛ کاملاً ایستا و روی GitHub Pages.', en: 'Astro, TypeScript and Three.js — fully static, on GitHub Pages.' },
+  },
+  {
+    q: { fa: 'سریع‌ترین راه تماس؟', en: 'Fastest way to reach you?' },
+    a: { fa: 'تلگرام. معمولاً همان روز جواب می‌دهم.', en: 'Telegram. I usually reply the same day.' },
+  },
+];

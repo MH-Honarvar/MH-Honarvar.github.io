@@ -1,0 +1,69 @@
+---
+import { SITE } from '../config';
+interface Props {
+  name: string;
+  language: string | null;
+  private: boolean;
+}
+const { name, language, private: isPrivate } = Astro.props;
+const web = ['HTML', 'CSS', 'SCSS', 'JavaScript', 'TypeScript', 'Astro', 'Vue', 'Svelte', 'MDX'];
+const kind = isPrivate
+  ? 'lock'
+  : name.toLowerCase() === SITE.githubUser.toLowerCase()
+    ? 'profile'
+    : !language || language === 'Markdown'
+      ? 'doc'
+      : web.includes(language)
+        ? 'web'
+        : 'terminal';
+const paths: Record<string, string> = {
+  lock: 'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v2',
+  profile: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+  doc: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h5',
+  web: 'M3 5h18v14H3zM3 9h18M6.5 7h.01M9 7h.01M8 13l-2 2 2 2M16 13l2 2-2 2M13 12l-2 6',
+  terminal: 'M3 4h18v16H3zM7 9l3 3-3 3M12 15h5',
+};
+---
+
+<span class="repo-icon" aria-hidden="true">
+  <svg viewBox="0 0 24 24" width="22" height="22"><path d={paths[kind]} /></svg>
+</span>
+
+<style>
+  .repo-icon {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    color: var(--c, var(--accent));
+    background: color-mix(in srgb, var(--c, var(--accent)) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c, var(--accent)) 30%, transparent);
+  }
+  .repo-icon::before {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--c, var(--accent)) 30%, transparent), transparent 65%);
+    z-index: -1;
+  }
+  svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 90;
+  }
+  :global(:hover) > .repo-icon svg,
+  :global(:hover) > * > .repo-icon svg {
+    animation: draw 1s ease-out;
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 90;
+    }
+  }
+</style>

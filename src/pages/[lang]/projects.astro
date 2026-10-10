@@ -1,63 +1,193 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { languages, t, type Lang } from '../../i18n/ui';
-import { getRepos, getContributions, languageStats } from '../../lib/github';
+import { languages, t, formatMonth, type Lang } from '../../i18n/ui';
+import { getRepos, getContributions, languageStats, langColor } from '../../lib/github';
+import RepoIcon from '../../components/RepoIcon.astro';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
 const lang = Astro.params.lang as Lang;
 const tr = t(lang);
 const repos = await getRepos();
-const { days, total } = await getContributions();
+const { days, total, privateTotal } = await getContributions();
 const langs = languageStats(repos).slice(0, 6);
-const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
+const locale = lang === 'fa' ? 'fa-IR' : 'en-US';
+const num = (n: number) => n.toLocaleString(locale);
+const pct = lang === 'fa' ? '٪' : '%';
+
+const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+const ago = (iso: string) => {
+  const sec = (new Date(iso).getTime() - Date.now()) / 1000;
+  const steps: [Intl.RelativeTimeFormatUnit, number][] = [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600]];
+  for (const [u, s] of steps) if (Math.abs(sec) >= s) return rtf.format(Math.round(sec / s), u);
+  return rtf.format(0, 'hour');
+};
+
+let longest = 0;
+let run = 0;
+for (const d of days) {
+  run = d.count > 0 ? run + 1 : 0;
+  longest = Math.max(longest, run);
+}
+let current = 0;
+for (let i = days.length - 1; i >= 0; i--) {
+  if (days[i].count > 0) current++;
+  else if (i === days.length - 1) continue;
+  else break;
+}
+const best = days.reduce((b, d) => (d.count > b.count ? d : b), { date: '', count: 0, level: 0 });
+const weekly = days.length ? (total / (days.length / 7)).toFixed(1) : '0';
+const bestDate = best.date
+  ? new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', ...(lang === 'fa' ? { calendar: 'persian' } : {}) }).format(new Date(best.date))
+  : '';
+const cityStats = [
+  [num(longest), tr('projects.longest'), tr('projects.days')],
+  [num(current), tr('projects.current'), tr('projects.days')],
+  [num(best.count), tr('projects.best'), bestDate],
+  [Number(weekly).toLocaleString(locale), tr('projects.weekly'), ''],
+];
+const filterLangs = [...new Set(repos.map((r) => r.language).filter(Boolean))] as string[];
+
+const donutC = 2 * Math.PI * 42;
+let acc = 0;
+const arcs = langs.map((l) => {
+  const len = (l.pct / 100) * donutC;
+  const arc = { ...l, len, off: -acc, color: langColor(l.name) };
+  acc += len;
+  return arc;
+});
+const newestPublic = repos.find((r) => !r.private);
+const lastPush = repos.map((r) => r.pushed_at).filter(Boolean).sort().pop();
+const lastAny = repos.map((r) => r.activity?.last).filter(Boolean).sort().pop();
+const lastLabel = lastPush ? ago(lastPush) : lastAny ? formatMonth(lastAny, lang) : '—';
+const period = (r: (typeof repos)[number]) => {
+  const a = r.activity;
+  if (!a) return '';
+  const end = a.recent ? tr('projects.now') : formatMonth(a.last, lang);
+  return a.first === a.last && !a.recent
+    ? formatMonth(a.first, lang)
+    : `${tr('projects.activeFrom')} ${formatMonth(a.first, lang)} ${tr('projects.until')} ${end}`;
+};
+const spark = (w: number[]) => {
+  const m = Math.max(1, ...w);
+  return w.map((v, i) => `${(i / (w.length - 1)) * 100},${22 - (v / m) * 20}`).join(' ');
+};
+const sizeOf = (r: (typeof repos)[number]) =>
+  r === newestPublic ? 'big' : !r.private && (r.description?.length ?? 0) > 60 || (r.topics?.length ?? 0) > 2 ? 'wide' : '';
 ---
 
-<Base lang={lang} title={tr('projects.title')} description={tr('projects.lede')}>
-  <section class="section container">
+<Base lang={lang} title={tr('projects.title')} description={tr('projects.lede')} image={`/og/${lang}/projects.png`}>
+  <section class="section container" data-pagefind-body>
     <h1 class="section-title" data-split>{tr('projects.title')}</h1>
     <p class="section-lede">{tr('projects.lede')}</p>
 
-    {
-      langs.length > 0 && (
-        <div class="langs glass reveal">
-          <h2>{tr('projects.langs')}</h2>
-          <div class="bar">
-            {langs.map((l, i) => (
-              <span style={`flex:${l.pct};--h:${i * 50}`} title={`${l.name} ${l.pct}%`} />
+    <div class="top reveal">
+      <dl class="pstats glass">
+        <div><dt>{num(repos.length)}</dt><dd>{tr('projects.repos')}</dd></div>
+        {filterLangs.length > 0 && <div><dt>{num(filterLangs.length)}</dt><dd>{tr('projects.langs')}</dd></div>}
+        <div><dt class="sm">{lastLabel}</dt><dd>{tr('projects.lastCommit')}</dd></div>
+      </dl>
+      {
+        langs.length > 0 && (
+          <div class="donut glass">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              {arcs.map((a) => (
+                <circle
+                  r="42" cx="50" cy="50"
+                  style={`--c:${a.color}`}
+                  stroke-dasharray={`${a.len} ${donutC - a.len}`}
+                  stroke-dashoffset={a.off}
+                  data-name={a.name}
+                  data-pct={`${num(a.pct)}${pct}`}
+                />
+              ))}
+            </svg>
+            <div class="center" data-donut-center>
+              <b>{num(langs.length)}</b>
+              <small>{tr('projects.langs')}</small>
+            </div>
+            <ul>
+              {arcs.map((a) => (
+                <li style={`--c:${a.color}`} data-name={a.name}>
+                  <i />
+                  <span dir="ltr">{a.name}</span> <small>{num(a.pct)}{pct}</small>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </div>
+
+    <div class="toolbar">
+      {
+        filterLangs.length > 1 && (
+          <div class="filters" role="group">
+            <span class="pill" aria-hidden="true" />
+            <button class="chip on" data-filter="">{tr('projects.all')}</button>
+            {filterLangs.map((l) => (
+              <button class="chip" data-filter={l} style={`--c:${langColor(l)}`} dir="ltr">
+                <i />
+                {l}
+              </button>
             ))}
           </div>
-          <ul>
-            {langs.map((l, i) => (
-              <li style={`--h:${i * 50}`}>
-                <i />
-                {l.name} <small>{num(l.pct)}{lang === 'fa' ? '٪' : '%'}</small>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )
-    }
+        )
+      }
+      <div class="sort" role="group">
+        <button class="chip on" data-sort="recent">{tr('projects.sortRecent')}</button>
+        <button class="chip" data-sort="name">{tr('projects.sortName')}</button>
+      </div>
+    </div>
 
     <div class="grid">
       {
-        repos.map((r) =>
+        repos.map((r, i) =>
           r.private ? (
-            <article class="repo glass reveal private">
+            <article class="repo glass reveal private" data-pagefind-ignore data-lang={r.language ?? ''} data-name={r.name.toLowerCase()} data-order={i} style={`--c:${langColor(r.language)}`}>
+              <div class="head">
+                <RepoIcon name={r.name} language={r.language} private />
+                <span class="badge">{tr('projects.private')}</span>
+                {r.activity?.recent && <span class="badge live"><i />{tr('projects.working')}</span>}
+              </div>
               <h3 dir="ltr">{r.name}</h3>
-              <p class="lock">{tr('projects.private')}</p>
-              <div class="foot" dir="ltr">{r.language && <span>● {r.language}</span>}</div>
+              {r.activity && <p class="period">{period(r)}</p>}
+              {r.activity && (
+                <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+                  <polyline points={spark(r.activity.weeks)} />
+                </svg>
+              )}
+              <div class="foot">
+                {r.language && <span dir="ltr"><i />{r.language}</span>}
+                {r.activity && <span>{num(r.activity.count)} {tr('projects.commitsYear')}</span>}
+              </div>
             </article>
           ) : (
-            <a href={r.html_url} class="repo glass reveal" data-tilt>
+            <article class={`repo glass reveal ${sizeOf(r)}`} data-tilt data-lang={r.language ?? ''} data-name={r.name.toLowerCase()} data-order={i} style={`--c:${langColor(r.language)}`}>
+              <a href={r.description ? `/${lang}/projects/${r.name}/` : r.html_url} class="cover" aria-label={r.name} />
+              <div class="head">
+                <RepoIcon name={r.name} language={r.language} private={false} />
+                {r.activity?.recent && <span class="badge live"><i />{tr('projects.working')}</span>}
+              </div>
               <h3 dir="ltr">{r.name}</h3>
               <p>{r.description ?? '—'}</p>
-              <div class="foot" dir="ltr">
-                {r.language && <span>● {r.language}</span>}
-                <span>★ {r.stargazers_count}</span>
-                <span>⑂ {r.forks_count}</span>
+              {(r.topics?.length ?? 0) > 0 && (
+                <ul class="topics" dir="ltr">{r.topics!.slice(0, 5).map((tp) => <li>{tp}</li>)}</ul>
+              )}
+              {r.activity && (
+                <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+                  <polyline points={spark(r.activity.weeks)} />
+                </svg>
+              )}
+              <div class="foot">
+                {r.language && <span dir="ltr"><i />{r.language}</span>}
+                {r.stargazers_count > 0 && <span dir="ltr">★ {r.stargazers_count}</span>}
+                {r.forks_count > 0 && <span dir="ltr">⑂ {r.forks_count}</span>}
+                {r.pushed_at && <span class="ago">{ago(r.pushed_at)}</span>}
+                <a class="site" href={r.html_url}>GitHub</a>
+                {r.homepage && <a class="site" href={r.homepage}>{tr('projects.site')} ↗</a>}
               </div>
-            </a>
+            </article>
           ),
         )
       }
@@ -72,51 +202,223 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
           {tr('projects.cityLede')}
           <br />
           <b class="gradient-text">{num(total)}</b> {tr('projects.contribs')}
+          {privateTotal > 0 && <span class="psplit"> · {num(privateTotal)} {tr('projects.inPrivate')}</span>}
         </p>
-        <div class="city glass reveal">
-          <canvas id="city" data-days={JSON.stringify(days.map((d) => d.count))} />
+        <div class="views reveal" role="group">
+          <button class="chip on" data-city-view="full">{tr('projects.viewFull')}</button>
+          <button class="chip" data-city-view="top">{tr('projects.viewTop')}</button>
+          <button class="chip" data-city-view="cine">{tr('projects.viewCine')}</button>
         </div>
+        <div class="city reveal">
+          <canvas id="city" data-days={JSON.stringify(days.map((d) => d.count))} data-start={days[0].date} data-lang={lang} data-unit={tr('projects.commits')} />
+          <div class="tip glass" data-city-tip hidden />
+          <div class="legend glass" aria-hidden="true">
+            {tr('projects.less')}
+            <span class="ramp" />
+            {tr('projects.more')}
+          </div>
+          <button class="rotate glass" data-city-rotate aria-pressed="true" title={tr('projects.rotate')} aria-label={tr('projects.rotate')}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <dl class="city-stats glass reveal">
+          {cityStats.map(([v, label, sub]) => (
+            <div>
+              <dt>{v}</dt>
+              <dd>
+                {label}
+                {sub && <small>{sub}</small>}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </section>
     )
   }
 </Base>
 
 <style>
-  .langs {
-    padding: 1.4rem;
-    margin-bottom: 2rem;
+  .top {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
   }
-  .langs h2 {
-    margin: 0 0 1rem;
-    font-size: 1.1rem;
+  .top:not(:has(.donut)) {
+    grid-template-columns: 1fr;
   }
-  .bar {
+  .pstats {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    margin: 0;
+    padding: 1.4rem 0;
+  }
+  .pstats div {
+    padding-inline: 1.3rem;
+  }
+  .pstats div + div {
+    border-inline-start: 1px solid var(--border);
+  }
+  .pstats dt {
+    font-size: 2.3rem;
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(100deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .pstats dt.sm {
+    font-size: 1.05rem;
+    line-height: 2.6rem;
+    white-space: nowrap;
+    color: var(--fg);
+    background: none;
+  }
+  .pstats dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .donut {
+    position: relative;
     display: flex;
-    height: 10px;
-    border-radius: 999px;
-    overflow: hidden;
-    gap: 3px;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 1.4rem;
   }
-  .bar span,
-  .langs i {
-    background: hsl(calc(270 + var(--h)) 85% 62%);
+  .donut svg {
+    width: 132px;
+    flex: none;
+    transform: rotate(-90deg);
   }
-  .langs ul {
+  .donut circle {
+    fill: none;
+    stroke: var(--c);
+    stroke-width: 11;
+    transition: stroke-width 0.25s, opacity 0.25s;
+    cursor: pointer;
+  }
+  .donut svg:hover circle:not(:hover) {
+    opacity: 0.35;
+  }
+  .donut circle:hover {
+    stroke-width: 15;
+  }
+  .center {
+    position: absolute;
+    inset-inline-start: 1.4rem;
+    width: 132px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    pointer-events: none;
+    line-height: 1.2;
+  }
+  .center b {
+    font-size: 1.4rem;
+  }
+  .center small {
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+  .donut ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.2rem;
+    gap: 0.5rem 1.1rem;
     list-style: none;
     padding: 0;
-    margin: 1rem 0 0;
+    margin: 0;
+    font-size: 0.88rem;
   }
-  .langs i {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+  .donut li.on {
+    color: var(--c);
   }
-  .langs small {
+  .donut li small {
     color: var(--muted);
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .toolbar .filters {
+    margin: 0;
+    position: relative;
+  }
+  .pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--c, var(--accent)) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c, var(--accent)) 60%, transparent);
+    transition: transform 0.4s cubic-bezier(0.3, 1.4, 0.5, 1), width 0.4s;
+    pointer-events: none;
+  }
+  .filters:has(.pill[style]) .chip.on {
+    background: transparent;
+    border-color: transparent;
+  }
+  .sort {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .views {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .psplit {
+    color: var(--accent2);
+  }
+  @media (max-width: 860px) {
+    .top {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .donut {
+      flex-direction: column;
+    }
+    .center {
+      inset-inline-start: auto;
+      top: 1.2rem;
+      height: 132px;
+    }
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .chip {
+    font: inherit;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .chip:hover,
+  .chip.on {
+    color: var(--fg);
+    border-color: color-mix(in srgb, var(--c, var(--accent)) 70%, transparent);
+    background: color-mix(in srgb, var(--c, var(--accent)) 14%, transparent);
   }
   .grid {
     display: grid;
@@ -124,15 +426,28 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     gap: 1.25rem;
   }
   .repo {
+    position: relative;
     display: flex;
     flex-direction: column;
-    padding: 1.4rem;
+    padding: 1.5rem 1.4rem 1.3rem;
     text-decoration: none;
-    transition: transform 0.2s ease-out, border-color 0.3s;
-    background-image: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%);
+    overflow: hidden;
+    transition: transform 0.2s ease-out, border-color 0.3s, opacity 0.35s, scale 0.35s;
+    background-image: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c) 16%, transparent), transparent 60%);
+  }
+  .repo::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--c), transparent);
+    opacity: 0.8;
   }
   .repo:hover {
-    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    border-color: color-mix(in srgb, var(--c) 60%, transparent);
+  }
+  .repo.hide {
+    display: none;
   }
   .repo h3 {
     margin: 0 0 0.4rem;
@@ -144,27 +459,275 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     margin: 0 0 1.2rem;
     flex: 1;
   }
-  .lock {
-    align-self: flex-start;
+  .private {
+    background-image: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--fg) 3%, transparent) 10px 11px);
+  }
+  .private h3 {
+    filter: blur(0.2px);
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .head :global(.repo-icon) {
+    margin-inline-end: auto;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
     border: 1px solid var(--border);
     border-radius: 999px;
-    padding: 0.15rem 0.7rem;
+    padding: 0.1rem 0.7rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .badge.live {
+    color: #3fb950;
+    border-color: color-mix(in srgb, #3fb950 45%, transparent);
+  }
+  .badge.live i {
+    --c: #3fb950;
+    width: 7px;
+    height: 7px;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0.25;
+    }
+  }
+  .period {
+    flex: 0 !important;
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem !important;
+  }
+  .private h3 + .period + .spark,
+  .private h3 + .spark {
+    margin-top: auto;
+  }
+  .spark {
+    width: 100%;
+    height: 28px;
+    margin: 0 0 0.9rem;
+    overflow: visible;
+  }
+  .spark polyline {
+    fill: none;
+    stroke: var(--c, var(--accent));
+    stroke-width: 1.6;
+    vector-effect: non-scaling-stroke;
+    stroke-linejoin: round;
+  }
+  .cover {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .repo > :not(.cover) {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .repo .site {
+    pointer-events: auto;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0;
+    margin: -0.5rem 0 1rem;
+  }
+  .topics li {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+    color: var(--fg);
+  }
+  .grid {
+    grid-auto-flow: dense;
+  }
+  .repo.big {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .repo.big h3 {
+    font-size: 1.6rem;
+  }
+  .repo.big p {
+    font-size: 1.05rem;
+  }
+  .repo.wide {
+    grid-column: span 2;
+  }
+  .repo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--ang, 0deg), transparent 70%, var(--c), transparent);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .repo:hover::after {
+    opacity: 1;
+    animation: ang 3s linear infinite;
+  }
+  @property --ang {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+  @keyframes ang {
+    to {
+      --ang: 360deg;
+    }
+  }
+  @media (max-width: 680px) {
+    .repo.big,
+    .repo.wide {
+      grid-column: auto;
+      grid-row: auto;
+    }
   }
   .foot {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
     font-size: 0.85rem;
     color: var(--muted);
   }
+  .ago {
+    margin-inline-start: auto;
+    opacity: 0.75;
+  }
   .city {
-    height: min(60vh, 520px);
-    overflow: hidden;
+    position: relative;
+    height: min(62vh, 540px);
+    mask-image: radial-gradient(ellipse 72% 78% at 50% 50%, #000 55%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 72% 78% at 50% 50%, #000 55%, transparent 100%);
   }
   #city {
     width: 100%;
     height: 100%;
     display: block;
     cursor: grab;
+  }
+  .tip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.8rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    z-index: 2;
+  }
+  .tip :global(span) {
+    color: var(--muted);
+  }
+  .legend {
+    position: absolute;
+    bottom: 12%;
+    inset-inline-end: 14%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .ramp {
+    width: 70px;
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 20%, var(--bg)), var(--accent), var(--accent2));
+  }
+  :global([dir='rtl']) .ramp {
+    transform: scaleX(-1);
+  }
+  .rotate {
+    position: absolute;
+    top: 12%;
+    inset-inline-end: 14%;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .rotate[aria-pressed='true'] {
+    color: var(--accent);
+  }
+  .rotate[aria-pressed='true'] svg {
+    animation: spin 4s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .city-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin: 1.5rem 0 0;
+    padding: 1.2rem 0;
+  }
+  .city-stats div {
+    padding-inline: 1.5rem;
+  }
+  .city-stats div + div {
+    border-inline-start: 1px solid var(--border);
+  }
+  .city-stats dt {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.2;
+    background: linear-gradient(100deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .city-stats dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .city-stats small {
+    display: block;
+    opacity: 0.7;
+    font-size: 0.75rem;
+  }
+  @media (max-width: 720px) {
+    .city-stats {
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 0;
+    }
+    .city-stats div:nth-child(3) {
+      border: 0;
+    }
+    .legend {
+      inset-inline-end: 8%;
+      bottom: 6%;
+    }
   }
 </style>
 
@@ -175,8 +738,71 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
       if (!e.isIntersecting) return;
       io.disconnect();
       const { initCity } = await import('../../scripts/city');
-      initCity(canvas, JSON.parse(canvas.dataset.days!));
+      initCity(canvas, JSON.parse(canvas.dataset.days!), canvas.dataset.start!, canvas.dataset.lang as 'fa' | 'en');
     });
     io.observe(canvas);
   }
+
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('.repo')];
+  const grid = document.querySelector<HTMLElement>('.grid');
+  const pill = document.querySelector<HTMLElement>('.pill');
+  const movePill = (chip: HTMLElement) => {
+    if (!pill) return;
+    pill.style.width = `${chip.offsetWidth}px`;
+    pill.style.transform = `translateX(${chip.offsetLeft}px) translateY(${chip.offsetTop}px)`;
+    pill.style.height = `${chip.offsetHeight}px`;
+    pill.style.setProperty('--c', chip.style.getPropertyValue('--c') || 'var(--accent)');
+  };
+  const onChip = () => chips.find((c) => c.classList.contains('on'));
+  requestAnimationFrame(() => onChip() && movePill(onChip()!));
+  addEventListener('resize', () => onChip() && movePill(onChip()!));
+
+  const sorts = [...document.querySelectorAll<HTMLButtonElement>('[data-sort]')];
+  sorts.forEach((btn) =>
+    btn.addEventListener('click', () => {
+      sorts.forEach((b) => b.classList.toggle('on', b === btn));
+      const by = btn.dataset.sort;
+      const sorted = [...cards].sort((a, b) =>
+        by === 'name' ? a.dataset.name!.localeCompare(b.dataset.name!) : +a.dataset.order! - +b.dataset.order!,
+      );
+      const apply = () => sorted.forEach((c) => grid?.append(c));
+      if (document.startViewTransition) document.startViewTransition(apply);
+      else apply();
+    }),
+  );
+
+  const center = document.querySelector<HTMLElement>('[data-donut-center]');
+  const centerHTML = center?.innerHTML ?? '';
+  document.querySelectorAll<SVGCircleElement>('.donut circle').forEach((c) => {
+    const li = document.querySelector(`.donut li[data-name="${c.dataset.name}"]`);
+    c.addEventListener('mouseenter', () => {
+      if (center) center.innerHTML = `<b>${c.dataset.pct}</b><small dir="ltr">${c.dataset.name}</small>`;
+      li?.classList.add('on');
+    });
+    c.addEventListener('mouseleave', () => {
+      if (center) center.innerHTML = centerHTML;
+      li?.classList.remove('on');
+    });
+  });
+
+  const views = [...document.querySelectorAll<HTMLButtonElement>('[data-city-view]')];
+  views.forEach((v) =>
+    v.addEventListener('click', () => {
+      views.forEach((b) => b.classList.toggle('on', b === v));
+      canvas?.dispatchEvent(new CustomEvent('cityview', { detail: v.dataset.cityView }));
+    }),
+  );
+
+  chips.forEach((chip) =>
+    chip.addEventListener('click', () => {
+      movePill(chip);
+      chips.forEach((c) => c.classList.toggle('on', c === chip));
+      const f = chip.dataset.filter;
+      const apply = () => cards.forEach((c) => c.classList.toggle('hide', !!f && c.dataset.lang !== f));
+      if (document.startViewTransition) document.startViewTransition(apply);
+      else apply();
+    }),
+  );
+  cards.forEach((c, i) => (c.style.viewTransitionName = `repo-${i}`));
 </script>

@@ -3,28 +3,31 @@ import { render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
 import Comments from '../../../components/Comments.astro';
 import { formatDate, languages, other, t, type Lang } from '../../../i18n/ui';
-import { getPosts, minutes, postSlug } from '../../../lib/blog';
+import { getPosts, minutes, postSlug, postUrl } from '../../../lib/blog';
+import { SITE } from '../../../config';
 
 export async function getStaticPaths() {
   const paths = [];
   for (const lang of languages) {
     const posts = await getPosts(lang);
     const otherSlugs = new Set((await getPosts(other(lang))).map(postSlug));
-    for (const post of posts) {
+    posts.forEach((post, i) => {
       const slug = postSlug(post);
-      paths.push({ params: { lang, slug }, props: { post, hasTwin: otherSlugs.has(slug) } });
-    }
+      const link = (p?: (typeof posts)[number]) => (p ? { title: p.data.title, url: postUrl(p) } : null);
+      paths.push({ params: { lang, slug }, props: { post, hasTwin: otherSlugs.has(slug), newer: link(posts[i - 1]), older: link(posts[i + 1]) } });
+    });
   }
   return paths;
 }
 
-const { post, hasTwin } = Astro.props;
+const { post, hasTwin, newer, older } = Astro.props;
 const lang = Astro.params.lang as Lang;
 const tr = t(lang);
 const slug = postSlug(post);
 const { Content, headings } = await render(post);
 const toc = headings.filter((h) => h.depth <= 3);
 const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
+const pageUrl = new URL(postUrl(post), Astro.site).href;
 ---
 
 <Base
@@ -33,16 +36,41 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
   description={post.data.description}
   image={`/og/${lang}/${slug}.png`}
   altPath={hasTwin ? `/${other(lang)}/blog/${slug}/` : `/${other(lang)}/blog/`}
+  alternate={hasTwin}
+  ogType="article"
+  published={post.data.date}
+  crumbs={[
+    { name: tr('nav.home'), url: `/${lang}/` },
+    { name: tr('nav.blog'), url: `/${lang}/blog/` },
+    { name: post.data.title, url: postUrl(post) },
+  ]}
 >
   <div id="read-progress"></div>
-  <article class="container post" data-pagefind-body>
+  <article class:list={['container post', `lang-${lang}`]} data-pagefind-body>
     <header>
+      <span class="aura" aria-hidden="true"></span>
+      <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore>
+        <a href={`/${lang}/`}>{tr('nav.home')}</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/${lang}/blog/`}>{tr('nav.blog')}</a>
+        <span aria-hidden="true">/</span>
+        <span>{post.data.title}</span>
+      </nav>
       <a href={`/${lang}/blog/`} class="back" data-pagefind-ignore>{tr('blog.back')}</a>
       <h1 style={`view-transition-name: ${vt}`}>{post.data.title}</h1>
-      <p class="meta" data-pagefind-ignore>
-        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
-        · {minutes(post).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {tr('blog.minutes')}
-      </p>
+      {post.data.description && <p class="desc" data-pagefind-ignore>{post.data.description}</p>}
+      <div class="meta" data-pagefind-ignore>
+        <img src={`https://github.com/${SITE.githubUser}.png?size=64`} alt={SITE.name[lang]} width="32" height="32" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av-fallback',textContent:this.dataset.i}))" data-i={SITE.name[lang].trim()[0]} />
+        <span>
+          {tr('blog.by')} <b>{SITE.name[lang]}</b>
+          <br />
+          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
+          · {minutes(post).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {tr('blog.minutes')}
+        </span>
+      </div>
+      <div class="left glass" data-left={minutes(post)} data-label={tr('blog.left')} data-locale={lang === 'fa' ? 'fa-IR' : 'en-US'} aria-hidden="true" data-pagefind-ignore>
+        <span class="ring"></span><b></b>
+      </div>
       <div class="tags" data-pagefind-ignore>
         {post.data.tags.map((tg) => <a class="tag" href={`/${lang}/blog/tags/${tg}/`}>#{tg}</a>)}
       </div>
@@ -53,6 +81,7 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
         toc.length > 1 && (
           <aside class="toc glass" data-pagefind-ignore>
             <p>{tr('blog.toc')}</p>
+            <span class="toc-track" aria-hidden="true"><span class="toc-fill" /></span>
             <ul>
               {toc.map((h) => (
                 <li class={`d${h.depth}`}>
@@ -68,8 +97,36 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
       </div>
     </div>
 
+    <div class="end" data-pagefind-ignore>
+      <div class="share">
+        <span>{tr('blog.share')}</span>
+        <button class="chip" data-share-copy data-done={tr('about.copied')}>{tr('blog.copyLink')}</button>
+        <a class="chip" href={`https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(post.data.title)}`} target="_blank" rel="noopener">Telegram</a>
+        <a class="chip" href={`https://x.com/intent/post?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(post.data.title)}`} target="_blank" rel="noopener">X</a>
+      </div>
+      {
+        (newer || older) && (
+          <nav class="pager">
+            {older ? (
+              <a class="glass" href={older.url}>
+                <small>{tr('blog.prev')}</small>
+                {older.title}
+              </a>
+            ) : <span />}
+            {newer && (
+              <a class="glass next" href={newer.url}>
+                <small>{tr('blog.next')}</small>
+                {newer.title}
+              </a>
+            )}
+          </nav>
+        )
+      }
+    </div>
+
     <div data-pagefind-ignore><Comments lang={lang} /></div>
   </article>
+  <button class="to-top glass" data-top aria-label={tr('blog.top')} title={tr('blog.top')}>↑</button>
 </Base>
 
 <style>
@@ -90,20 +147,121 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
     padding-top: 4rem;
   }
   header {
-    max-width: 760px;
-    margin-bottom: 3rem;
+    position: relative;
+    max-width: 820px;
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .aura {
+    position: absolute;
+    inset: -6rem -10rem auto;
+    height: 22rem;
+    z-index: -1;
+    background:
+      radial-gradient(40% 60% at 25% 40%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(35% 50% at 70% 30%, color-mix(in srgb, var(--accent2) 16%, transparent), transparent 70%);
+    filter: blur(20px);
+    pointer-events: none;
+  }
+  .crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0 0 0.8rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .crumbs a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    color: var(--accent);
   }
   .back {
     color: var(--accent);
     text-decoration: none;
+    font-size: 0.9rem;
   }
   h1 {
-    font-size: clamp(2rem, 5vw, 3.4rem);
-    line-height: 1.2;
-    margin: 1rem 0;
+    font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+    line-height: 1.15;
+    margin: 1rem 0 0.8rem;
+    letter-spacing: -0.01em;
+  }
+  .desc {
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin: 0 0 1.4rem;
+    max-width: 60ch;
   }
   .meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+  }
+  .av-fallback {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+  .left {
+    position: fixed;
+    bottom: 1.2rem;
+    inset-inline-start: 1.2rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.45rem;
+    padding-inline: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    opacity: 0;
+    translate: 0 10px;
+    transition: opacity 0.3s, translate 0.3s;
+    pointer-events: none;
+  }
+  .left.show {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .left .ring {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) calc(var(--p, 0) * 360deg), var(--border) 0);
+    mask: radial-gradient(circle, transparent 7px, #000 8px);
+    -webkit-mask: radial-gradient(circle, transparent 7px, #000 8px);
+  }
+  .prose.focus-mode > :global(p),
+  .prose.focus-mode > :global(ul),
+  .prose.focus-mode > :global(ol),
+  .prose.focus-mode > :global(blockquote) {
+    transition: opacity 0.4s;
+    opacity: 0.55;
+  }
+  .prose.focus-mode > :global(.active) {
+    opacity: 1;
+  }
+  .meta img {
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+  }
+  .meta b {
+    color: var(--fg);
   }
   .tags {
     display: flex;
@@ -127,10 +285,30 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
     margin: 0 0 0.5rem;
     font-weight: 700;
   }
+  .toc {
+    --tp: 0;
+  }
+  .toc-track {
+    position: absolute;
+    inset-block: 3rem 1.2rem;
+    inset-inline-start: 0.6rem;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .toc-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(var(--accent), var(--accent2));
+    transform-origin: top;
+    transform: scaleY(var(--tp));
+  }
   .toc ul {
     list-style: none;
     margin: 0;
     padding: 0;
+    padding-inline-start: 0.6rem;
   }
   .toc li {
     padding: 0.2rem 0;
@@ -147,34 +325,84 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
     color: var(--accent);
   }
   .prose {
-    max-width: 72ch;
-    font-size: 1.08rem;
+    max-width: 70ch;
+    font-size: 1.1rem;
+    line-height: 1.85;
+  }
+  .lang-fa .prose {
+    line-height: 2;
+  }
+  .prose :global(p) {
+    margin: 0 0 1.3rem;
+  }
+  .lang-en .prose > :global(p:first-of-type::first-letter) {
+    float: left;
+    font-size: 3.6em;
+    line-height: 0.9;
+    font-weight: 800;
+    margin: 0.08em 0.12em 0 0;
+    background: linear-gradient(140deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .prose :global(h2),
   .prose :global(h3) {
+    position: relative;
     line-height: 1.3;
-    margin-top: 2.5rem;
+    margin-top: 2.8rem;
     scroll-margin-top: 6rem;
+  }
+  .prose :global(.anchor) {
+    position: absolute;
+    inset-inline-start: -1.3em;
+    color: var(--accent);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .prose :global(h2:hover .anchor),
+  .prose :global(h3:hover .anchor) {
+    opacity: 1;
   }
   .prose :global(a) {
     color: var(--accent2);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
   }
   .prose :global(blockquote) {
-    margin: 1.5rem 0;
-    padding: 0.5rem 1.2rem;
+    position: relative;
+    margin: 2rem 0;
+    padding: 1.1rem 1.4rem 1.1rem 1.4rem;
     border-inline-start: 3px solid var(--accent);
-    background: var(--glass);
-    border-radius: 0.5rem;
+    background: linear-gradient(100deg, color-mix(in srgb, var(--accent) 10%, transparent), var(--glass));
+    border-radius: 0.9rem;
+    font-size: 1.15rem;
+    font-style: italic;
+  }
+  .prose :global(blockquote p:last-child) {
+    margin: 0;
   }
   .prose :global(pre) {
     position: relative;
     direction: ltr;
     text-align: left;
-    padding: 1.1rem;
+    padding: 2.2rem 1.2rem 1.1rem;
     border-radius: 0.9rem;
     border: 1px solid var(--border);
     overflow-x: auto;
     font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .prose :global(pre[data-language]::before) {
+    content: attr(data-language);
+    position: absolute;
+    top: 0.55rem;
+    left: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
   .prose :global(:not(pre) > code) {
     background: var(--glass);
@@ -193,16 +421,109 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
     border-radius: 0.4rem;
     border: 1px solid var(--border);
     background: var(--bg2);
-    color: var(--fg);
-    opacity: 0;
-    transition: opacity 0.2s;
+    color: var(--muted);
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.2s, color 0.2s, border-color 0.2s;
   }
   .prose :global(pre:hover .copy-btn) {
     opacity: 1;
   }
+  .prose :global(.copy-btn:hover) {
+    color: var(--fg);
+    border-color: var(--accent);
+  }
   .prose :global(img) {
     max-width: 100%;
     border-radius: 1rem;
+  }
+  .end {
+    max-width: 70ch;
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .share {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .share span {
+    margin-inline-end: 0.4rem;
+  }
+  .chip {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--glass);
+    color: var(--fg);
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .chip:hover {
+    border-color: var(--accent);
+  }
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .pager a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1.1rem 1.3rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .pager a:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .pager small {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .pager .next {
+    text-align: end;
+  }
+  .to-top {
+    position: fixed;
+    bottom: 1.5rem;
+    inset-inline-end: 1.5rem;
+    z-index: 40;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font: inherit;
+    font-size: 1.1rem;
+    color: var(--fg);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .to-top.show {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  @media (max-width: 720px) {
+    .to-top {
+      bottom: 5rem;
+    }
+    .pager {
+      grid-template-columns: 1fr;
+    }
   }
   @media (max-width: 900px) {
     .layout {
@@ -229,4 +550,56 @@ const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
       if (h) obs.observe(h);
     });
   }
+
+  const toc = document.querySelector<HTMLElement>('.toc');
+  const prose = document.querySelector<HTMLElement>('.prose');
+  const top = document.querySelector<HTMLButtonElement>('[data-top]');
+  const onScroll = () => {
+    if (toc && prose) {
+      const r = prose.getBoundingClientRect();
+      toc.style.setProperty('--tp', String(Math.min(1, Math.max(0, (innerHeight * 0.3 - r.top) / r.height))));
+    }
+    top?.classList.toggle('show', scrollY > innerHeight);
+    if (left && prose) {
+      const r = prose.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - innerHeight)));
+      const m = Math.ceil(total * (1 - p));
+      left.style.setProperty('--p', String(p));
+      left.classList.toggle('show', r.top < 0 && p < 1);
+      leftB.textContent = `${m.toLocaleString(left.dataset.locale)} ${left.dataset.label}`;
+    }
+  };
+  const left = document.querySelector<HTMLElement>('[data-left]');
+  const leftB = left?.querySelector('b') as HTMLElement;
+  const total = Number(left?.dataset.left ?? 0);
+  const paras = prose ? ([...prose.querySelectorAll(':scope > p, :scope > ul, :scope > ol, :scope > blockquote')] as HTMLElement[]) : [];
+  if (paras.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    prose!.classList.add('focus-mode');
+    const po = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.target.classList.toggle('active', e.isIntersecting)),
+      { rootMargin: '-35% 0px -45% 0px' },
+    );
+    paras.forEach((p) => po.observe(p));
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  top?.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+
+  document.querySelectorAll<HTMLElement>('.prose h2[id], .prose h3[id]').forEach((h) => {
+    const a = document.createElement('a');
+    a.className = 'anchor';
+    a.href = `#${h.id}`;
+    a.textContent = '#';
+    a.setAttribute('aria-hidden', 'true');
+    a.addEventListener('click', () => navigator.clipboard?.writeText(location.href.split('#')[0] + a.hash));
+    h.prepend(a);
+  });
+
+  const share = document.querySelector<HTMLButtonElement>('[data-share-copy]');
+  share?.addEventListener('click', async () => {
+    const label = share.textContent;
+    await navigator.clipboard.writeText(location.href);
+    share.textContent = share.dataset.done!;
+    setTimeout(() => (share.textContent = label), 1600);
+  });
 </script>

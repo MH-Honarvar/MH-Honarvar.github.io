@@ -29,7 +29,7 @@
   --bg: #f6f4fb;
   --bg2: #ffffff;
   --fg: #16132a;
-  --muted: #5d5878;
+  --muted: #3e3a56;
   --accent: #7c3aed;
   --accent2: #0891b2;
   --glass: rgba(255, 255, 255, 0.6);
@@ -41,9 +41,32 @@
 @view-transition {
   navigation: auto;
 }
-::view-transition-old(root),
+::view-transition-old(root) {
+  animation: vt-out 0.4s cubic-bezier(0.6, 0, 0.3, 1) both;
+}
 ::view-transition-new(root) {
-  animation-duration: 0.45s;
+  animation: vt-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(0.985);
+  }
+}
+@keyframes vt-in {
+  from {
+    clip-path: circle(0% at 50% 0%);
+  }
+  to {
+    clip-path: circle(150% at 50% 0%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }
 
 *,
@@ -57,6 +80,10 @@ html {
   color: var(--fg);
   font-family: 'Inter Variable', 'Vazirmatn Variable', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 html[lang='fa'] {
   font-family: 'Vazirmatn Variable', 'Inter Variable', system-ui, sans-serif;
@@ -152,6 +179,17 @@ a {
 .tag:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.astro-code,
+.astro-code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+[data-theme='light'] .astro-code,
+[data-theme='light'] .astro-code span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
 }
 
 .reveal {

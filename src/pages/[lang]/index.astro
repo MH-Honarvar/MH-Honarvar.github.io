@@ -3,7 +3,10 @@ import Base from '../../layouts/Base.astro';
 import PostCard from '../../components/PostCard.astro';
 import { languages, t, type Lang } from '../../i18n/ui';
 import { getPosts } from '../../lib/blog';
-import { getRepos, getContributions, languageStats } from '../../lib/github';
+import { getRepos, getContributions, languageStats, langColor } from '../../lib/github';
+import { SITE } from '../../config';
+import RepoIcon from '../../components/RepoIcon.astro';
+import { story } from '../../content/about';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -12,7 +15,9 @@ const tr = t(lang);
 const allPosts = await getPosts(lang);
 const posts = allPosts.slice(0, 4);
 const repos = await getRepos();
-const { total } = await getContributions();
+const { total, days, privateTotal } = await getContributions();
+const featured = repos.filter((r) => !r.private).slice(0, 3);
+const strip = days.slice(-7 * 26);
 const langCount = languageStats(repos).length;
 const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 const stats = [
@@ -21,10 +26,20 @@ const stats = [
   [langCount, tr('hero.langs')],
   [total, tr('projects.contribs')],
 ].filter(([n]) => n > 0) as [number, string][];
+const sn = (i: number) => num(i).padStart(2, lang === 'fa' ? '۰' : '0');
+const monthFmt = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US', { month: 'short' });
+const dayFmt = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US', { day: 'numeric', month: 'long' });
+const stripMonths: { col: number; label: string }[] = [];
+for (let w = 0; w * 7 < strip.length; w++) {
+  const label = monthFmt.format(new Date(strip[w * 7].date));
+  if (stripMonths.at(-1)?.label !== label) stripMonths.push({ col: w + 1, label });
+}
+if (stripMonths.length > 1 && stripMonths[1].col - stripMonths[0].col < 3) stripMonths.shift();
+const teaser = story[lang].split(/(?<=[.!?؟])\s/).slice(0, 2).join(' ');
 const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS', 'Node.js', 'Git', 'UI Design', 'Typography', 'Motion'];
 ---
 
-<Base lang={lang} intro scene="hero">
+<Base lang={lang} title={tr('hero.title')} image={`/og/${lang}/home.png`} intro scene="hero">
   <section class="hero container">
     <div class="copy" data-depth>
       <p class="status"><span class="dot"></span>{tr('hero.status')}</p>
@@ -44,16 +59,127 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
         {[...skills, ...skills].map((s) => <span>{s}</span>)}
       </div>
     </div>
+    <button class="sound glass" data-sound data-on={tr('sound.on')} data-off={tr('sound.off')} aria-pressed="false" title={tr('sound.off')} aria-label={tr('sound.off')}>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" />
+        <path class="waves" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path class="mute" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
     <div class="scroll-hint" aria-hidden="true"><span class="line"></span>{tr('hero.scroll')}</div>
+  </section>
+
+  <script>
+    const btn = document.querySelector<HTMLButtonElement>('[data-sound]');
+    if (btn) {
+      const sync = () => {
+        const on = localStorage.getItem('sound') === 'on';
+        btn.setAttribute('aria-pressed', String(on));
+        btn.title = btn.ariaLabel = on ? btn.dataset.on! : btn.dataset.off!;
+      };
+      btn.addEventListener('click', () => {
+        localStorage.setItem('sound', localStorage.getItem('sound') === 'on' ? 'off' : 'on');
+        sync();
+      });
+      sync();
+    }
+
+    const cells = document.querySelector<HTMLElement>('[data-cells]');
+    const htip = document.querySelector<HTMLElement>('[data-htip]');
+    if (cells && htip) {
+      cells.addEventListener('pointerover', (e) => {
+        const el = e.target as HTMLElement;
+        if (!el.dataset.tip) return;
+        htip.textContent = el.dataset.tip;
+        htip.hidden = false;
+        const p = htip.parentElement!.getBoundingClientRect();
+        const r = el.getBoundingClientRect();
+        htip.style.left = `${r.left - p.left + r.width / 2}px`;
+        htip.style.top = `${r.top - p.top}px`;
+      });
+      cells.addEventListener('pointerleave', () => (htip.hidden = true));
+    }
+  </script>
+
+  <section class="section container">
+    <div class="head">
+      <h2 class="section-title reveal"><span class="snum">{sn(1)}</span>{tr('home.latest')}</h2>
+      <a href={`/${lang}/blog/`} class="all">{tr('home.all')}</a>
+    </div>
+    <div class="grid">
+      {posts.map((post, i) => <PostCard post={post} lang={lang} index={i} />)}
+    </div>
   </section>
 
   <section class="section container">
     <div class="head">
-      <h2 class="section-title reveal">{tr('home.latest')}</h2>
-      <a href={`/${lang}/blog/`} class="all">{tr('home.all')}</a>
+      <h2 class="section-title reveal"><span class="snum">{sn(2)}</span>{tr('home.aboutTitle')}</h2>
     </div>
-    <div class="grid">
-      {posts.map((post) => <PostCard post={post} lang={lang} />)}
+    <a href={`/${lang}/about/`} class="mini glass reveal" data-tilt>
+      <img src={`https://github.com/${SITE.githubUser}.png?size=200`} alt={SITE.name[lang]} width="96" height="96" loading="lazy" onerror="this.style.visibility='hidden'" />
+      <div>
+        <b>{SITE.name[lang]}</b>
+        <p>{teaser}</p>
+        <span class="all">{tr('home.aboutMore')}</span>
+      </div>
+    </a>
+  </section>
+
+  {
+    featured.length > 0 && (
+      <section class="section container">
+        <div class="head">
+          <h2 class="section-title reveal"><span class="snum">{sn(3)}</span>{tr('home.projects')}</h2>
+          <a href={`/${lang}/projects/`} class="all">{tr('home.allProjects')}</a>
+        </div>
+        <div class="projects">
+          {featured.map((r, i) => (
+            <a href={r.description ? `/${lang}/projects/${r.name}/` : r.html_url} class:list={['proj glass reveal', { big: i === 0 }]} data-tilt style={`--c:${langColor(r.language)}`}>
+              <RepoIcon name={r.name} language={r.language} private={false} />
+              <h3 dir="ltr">{r.name}</h3>
+              <p>{r.description ?? '—'}</p>
+              {r.language && <span class="lang" dir="ltr"><i />{r.language}</span>}
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    strip.length > 0 && (
+      <section class="section container activity">
+        <a href={`/${lang}/projects/`} class="heat glass reveal">
+          <div class="heat-head">
+            <span><span class="snum">{sn(4)}</span>{tr('home.activity')}</span>
+            <b class="gradient-text">
+              {num(total)} {tr('projects.commits')}
+              {privateTotal > 0 && <small> · {num(privateTotal)} {tr('projects.inPrivate')}</small>}
+            </b>
+          </div>
+          <div class="months" dir="ltr" style={`--weeks:${Math.ceil(strip.length / 7)}`}>
+            {stripMonths.map((m) => <span style={`grid-column:${m.col}`}>{m.label}</span>)}
+          </div>
+          <div class="cells" dir="ltr" data-cells>
+            {strip.map((d) => <span style={`--l:${d.level}`} data-tip={`${num(d.count)} ${tr('projects.commits')} · ${dayFmt.format(new Date(d.date))}`} />)}
+          </div>
+          <div class="htip glass" data-htip hidden></div>
+        </a>
+      </section>
+    )
+  }
+
+  <section class="section container">
+    <div class="contact glass reveal">
+      <div>
+        <h2 class="gradient-text">{tr('home.contactTitle')}</h2>
+        <p>{tr('home.contactBody')}</p>
+      </div>
+      <div class="contact-actions">
+        <a class="btn primary" href={`https://t.me/${SITE.telegram}`}>Telegram @{SITE.telegram}</a>
+        {SITE.email && <a class="btn" href={`mailto:${SITE.email}`}>{SITE.email}</a>}
+        <a class="btn" href={`/${lang}/about/`}>{tr('nav.about')}</a>
+      </div>
     </div>
   </section>
 </Base>
@@ -270,6 +396,31 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
       animation: none;
     }
   }
+  .sound {
+    position: absolute;
+    bottom: 1.2rem;
+    inset-inline-end: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .sound .waves,
+  .sound[aria-pressed='false'] .waves {
+    display: none;
+  }
+  .sound[aria-pressed='true'] .waves {
+    display: inline;
+  }
+  .sound[aria-pressed='true'] .mute {
+    display: none;
+  }
+  .sound[aria-pressed='true'] {
+    color: var(--accent);
+  }
   .head {
     display: flex;
     justify-content: space-between;
@@ -284,5 +435,208 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 1.25rem;
+  }
+  @media (min-width: 900px) {
+    .grid > :global(:nth-child(even)) {
+      margin-top: 2.5rem;
+    }
+  }
+  .projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 1.25rem;
+  }
+  .proj {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1.4rem 1.3rem;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.2s ease-out, border-color 0.3s;
+    background-image: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c) 16%, transparent), transparent 60%);
+  }
+  .proj::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--c), transparent);
+  }
+  .proj:hover {
+    border-color: color-mix(in srgb, var(--c) 60%, transparent);
+  }
+  .proj h3 {
+    margin: 0 0 0.4rem;
+    text-align: start;
+  }
+  .proj p {
+    flex: 1;
+    margin: 0 0 1rem;
+    color: var(--muted);
+  }
+  .lang {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: start;
+  }
+  .lang i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--c);
+    margin-inline-end: 0.4rem;
+  }
+  .activity {
+    padding-block: 1rem;
+  }
+  .heat {
+    display: block;
+    padding: 1.3rem 1.5rem;
+    text-decoration: none;
+    transition: border-color 0.3s;
+  }
+  .heat:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .heat-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.9rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .cells {
+    display: grid;
+    grid-template-rows: repeat(7, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 3px;
+  }
+  .cells span {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--accent) calc(var(--l) * 22% + 6%), color-mix(in srgb, var(--accent2) calc(var(--l) * 18%), var(--bg2)));
+  }
+  .snum {
+    display: inline-block;
+    margin-inline-end: 0.7rem;
+    font-size: 0.5em;
+    vertical-align: super;
+    color: var(--accent2);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .heat-head .snum {
+    font-size: 0.8em;
+    vertical-align: baseline;
+  }
+  .heat-head small {
+    color: var(--accent2);
+    -webkit-text-fill-color: var(--accent2);
+    font-weight: 500;
+  }
+  .heat {
+    position: relative;
+  }
+  .months {
+    display: grid;
+    grid-template-columns: repeat(var(--weeks), 1fr);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    white-space: nowrap;
+  }
+  .cells span:hover {
+    outline: 2px solid var(--accent);
+  }
+  .htip {
+    position: absolute;
+    transform: translate(-50%, calc(-100% - 8px));
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.6rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    pointer-events: none;
+    color: var(--fg);
+  }
+  .mini {
+    display: flex;
+    gap: 1.6rem;
+    align-items: center;
+    padding: 1.5rem 1.7rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease-out, border-color 0.3s;
+  }
+  .mini:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .mini img {
+    flex: none;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent);
+  }
+  .mini b {
+    font-size: 1.2rem;
+  }
+  .mini p {
+    margin: 0.3rem 0 0.6rem;
+    color: var(--muted);
+  }
+  .proj :global(.repo-icon) {
+    margin-bottom: 1rem;
+  }
+  @media (min-width: 900px) {
+    .projects {
+      grid-template-columns: 1.4fr 1fr;
+    }
+    .proj.big {
+      grid-row: span 2;
+    }
+    .proj.big h3 {
+      font-size: 1.6rem;
+    }
+  }
+  @media (max-width: 560px) {
+    .mini {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+  .contact {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.6rem, 4vw, 2.6rem);
+    overflow: hidden;
+  }
+  .contact::before {
+    content: '';
+    position: absolute;
+    inset: -40% 30% auto -10%;
+    height: 180%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%);
+    pointer-events: none;
+  }
+  .contact h2 {
+    position: relative;
+    margin: 0 0 0.3rem;
+    font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+  }
+  .contact p {
+    position: relative;
+    margin: 0;
+    color: var(--muted);
+  }
+  .contact-actions {
+    position: relative;
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
   }
 </style>

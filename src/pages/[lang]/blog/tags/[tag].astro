@@ -21,7 +21,7 @@ const { posts } = Astro.props;
 const tr = t(lang);
 ---
 
-<Base lang={lang} title={`#${tag}`} altPath={`/${lang === 'fa' ? 'en' : 'fa'}/blog/`}>
+<Base lang={lang} title={`#${tag}`} description={`${tr('blog.tagDesc')} #${tag}`} alternate={false}>
   <section class="section container">
     <p class="kicker">{tr('blog.tag')}</p>
     <h1 class="section-title gradient-text">#{tag}</h1>

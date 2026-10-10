@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+import { t } from '../i18n/ui';
+
+const tr = t('fa');
+const en = t('en');
+const links = (lang: 'fa' | 'en', label: (k: string) => string) => [
+  [`/${lang}/`, label('nav.home')],
+  [`/${lang}/blog/`, label('nav.blog')],
+  [`/${lang}/projects/`, label('nav.projects')],
+];
+---
+
+<Base lang="fa" title={tr('notfound.title')} description={tr('notfound.body')} noindex alternate={false}>
+  <section class="section container miss">
+    <h1 class="section-title">{tr('notfound.title')}</h1>
+    <p>{tr('notfound.body')}</p>
+    <div class="cols">
+      <div>
+        <h2>فارسی</h2>
+        <ul>
+          {links('fa', tr).map(([href, label]) => <li><a href={href}>{label}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <h2>{en('notfound.title')}</h2>
+        <p>{en('notfound.body')}</p>
+        <ul>
+          {links('en', en).map(([href, label]) => <li><a href={href}>{label}</a></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .miss {
+    max-width: 46rem;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.4rem;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  @media (max-width: 640px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

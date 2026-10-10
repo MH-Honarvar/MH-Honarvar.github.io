@@ -80,6 +80,23 @@ const finishShader = {
     }`,
 };
 
+let audio: AudioContext | undefined;
+function blip() {
+  audio ??= new AudioContext();
+  const t = audio.currentTime;
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(520, t);
+  osc.frequency.exponentialRampToValueAtTime(180, t + 0.35);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(0.12, t + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+  osc.connect(gain).connect(audio.destination);
+  osc.start(t);
+  osc.stop(t + 0.55);
+}
+
 const cssColor = (name: string) => new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#a855f7');
 const isLight = () => document.documentElement.dataset.theme === 'light';
 const smooth = (a: number, b: number, x: number) => {
@@ -367,7 +384,9 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     if ((e.target as Element).closest?.('a, button, input, textarea')) return;
     if (blob && uniforms.uMorph.value.x < 0.3 && castBlob()) {
       uniforms.uRipple.value.set(hitLocal.x, hitLocal.y, hitLocal.z, 0);
+      uniforms.uIntensity.value += 0.9;
       holding = true;
+      if (localStorage.getItem('sound') === 'on') blip();
     }
   });
   const release = () => (holding = false);

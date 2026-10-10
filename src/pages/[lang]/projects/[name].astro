@@ -1,0 +1,90 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { languages, t, type Lang } from '../../../i18n/ui';
+import { getRepos, langColor } from '../../../lib/github';
+import RepoIcon from '../../../components/RepoIcon.astro';
+
+export async function getStaticPaths() {
+  const repos = await getRepos();
+  const paths = [];
+  for (const lang of languages) {
+    for (const repo of repos) {
+      if (repo.private || !repo.description) continue;
+      paths.push({ params: { lang, name: repo.name }, props: { repo } });
+    }
+  }
+  return paths;
+}
+
+const lang = Astro.params.lang as Lang;
+const { repo } = Astro.props;
+const tr = t(lang);
+---
+
+<Base lang={lang} title={repo.name} description={repo.description!} image={`/og/${lang}/projects.png`}>
+  <article class="section container case" data-pagefind-body style={`--c:${langColor(repo.language)}`}>
+    <a class="back" href={`/${lang}/projects/`}>{tr('nav.projects')}</a>
+    <header>
+      <RepoIcon name={repo.name} language={repo.language} private={false} />
+      <h1 dir="ltr">{repo.name}</h1>
+      <p>{repo.description}</p>
+    </header>
+    <dl>
+      {repo.language && (
+        <div>
+          <dt>{tr('projects.langs')}</dt>
+          <dd dir="ltr">{repo.language}</dd>
+        </div>
+      )}
+      {(repo.topics?.length ?? 0) > 0 && (
+        <div>
+          <dt>{tr('blog.tag')}</dt>
+          <dd dir="ltr">{repo.topics!.join(' · ')}</dd>
+        </div>
+      )}
+    </dl>
+    <div class="actions">
+      <a class="btn primary" href={repo.html_url}>GitHub</a>
+      {repo.homepage && <a class="btn" href={repo.homepage}>{tr('projects.site')}</a>}
+    </div>
+  </article>
+</Base>
+
+<style>
+  .case {
+    max-width: 46rem;
+  }
+  .back {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  header {
+    margin: 1.2rem 0 1.5rem;
+  }
+  h1 {
+    margin: 0.8rem 0 0.4rem;
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+  dl {
+    display: grid;
+    gap: 0.8rem;
+    margin: 0 0 1.6rem;
+  }
+  dt {
+    color: var(--accent2);
+    font-size: 0.8rem;
+  }
+  dd {
+    margin: 0;
+  }
+  .actions {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+  }
+</style>

@@ -4,30 +4,74 @@ import { minutes, postSlug, postUrl, type Post } from '../lib/blog';
 interface Props {
   post: Post;
   lang: Lang;
+  index?: number;
+  featured?: boolean;
 }
-const { post, lang } = Astro.props;
-const vt = `post-${postSlug(post).replace(/[^a-z0-9-]/gi, '')}`;
+const { post, lang, index, featured = false } = Astro.props;
+const tr = t(lang);
+const slug = postSlug(post);
+const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
+const mins = minutes(post);
+let seed = [...slug].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+const blobs = Array.from({ length: 4 }, () => ({ x: rnd() * 600, y: rnd() * 320, r: 70 + rnd() * 120, c: rnd() > 0.5 ? 'var(--accent)' : 'var(--accent2)' }));
+const waves = Array.from({ length: 7 }, (_, i) => {
+  const a = 20 + rnd() * 40;
+  const f = 0.006 + rnd() * 0.01;
+  const y0 = 60 + i * 34;
+  return Array.from({ length: 31 }, (_, k) => `${k * 20},${(y0 + Math.sin(k * 20 * f + i) * a).toFixed(1)}`).join(' ');
+});
+const fmt = (n: number, pad = 0) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US', { minimumIntegerDigits: pad || 1, useGrouping: false });
 ---
 
-<a href={postUrl(post)} class="card glass reveal" data-tilt>
-  <div class="meta">
-    <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
-    <span>· {minutes(post).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {t(lang)('blog.minutes')}</span>
+<a href={postUrl(post)} data-tags={post.data.tags.join(' ')} class:list={['card glass reveal', { featured }]} data-tilt={featured ? undefined : ''}>
+  {
+    featured && (
+      <svg class="cover" viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <filter id={`b-${vt}`} filterUnits="userSpaceOnUse" x="-300" y="-300" width="1200" height="920"><feGaussianBlur stdDeviation="40" /></filter>
+        </defs>
+        <g filter={`url(#b-${vt})`} opacity="0.75">
+          {blobs.map((b) => <circle cx={b.x} cy={b.y} r={b.r} style={`fill:${b.c}`} />)}
+        </g>
+        <g class="waves">
+          {waves.map((w) => <polyline points={w} />)}
+        </g>
+      </svg>
+    )
+  }
+  {index !== undefined && !featured && <span class="num" aria-hidden="true">{fmt(index + 1, 2)}</span>}
+  <div class="inner">
+    <div class="meta">
+      {featured && <span class="badge">{tr('blog.featured')}</span>}
+      <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
+      <span>· {fmt(mins)} {tr('blog.minutes')}</span>
+    </div>
+    <h3 style={`view-transition-name: ${vt}`}>{post.data.title}</h3>
+    <p>{post.data.description}</p>
+    <div class="foot">
+      <div class="tags">{post.data.tags.map((tg) => <span class="tag">#{tg}</span>)}</div>
+      <span class="go" aria-hidden="true">{tr('blog.read')} <b>{lang === 'fa' ? '←' : '→'}</b></span>
+    </div>
   </div>
-  <h3 style={`view-transition-name: ${vt}`}>{post.data.title}</h3>
-  <p>{post.data.description}</p>
-  <div class="tags">{post.data.tags.map((tg) => <span class="tag">#{tg}</span>)}</div>
+  <span class="time" style={`--m:${Math.min(mins / 15, 1)}`} aria-hidden="true"></span>
 </a>
 
 <style>
   .card {
     position: relative;
     display: block;
-    padding: 1.6rem;
     text-decoration: none;
     overflow: hidden;
     transition: transform 0.2s ease-out, border-color 0.3s;
     transform-style: preserve-3d;
+  }
+  .card[hidden] {
+    display: none;
+  }
+  .inner {
+    position: relative;
+    padding: 1.6rem 1.6rem 1.4rem;
   }
   .card::before {
     content: '';
@@ -44,11 +88,31 @@ const vt = `post-${postSlug(post).replace(/[^a-z0-9-]/gi, '')}`;
   .card:hover::before {
     opacity: 1;
   }
+  .num {
+    position: absolute;
+    top: 0.4rem;
+    inset-inline-end: 1rem;
+    font-size: 4.2rem;
+    font-weight: 800;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--fg) 14%, transparent);
+    pointer-events: none;
+  }
   .meta {
     display: flex;
+    align-items: center;
     gap: 0.4rem;
     color: var(--muted);
     font-size: 0.85rem;
+  }
+  .badge {
+    padding: 0.05rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0b0716;
+    background: linear-gradient(100deg, var(--accent), var(--accent2));
   }
   h3 {
     font-size: 1.35rem;
@@ -59,9 +123,100 @@ const vt = `post-${postSlug(post).replace(/[^a-z0-9-]/gi, '')}`;
     color: var(--muted);
     margin: 0 0 1rem;
   }
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
   .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
+  }
+  .go {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    opacity: 0.75;
+    transition: opacity 0.2s;
+  }
+  .go b {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .card:hover .go {
+    opacity: 1;
+  }
+  .card:hover .go b {
+    transform: translateX(6px);
+  }
+  :global([dir='rtl']) .card:hover .go b {
+    transform: translateX(-6px);
+  }
+  .time {
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: 0;
+    height: 2px;
+    width: calc(var(--m) * 100%);
+    min-width: 12%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0.7;
+  }
+  .featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+  }
+  .featured .cover {
+    width: 100%;
+    height: 100%;
+    min-height: 260px;
+    object-fit: cover;
+    display: block;
+    mask-image: linear-gradient(90deg, #000 60%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, #000 60%, transparent);
+  }
+  :global([dir='rtl']) .featured .cover {
+    mask-image: linear-gradient(-90deg, #000 60%, transparent);
+    -webkit-mask-image: linear-gradient(-90deg, #000 60%, transparent);
+  }
+  .featured .cover {
+    background: var(--bg2);
+  }
+  .waves polyline {
+    fill: none;
+    stroke: var(--fg);
+    stroke-opacity: 0.22;
+    stroke-width: 1.2;
+    stroke-dasharray: 700;
+    animation: wave 3s ease-out both;
+  }
+  @keyframes wave {
+    from {
+      stroke-dashoffset: 700;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .waves polyline {
+      animation: none;
+    }
+  }
+  .featured h3 {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+  }
+  @media (max-width: 760px) {
+    .featured {
+      grid-template-columns: 1fr;
+    }
+    .featured .cover {
+      min-height: 0;
+      aspect-ratio: 1200 / 630;
+      mask-image: linear-gradient(#000 60%, transparent);
+      -webkit-mask-image: linear-gradient(#000 60%, transparent);
+    }
   }
 </style>
