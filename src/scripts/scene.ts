@@ -349,7 +349,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
       basePos.set(dir * (halfW * 0.93 - EXTENT * baseScale), 0.1, 0);
     }
     cornerPos.set(dir * (halfW - 0.5), -HALF_H + 0.55, 0);
-    uTextAmt.value = stacked || mobile ? 0 : 1;
+    uTextAmt.value = 0;
   };
   applyTheme();
   if (hero) applyTier();
