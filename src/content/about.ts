@@ -39,6 +39,31 @@ export const toolbox: { name: string; level: number; icon: string }[] = [
   { name: 'Figma / UI', level: 78, icon: 'M9 3h6a3 3 0 0 1 0 6H9a3 3 0 0 1 0-6zM9 9h6a3 3 0 1 1 0 6H9M9 15a3 3 0 1 0 3 3v-9' },
 ];
 
+/** Public facts only: project_one (2024), this site's repo (2025), bilingual pages (2026). */
+export const timeline: { year: L; text: L }[] = [
+  {
+    year: { fa: '۱۴۰۳', en: '2024' },
+    text: {
+      fa: 'ریپازیتوری عمومی project_one روی گیت‌هاب است.',
+      en: 'The public repository project_one is on GitHub.',
+    },
+  },
+  {
+    year: { fa: '۱۴۰۴', en: '2025' },
+    text: {
+      fa: 'ریپازیتوری عمومی همین سایت شروع شد.',
+      en: 'The public repository for this site started.',
+    },
+  },
+  {
+    year: { fa: '۱۴۰۵', en: '2026' },
+    text: {
+      fa: 'چیدمان دوزبانه است: فارسی و انگلیسی، با وبلاگ روی همین سایت.',
+      en: 'The layout is bilingual, Persian and English, with the blog on this site.',
+    },
+  },
+];
+
 export const faq: { q: L; a: L }[] = [
   {
     q: { fa: 'پروژه‌ی سفارشی هم قبول می‌کنی؟', en: 'Do you take on custom projects?' },

@@ -6,8 +6,10 @@ interface Props {
   lang: Lang;
   index?: number;
   featured?: boolean;
+  heading?: 'h2' | 'h3';
 }
-const { post, lang, index, featured = false } = Astro.props;
+const { post, lang, index, featured = false, heading = 'h3' } = Astro.props;
+const Heading = heading;
 const tr = t(lang);
 const slug = postSlug(post);
 const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
@@ -47,7 +49,7 @@ const fmt = (n: number, pad = 0) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : '
       <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
       <span>· {fmt(mins)} {tr('blog.minutes')}</span>
     </div>
-    <h3 style={`view-transition-name: ${vt}`}>{post.data.title}</h3>
+    <Heading style={`view-transition-name: ${vt}`}>{post.data.title}</Heading>
     <p>{post.data.description}</p>
     <div class="foot">
       <div class="tags">{post.data.tags.map((tg) => <span class="tag">#{tg}</span>)}</div>
@@ -114,6 +116,7 @@ const fmt = (n: number, pad = 0) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : '
     color: #0b0716;
     background: linear-gradient(100deg, var(--accent), var(--accent2));
   }
+  h2,
   h3 {
     font-size: 1.35rem;
     line-height: 1.35;
@@ -205,6 +208,7 @@ const fmt = (n: number, pad = 0) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : '
       animation: none;
     }
   }
+  .featured h2,
   .featured h3 {
     font-size: clamp(1.5rem, 3vw, 2.1rem);
   }

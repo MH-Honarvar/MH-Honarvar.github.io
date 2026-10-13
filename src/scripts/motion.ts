@@ -24,10 +24,13 @@ document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
   }
 });
 
+let lenis: Lenis | undefined;
+
+const startEntrances = () => {
 document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
   const end = Number(el.dataset.count);
   if (reduced || !end) return;
-  const fmt = new Intl.NumberFormat(document.documentElement.lang === 'fa' ? 'fa-IR' : 'en-US');
+  const fmt = new Intl.NumberFormat(document.documentElement.lang.startsWith('fa') ? 'fa-IR' : 'en-US');
   const state = { v: 0 };
   el.textContent = fmt.format(0);
   gsap.to(state, {
@@ -42,27 +45,46 @@ document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
 
 const depth = document.querySelector<HTMLElement>('[data-depth]');
 if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
+  let px = 0;
+  let py = 0;
+  let raf = 0;
+  const paint = () => {
+    raf = 0;
+    const rect = depth.getBoundingClientRect();
+    const x = px / innerWidth - 0.5;
+    const y = py / innerHeight - 0.5;
+    depth.style.transform = `translate3d(${(-x * 14).toFixed(2)}px, ${(-y * 10).toFixed(2)}px, 0)`;
+    depth.style.setProperty('--hx', `${px - rect.left}px`);
+    depth.style.setProperty('--hy', `${py - rect.top}px`);
+    depth.classList.add('lit');
+  };
   addEventListener('pointermove', (e) => {
-    const x = e.clientX / innerWidth - 0.5;
-    const y = e.clientY / innerHeight - 0.5;
-    depth.style.transform = `translate3d(${-x * 14}px, ${-y * 10}px, 0)`;
-  });
+    px = e.clientX;
+    py = e.clientY;
+    if (!raf) raf = requestAnimationFrame(paint);
+  }, { passive: true });
+  depth.addEventListener('pointerleave', () => depth.classList.remove('lit'));
 }
 
 if (!reduced) {
-  const lenis = new Lenis({ lerp: 0.1 });
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  const smooth = new Lenis({ lerp: 0.1 });
+  lenis = smooth;
+  smooth.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => smooth.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
   document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
+    const inHero = !!el.closest('.hero');
     gsap.from(el.querySelectorAll('.split-word > span'), {
       yPercent: 110,
       opacity: 0,
-      rotate: 4,
-      duration: 1,
-      ease: 'expo.out',
-      stagger: 0.06,
+      rotate: inHero ? 0 : 4,
+      duration: inHero ? 1.15 : 1,
+      ease: inHero ? 'power4.out' : 'expo.out',
+      stagger: {
+        each: inHero ? 0.042 : 0.06,
+        from: inHero && document.dir === 'rtl' ? 'end' : 'start',
+      },
       delay: Number(el.dataset.delay ?? 0),
     });
   });
@@ -78,6 +100,23 @@ if (!reduced) {
     });
   });
 }
+};
+document.addEventListener('site-scroll', (e) => {
+  const id = (e as CustomEvent<string>).detail;
+  if (id === 'top') {
+    if (lenis) lenis.scrollTo(0, { duration: 1.05 });
+    else scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    return;
+  }
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (lenis) lenis.scrollTo(el, { offset: -88, duration: 1.05 });
+  else el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+});
+
+const introEl = document.getElementById('intro');
+if (introEl && !introEl.classList.contains('out')) addEventListener('introout', startEntrances, { once: true });
+else startEntrances();
 
 const progress = document.getElementById('read-progress');
 if (progress) {

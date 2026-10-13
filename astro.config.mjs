@@ -6,7 +6,13 @@ export default defineConfig({
   trailingSlash: 'always',
   integrations: [
     sitemap({
-      filter: (page) => page !== 'https://mh-honarvar.github.io/',
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        if (pathname === '/') return false;
+        if (pathname.startsWith('/og/')) return false;
+        if (pathname.endsWith('/rss.xml')) return false;
+        return true;
+      },
       i18n: {
         defaultLocale: 'fa',
         locales: { fa: 'fa-IR', en: 'en-US' },

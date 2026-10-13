@@ -76,7 +76,16 @@ const sizeOf = (r: (typeof repos)[number]) =>
   r === newestPublic ? 'big' : !r.private && (r.description?.length ?? 0) > 60 || (r.topics?.length ?? 0) > 2 ? 'wide' : '';
 ---
 
-<Base lang={lang} title={tr('projects.title')} description={tr('projects.lede')} image={`/og/${lang}/projects.png`}>
+<Base
+  lang={lang}
+  title={tr('projects.title')}
+  description={tr('projects.lede')}
+  image={`/og/${lang}/projects.png`}
+  crumbs={[
+    { name: tr('nav.home'), url: `/${lang}/` },
+    { name: tr('nav.projects'), url: `/${lang}/projects/` },
+  ]}
+>
   <section class="section container" data-pagefind-body>
     <h1 class="section-title" data-split>{tr('projects.title')}</h1>
     <p class="section-lede">{tr('projects.lede')}</p>
@@ -210,7 +219,7 @@ const sizeOf = (r: (typeof repos)[number]) =>
           <button class="chip" data-city-view="cine">{tr('projects.viewCine')}</button>
         </div>
         <div class="city reveal">
-          <canvas id="city" data-days={JSON.stringify(days.map((d) => d.count))} data-start={days[0].date} data-lang={lang} data-unit={tr('projects.commits')} />
+          <canvas id="city" role="img" aria-label={tr('projects.city')} data-days={JSON.stringify(days.map((d) => d.count))} data-start={days[0].date} data-lang={lang} data-unit={tr('projects.commits')} />
           <div class="tip glass" data-city-tip hidden />
           <div class="legend glass" aria-hidden="true">
             {tr('projects.less')}
@@ -433,15 +442,28 @@ const sizeOf = (r: (typeof repos)[number]) =>
     text-decoration: none;
     overflow: hidden;
     transition: transform 0.2s ease-out, border-color 0.3s, opacity 0.35s, scale 0.35s;
-    background-image: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c) 16%, transparent), transparent 60%);
+    background-image: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c) 20%, transparent), transparent 62%);
   }
-  .repo::before {
+  .repo:not(.private)::before {
     content: '';
     position: absolute;
     inset: 0 0 auto;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--c), transparent);
-    opacity: 0.8;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--c) 18%, color-mix(in srgb, white 40%, var(--c)), var(--c) 82%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--c) 55%, transparent);
+    z-index: 1;
+  }
+  .repo:not(.private)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(240px circle at var(--mx, 70%) var(--my, 0%), color-mix(in srgb, var(--c) 40%, transparent), transparent 58%);
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
+  .repo:not(.private):hover::after {
+    opacity: 1;
   }
   .repo:hover {
     border-color: color-mix(in srgb, var(--c) 60%, transparent);

@@ -46,17 +46,23 @@
 <script>
   const fine = matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (fine) {
-    document.documentElement.classList.add('has-cursor');
     const dot = document.querySelector<HTMLElement>('.cursor-dot')!;
     const ring = document.querySelector<HTMLElement>('.cursor-ring')!;
     let x = innerWidth / 2,
       y = innerHeight / 2,
       rx = x,
       ry = y;
+    let shown = false;
     addEventListener('pointermove', (e) => {
       x = e.clientX;
       y = e.clientY;
       dot.style.transform = `translate(${x}px, ${y}px)`;
+      if (!shown) {
+        shown = true;
+        rx = x;
+        ry = y;
+        document.documentElement.classList.add('has-cursor');
+      }
     });
     const loop = () => {
       rx += (x - rx) * 0.18;

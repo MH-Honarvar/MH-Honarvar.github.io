@@ -1,10 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { languages, t, formatMonth, type Lang } from '../../i18n/ui';
+import { languages, t, type Lang } from '../../i18n/ui';
 import { SITE } from '../../config';
 import { getRepos, getContributions } from '../../lib/github';
 import { getPosts, postUrl } from '../../lib/blog';
-import { story, values, toolbox, faq } from '../../content/about';
+import { story, values, toolbox, faq, timeline } from '../../content/about';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -16,31 +16,7 @@ const repos = await getRepos();
 const { total, privateTotal } = await getContributions();
 const posts = await getPosts(lang);
 
-const yearFmt = new Intl.DateTimeFormat(locale, { year: 'numeric', ...(lang === 'fa' ? { calendar: 'persian' } : {}) });
 const pub = repos.filter((r) => !r.private && r.created_at).sort((a, b) => a.created_at.localeCompare(b.created_at));
-const byYear = new Map<string, { sort: string; names: string[]; priv: number }>();
-const bucket = (label: string, sort: string) => {
-  const e = byYear.get(label) ?? { sort, names: [], priv: 0 };
-  if (sort < e.sort) e.sort = sort;
-  byYear.set(label, e);
-  return e;
-};
-for (const r of pub) bucket(yearFmt.format(new Date(r.created_at)), r.created_at).names.push(r.name);
-for (const r of repos) if (r.private && r.activity) bucket(yearFmt.format(new Date(`${r.activity.first}-15`)), `${r.activity.first}-15`).priv++;
-const entries = [...byYear.entries()].sort((a, b) => a[1].sort.localeCompare(b[1].sort));
-const nowLabel = yearFmt.format(new Date());
-const timeline = entries.map(([when, e], i) => ({
-  when,
-  title: [
-    e.names.length ? (i === 0 && pub.length ? tr('about.firstRepo') : `${num(e.names.length)} ${tr('about.reposIn')}`) : '',
-    e.priv ? `${num(e.priv)} ${tr('about.privateIn')}` : '',
-  ].filter(Boolean).join(' · '),
-  body: e.names.join(' · '),
-  now: when === nowLabel,
-}));
-if (!timeline.some((e) => e.now)) timeline.push({ when: nowLabel, title: tr('about.now'), body: '', now: true });
-else timeline[timeline.length - 1].body = [timeline[timeline.length - 1].body, tr('about.now')].filter(Boolean).join(' · ');
-
 const firstDate = [pub[0]?.created_at, ...repos.map((r) => r.activity?.first && `${r.activity.first}-01`)].filter(Boolean).sort()[0] as string | undefined;
 const years = Math.max(1, new Date().getFullYear() - (firstDate ? new Date(firstDate).getFullYear() : new Date().getFullYear()) + 1);
 
@@ -62,7 +38,31 @@ const latestPost = posts[0];
 const words = story[lang].split(' ');
 ---
 
-<Base lang={lang} title={tr('about.title')} description={story[lang].split(/(?<=[.!?؟])\s/)[0]} image={`/og/${lang}/about.png`}>
+<Base
+  lang={lang}
+  title={tr('about.title')}
+  description={story[lang].split(/(?<=[.!?؟])\s/)[0]}
+  image={`/og/${lang}/about.png`}
+  crumbs={[
+    { name: tr('nav.home'), url: `/${lang}/` },
+    { name: tr('nav.about'), url: `/${lang}/about/` },
+  ]}
+  extra={[
+    {
+      '@type': 'ProfilePage',
+      mainEntity: { '@id': new URL(`/${lang}/about/`, Astro.site).href },
+      inLanguage: lang === 'fa' ? 'fa-IR' : 'en-US',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.q[lang],
+        acceptedAnswer: { '@type': 'Answer', text: f.a[lang] },
+      })),
+    },
+  ]}
+>
   <section class="section container about" data-pagefind-body>
     <header class="intro">
       <div class="avatar" data-avatar>
@@ -192,12 +192,11 @@ const words = story[lang].split(' ');
       <ol class="htl">
         <span class="track" aria-hidden="true"><span class="fill"></span></span>
         {
-          timeline.map((e) => (
-            <li class:list={['reveal', { now: e.now }]}>
+          timeline.map((e, i) => (
+            <li class:list={['reveal', { now: i === timeline.length - 1 }]}>
               <span class="dot" aria-hidden="true" />
-              <time>{e.when}</time>
-              <h3>{e.title}</h3>
-              {e.body && <p>{e.body}</p>}
+              <time>{e.year[lang]}</time>
+              <h3>{e.text[lang]}</h3>
             </li>
           ))
         }
@@ -733,12 +732,21 @@ const words = story[lang].split(' ');
     color: var(--fg);
     font-variant-numeric: tabular-nums;
   }
-  @media (max-width: 820px) {
+  @media (max-width: 960px) {
     .toolbox {
       grid-template-columns: 1fr;
+      overflow: hidden;
     }
     .orbit {
       display: none;
+    }
+  }
+  @media (max-width: 420px) {
+    .tools li {
+      grid-template-columns: 24px minmax(0, 1fr);
+    }
+    .lvl {
+      grid-column: 1 / -1;
     }
   }
   @media (prefers-reduced-motion: reduce) {

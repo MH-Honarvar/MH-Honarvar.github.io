@@ -15,14 +15,22 @@ const tags = [...counts.entries()].sort((a, b) => b[1] - a[1]);
 const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 ---
 
-<Base lang={lang} title={tr('blog.title')} description={tr('blog.lede')}>
+<Base
+  lang={lang}
+  title={tr('blog.title')}
+  description={tr('blog.lede')}
+  crumbs={[
+    { name: tr('nav.home'), url: `/${lang}/` },
+    { name: tr('nav.blog'), url: `/${lang}/blog/` },
+  ]}
+>
   <section class="section container">
     <h1 class="section-title" data-split>{tr('blog.title')}</h1>
     <p class="section-lede">{tr('blog.lede')}</p>
 
     <div class="search-wrap">
       <div id="search" class="glass" data-lang={lang} data-placeholder={tr('blog.search')}></div>
-      <kbd dir="ltr" aria-hidden="true">Ctrl K</kbd>
+      <span class="search-hint">{tr('blog.searchHint')}</span>
     </div>
 
     {
@@ -41,7 +49,7 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
       posts.length ? (
         <div class="grid">
           {posts.map((post, i) => (
-            <PostCard post={post} lang={lang} index={i} featured={i === 0} />
+            <PostCard post={post} lang={lang} index={i} featured={i === 0} heading="h2" />
           ))}
         </div>
       ) : (
@@ -68,11 +76,10 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
   #search {
     padding: 0.4rem;
   }
-  kbd {
+  .search-hint {
     position: absolute;
     top: 1.05rem;
     inset-inline-end: 1.1rem;
-    font: inherit;
     font-size: 0.72rem;
     padding: 0.1rem 0.5rem;
     border-radius: 0.4rem;
@@ -80,7 +87,7 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     color: var(--muted);
     pointer-events: none;
   }
-  .search-wrap:focus-within kbd {
+  .search-wrap:focus-within .search-hint {
     opacity: 0;
   }
   .pill.on {
@@ -157,6 +164,7 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
   }
   :global(#search .pagefind-ui__search-input) {
     font-weight: 500;
+    padding-left: 4.6rem;
   }
   :global(#search .pagefind-ui__search-input:focus) {
     outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
@@ -191,6 +199,6 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     // @ts-expect-error injected by pagefind-ui.js
     new window.PagefindUI({ element: el, showSubResults: true, showImages: false, translations: { placeholder: el.dataset.placeholder } });
   };
-  js.onerror = () => el.remove();
+  js.onerror = () => el.closest('.search-wrap')?.remove();
   document.head.append(css, js);
 </script>

@@ -21,7 +21,17 @@ const { repo } = Astro.props;
 const tr = t(lang);
 ---
 
-<Base lang={lang} title={repo.name} description={repo.description!} image={`/og/${lang}/projects.png`}>
+<Base
+  lang={lang}
+  title={repo.name}
+  description={repo.description!}
+  image={`/og/${lang}/projects.png`}
+  crumbs={[
+    { name: tr('nav.home'), url: `/${lang}/` },
+    { name: tr('nav.projects'), url: `/${lang}/projects/` },
+    { name: repo.name, url: `/${lang}/projects/${repo.name}/` },
+  ]}
+>
   <article class="section container case" data-pagefind-body style={`--c:${langColor(repo.language)}`}>
     <a class="back" href={`/${lang}/projects/`}>{tr('nav.projects')}</a>
     <header>

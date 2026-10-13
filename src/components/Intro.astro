@@ -23,6 +23,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
     inset: 0;
     z-index: 10000;
     background: var(--bg);
+    cursor: pointer;
     transition: opacity 0.9s ease, transform 0.9s ease;
   }
   #intro.out {
@@ -39,7 +40,6 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
 <script>
   const root = document.getElementById('intro');
   if (root) {
-    sessionStorage.setItem('intro-seen', '1');
     const lines: string[] = JSON.parse(root.dataset.lines!);
     const canvas = root.querySelector('canvas')!;
     const ctx = canvas.getContext('2d')!;
@@ -53,54 +53,81 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
     const c1 = css.getPropertyValue('--accent').trim();
     const c2 = css.getPropertyValue('--accent2').trim();
 
+    const cols = Math.min(220, Math.max(80, Math.round(W / 8)));
+    const rows = Math.max(48, Math.round(cols * (H / W)));
     const off = document.createElement('canvas');
-    off.width = W;
-    off.height = H;
+    off.width = cols;
+    off.height = rows;
     const o = off.getContext('2d', { willReadFrequently: true })!;
-    const big = Math.min(W / 7, 120);
+    const big = Math.min(cols / 7, 28);
     const family = '"Vazirmatn Variable", "Inter Variable", sans-serif';
     o.fillStyle = '#fff';
     o.textAlign = 'center';
     o.textBaseline = 'middle';
+    o.direction = document.dir === 'rtl' ? 'rtl' : 'ltr';
+
+    let frame = 0;
+    let leaving = false;
+    const finish = () => {
+      if (leaving) return;
+      leaving = true;
+      cancelAnimationFrame(frame);
+      sessionStorage.setItem('intro-seen', '1');
+      root.classList.add('out');
+      window.dispatchEvent(new Event('introout'));
+      setTimeout(() => root.remove(), 900);
+    };
 
     const run = () => {
-      const data = o.getImageData(0, 0, W, H).data;
-      const step = W < 700 ? 4 : 5;
-      const pts: { x: number; y: number; tx: number; ty: number; c: string; d: number }[] = [];
-      for (let y = 0; y < H; y += step)
-        for (let x = 0; x < W; x += step)
-          if (data[(y * W + x) * 4 + 3] > 128)
-            pts.push({ x: Math.random() * W, y: Math.random() * H, tx: x, ty: y, c: Math.random() > 0.5 ? c1 : c2, d: Math.random() * 0.5 });
+      const data = o.getImageData(0, 0, cols, rows).data;
+      const step = W < 700 ? 2 : 3;
+      const pts: { x: number; y: number; tx: number; ty: number; a: number; d: number }[] = [];
+      for (let y = 0; y < rows; y += step)
+        for (let x = 0; x < cols; x += step) {
+          if (data[(y * cols + x) * 4 + 3] < 128) continue;
+          pts.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            tx: ((x + 0.5) / cols) * W,
+            ty: ((y + 0.5) / rows) * H,
+            a: Math.random() > 0.5 ? 0 : 1,
+            d: Math.random() * 0.45,
+          });
+        }
 
+      const size = Math.max(2.2, (W / cols) * step * 0.72);
       const start = performance.now();
       const tick = (now: number) => {
+        if (leaving) return;
         const t = (now - start) / 1000;
         ctx.clearRect(0, 0, W, H);
+        const pathA = new Path2D();
+        const pathB = new Path2D();
         for (const p of pts) {
-          const k = Math.min(Math.max((t - p.d) / 1.4, 0), 1);
-          const e = 1 - Math.pow(1 - k, 4);
+          const k = Math.min(Math.max((t - p.d) / 1.25, 0), 1);
+          const e = 1 - Math.pow(1 - k, 3);
           const x = p.x + (p.tx - p.x) * e;
           const y = p.y + (p.ty - p.y) * e;
-          ctx.fillStyle = p.c;
-          ctx.fillRect(x, y, step * 0.6, step * 0.6);
+          (p.a ? pathB : pathA).rect(x, y, size, size);
         }
-        if (t < 2.6) requestAnimationFrame(tick);
-        else {
-          root.classList.add('out');
-          setTimeout(() => root.remove(), 1000);
-        }
+        ctx.fillStyle = c1;
+        ctx.fill(pathA);
+        ctx.fillStyle = c2;
+        ctx.fill(pathB);
+        if (t < 2.45) frame = requestAnimationFrame(tick);
+        else finish();
       };
-      requestAnimationFrame(tick);
+      frame = requestAnimationFrame(tick);
     };
     Promise.all(lines.map((l) => document.fonts.load(`800 40px ${family}`, l)))
       .catch(() => {})
       .then(() => {
         o.font = `800 ${big}px ${family}`;
-        o.fillText(lines[0], W / 2, H / 2 - big * 0.4);
+        o.fillText(lines[0], cols / 2, rows / 2 - big * 0.4);
         o.font = `600 ${big * 0.42}px ${family}`;
-        o.fillText(lines[1], W / 2, H / 2 + big * 0.55);
+        o.fillText(lines[1], cols / 2, rows / 2 + big * 0.55);
         run();
       });
-    root.addEventListener('click', () => root.classList.add('out'));
+    root.addEventListener('click', finish);
   }
 </script>

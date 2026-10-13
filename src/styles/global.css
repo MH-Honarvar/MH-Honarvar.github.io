@@ -63,10 +63,19 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
+  @view-transition {
+    navigation: none;
   }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+html.no-motion ::view-transition-group(*),
+html.no-motion ::view-transition-old(*),
+html.no-motion ::view-transition-new(*) {
+  animation: none !important;
 }
 
 *,

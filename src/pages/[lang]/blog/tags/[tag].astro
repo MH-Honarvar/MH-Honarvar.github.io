@@ -21,13 +21,23 @@ const { posts } = Astro.props;
 const tr = t(lang);
 ---
 
-<Base lang={lang} title={`#${tag}`} description={`${tr('blog.tagDesc')} #${tag}`} alternate={false}>
+<Base
+  lang={lang}
+  title={`#${tag}`}
+  description={`${tr('blog.tagDesc')} #${tag}`}
+  alternate={false}
+  crumbs={[
+    { name: tr('nav.home'), url: `/${lang}/` },
+    { name: tr('nav.blog'), url: `/${lang}/blog/` },
+    { name: `#${tag}`, url: `/${lang}/blog/tags/${tag}/` },
+  ]}
+>
   <section class="section container">
     <p class="kicker">{tr('blog.tag')}</p>
     <h1 class="section-title gradient-text">#{tag}</h1>
     <a href={`/${lang}/blog/`} class="back">{tr('blog.back')}</a>
     <div class="grid">
-      {posts.map((post) => <PostCard post={post} lang={lang} />)}
+      {posts.map((post) => <PostCard post={post} lang={lang} heading="h2" />)}
     </div>
   </section>
 </Base>

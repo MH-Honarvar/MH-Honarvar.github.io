@@ -39,10 +39,18 @@ const teaser = story[lang].split(/(?<=[.!?؟])\s/).slice(0, 2).join(' ');
 const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS', 'Node.js', 'Git', 'UI Design', 'Typography', 'Motion'];
 ---
 
-<Base lang={lang} title={tr('hero.title')} image={`/og/${lang}/home.png`} intro scene="hero">
+<Base lang={lang} title={tr('meta.homeTitle')} description={tr('hero.lede')} image={`/og/${lang}/home.png`} intro scene="hero">
+  <div id="home-progress" aria-hidden="true"></div>
+  <nav class="rail" aria-label={tr('rail.label')}>
+    <a href="#latest"><span>{sn(1)}</span><em>{tr('home.latest')}</em></a>
+    <a href="#about"><span>{sn(2)}</span><em>{tr('home.aboutTitle')}</em></a>
+    {featured.length > 0 && <a href="#projects"><span>{sn(3)}</span><em>{tr('home.projects')}</em></a>}
+    {strip.length > 0 && <a href="#activity"><span>{sn(4)}</span><em>{tr('home.activity')}</em></a>}
+    <a href="#contact"><span>·</span><em>{tr('home.contactTitle')}</em></a>
+  </nav>
   <section class="hero container">
     <div class="copy" data-depth>
-      <p class="status"><span class="dot"></span>{tr('hero.status')}</p>
+      <p class="status"><span class="dot"></span><span class="live">{tr('hero.status')}</span></p>
       <p class="eyebrow">{tr('hero.eyebrow')}</p>
       <h1 data-split data-highlight={tr('hero.word')}>{tr('hero.title')}</h1>
       <p class="lede reveal">{tr('hero.lede')}</p>
@@ -50,6 +58,11 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
         <a class="btn primary" href={`/${lang}/blog/`}>{tr('hero.cta')}</a>
         <a class="btn" href={`/${lang}/projects/`}>{tr('hero.cta2')}</a>
       </div>
+      <ul class="points reveal">
+        <li>{tr('hero.bilingual')}</li>
+        <li>{tr('hero.fast')}</li>
+        <li>{tr('hero.private')}</li>
+      </ul>
       <dl class="stats glass reveal">
         {stats.map(([n, label]) => <div><dt data-count={n}>{num(n)}</dt><dd>{label}</dd></div>)}
       </dl>
@@ -101,7 +114,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     }
   </script>
 
-  <section class="section container">
+  <section class="section container" id="latest">
     <div class="head">
       <h2 class="section-title reveal"><span class="snum">{sn(1)}</span>{tr('home.latest')}</h2>
       <a href={`/${lang}/blog/`} class="all">{tr('home.all')}</a>
@@ -111,7 +124,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     </div>
   </section>
 
-  <section class="section container">
+  <section class="section container" id="about">
     <div class="head">
       <h2 class="section-title reveal"><span class="snum">{sn(2)}</span>{tr('home.aboutTitle')}</h2>
     </div>
@@ -127,7 +140,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
 
   {
     featured.length > 0 && (
-      <section class="section container">
+      <section class="section container" id="projects">
         <div class="head">
           <h2 class="section-title reveal"><span class="snum">{sn(3)}</span>{tr('home.projects')}</h2>
           <a href={`/${lang}/projects/`} class="all">{tr('home.allProjects')}</a>
@@ -148,7 +161,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
 
   {
     strip.length > 0 && (
-      <section class="section container activity">
+      <section class="section container activity" id="activity">
         <a href={`/${lang}/projects/`} class="heat glass reveal">
           <div class="heat-head">
             <span><span class="snum">{sn(4)}</span>{tr('home.activity')}</span>
@@ -169,7 +182,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     )
   }
 
-  <section class="section container">
+  <section class="section container" id="contact">
     <div class="contact glass reveal">
       <div>
         <h2 class="gradient-text">{tr('home.contactTitle')}</h2>
@@ -184,7 +197,124 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
   </section>
 </Base>
 
+<script>
+  const bar = document.getElementById('home-progress');
+  const rail = document.querySelector<HTMLElement>('.rail');
+  const links = [...(rail?.querySelectorAll<HTMLAnchorElement>('a') ?? [])];
+  const reduce = document.documentElement.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const paint = () => {
+    if (!bar) return;
+    const h = document.documentElement.scrollHeight - innerHeight;
+    bar.style.transform = `scaleX(${h > 0 ? scrollY / h : 0})`;
+  };
+  addEventListener('scroll', paint, { passive: true });
+  paint();
+  links.forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href')?.slice(1);
+      if (!id) return;
+      e.preventDefault();
+      if (reduce) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+      else document.dispatchEvent(new CustomEvent('site-scroll', { detail: id }));
+    });
+  });
+  const targets = links.map((a) => document.getElementById(a.getAttribute('href')!.slice(1))).filter((el): el is HTMLElement => !!el);
+  if (targets.length) {
+    const seen = new Map<string, number>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) seen.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0);
+        const current = [...seen.entries()].sort((a, b) => b[1] - a[1])[0];
+        links.forEach((a) => a.classList.toggle('on', !!current && current[1] > 0 && a.getAttribute('href') === `#${current[0]}`));
+      },
+      { rootMargin: '-20% 0px -55% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    targets.forEach((el) => io.observe(el));
+  }
+</script>
+
 <style>
+  #home-progress {
+    position: fixed;
+    top: 0;
+    inset-inline: 0;
+    height: 2px;
+    z-index: 80;
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  :global([dir='rtl']) #home-progress {
+    transform-origin: right;
+  }
+  .rail {
+    position: fixed;
+    z-index: 35;
+    top: 50%;
+    inset-inline-end: max(1rem, calc((100vw - 1100px) / 2 - 3rem));
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+  .rail a {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 1.7rem;
+    padding: 0.15rem 0.35rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+  .rail a span {
+    width: 1.4rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+  .rail em {
+    font-style: normal;
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    transition: max-width 0.35s ease, opacity 0.35s ease;
+  }
+  .rail a.on,
+  .rail a:hover {
+    color: var(--fg);
+  }
+  .rail a.on span {
+    color: var(--accent2);
+    opacity: 1;
+  }
+  .rail a.on em,
+  .rail a:hover em,
+  .rail a:focus-visible em {
+    max-width: 14rem;
+    opacity: 1;
+  }
+  @media (max-width: 720px) {
+    .rail {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rail em {
+      transition: none;
+    }
+  }
+  :global(html.no-motion) .rail em {
+    transition: none;
+  }
+  .section {
+    scroll-margin-top: 5.5rem;
+  }
   .hero {
     min-height: calc(100vh - 6rem);
     display: flex;
@@ -192,6 +322,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     justify-content: center;
     position: relative;
     padding-bottom: 7.5rem;
+    overflow-x: clip;
   }
   .eyebrow {
     color: var(--accent2);
@@ -226,10 +357,52 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     gap: 0.8rem;
     flex-wrap: wrap;
   }
+  .points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1.1rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .points li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .points li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+  }
   .copy {
+    position: relative;
+    isolation: isolate;
     max-width: min(100%, 52%);
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-    will-change: transform;
+  }
+  .copy::after {
+    content: '';
+    position: absolute;
+    left: var(--hx, -999px);
+    top: var(--hy, -999px);
+    width: 240px;
+    height: 240px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent2) 24%, transparent), transparent 68%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+  }
+  .copy.lit::after {
+    opacity: 1;
+  }
+  .copy > * {
+    position: relative;
+    z-index: 1;
   }
   :global(html.hero-stacked) .hero {
     justify-content: flex-end;
@@ -265,6 +438,18 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     }
     100% {
       box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
+    }
+  }
+  .live {
+    animation: status-pulse 3.2s ease-in-out infinite;
+  }
+  @keyframes status-pulse {
+    0%,
+    100% {
+      opacity: 0.62;
+    }
+    50% {
+      opacity: 1;
     }
   }
   :global(.hl) {
@@ -392,9 +577,29 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     .track,
     .line::after,
     .dot,
+    .live,
     :global(.hl) {
       animation: none;
     }
+    .copy::after {
+      display: none;
+    }
+    .live {
+      opacity: 1;
+    }
+  }
+  :global(html.no-motion) .track,
+  :global(html.no-motion) .line::after,
+  :global(html.no-motion) .dot,
+  :global(html.no-motion) .live,
+  :global(html.no-motion) :global(.hl) {
+    animation: none;
+  }
+  :global(html.no-motion) .copy::after {
+    display: none;
+  }
+  :global(html.no-motion) .live {
+    opacity: 1;
   }
   .sound {
     position: absolute;
@@ -454,14 +659,28 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     text-decoration: none;
     overflow: hidden;
     transition: transform 0.2s ease-out, border-color 0.3s;
-    background-image: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c) 16%, transparent), transparent 60%);
+    background-image: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c) 22%, transparent), transparent 62%);
   }
   .proj::before {
     content: '';
     position: absolute;
     inset: 0 0 auto;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--c), transparent);
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--c) 18%, color-mix(in srgb, white 40%, var(--c)), var(--c) 82%, transparent);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--c) 55%, transparent);
+    z-index: 1;
+  }
+  .proj::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(240px circle at var(--mx, 70%) var(--my, 0%), color-mix(in srgb, var(--c) 42%, transparent), transparent 58%);
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
+  .proj:hover::after {
+    opacity: 1;
   }
   .proj:hover {
     border-color: color-mix(in srgb, var(--c) 60%, transparent);
@@ -506,6 +725,10 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     margin-bottom: 0.9rem;
     color: var(--muted);
     font-size: 0.9rem;
+  }
+  .heat-head h2 {
+    margin: 0;
+    font: inherit;
   }
   .cells {
     display: grid;

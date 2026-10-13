@@ -11,6 +11,7 @@ export interface BlobUniforms {
   uHitAmt: { value: number };
   uRipple: { value: THREE.Vector4 };
   uIntensity: { value: number };
+  uHold: { value: number };
   uA: { value: THREE.Color };
   uB: { value: THREE.Color };
   uGlow: { value: number };
@@ -102,7 +103,7 @@ function normalsFor(index: THREE.BufferAttribute, positions: Float32Array) {
 
 const vertexHead = /* glsl */ `
 uniform float uTime; uniform vec2 uMorph; uniform vec3 uHit; uniform float uHitAmt;
-uniform vec4 uRipple; uniform float uIntensity;
+uniform vec4 uRipple; uniform float uIntensity; uniform float uHold;
 attribute vec3 aKnot; attribute vec3 aKnotN; attribute vec3 aDrop; attribute vec3 aDropN;
 varying float vDisp;
 ${snoise}
@@ -110,6 +111,7 @@ float disp(vec3 p){
   float knotness = uMorph.x * (1.0 - uMorph.y);
   float d = snoise(p * 0.65 + uTime * 0.28) * 0.2 + snoise(p * 1.5 - uTime * 0.2) * 0.04;
   d *= mix(1.0, 0.35, knotness) * (1.0 + uIntensity);
+  d += uHold * 0.07 * (0.65 + 0.35 * sin(uTime * 5.0 + p.y * 2.0));
   float h = distance(p, uHit);
   d += uHitAmt * (0.32 * exp(-h * h * 3.5) - 0.06 * exp(-h * h * 0.8));
   if (uRipple.w >= 0.0) {
@@ -140,7 +142,7 @@ vDisp = d0;
 `;
 
 const fragmentHead = /* glsl */ `
-uniform vec3 uA; uniform vec3 uB; uniform float uTime; uniform float uGlow;
+uniform vec3 uA; uniform vec3 uB; uniform float uTime; uniform float uGlow; uniform float uHold;
 varying float vDisp;
 `;
 
@@ -149,6 +151,8 @@ const fragmentEmissive = /* glsl */ `
 float fres = pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 3.0);
 vec3 rim = mix(uA, uB, 0.5 + 0.5 * sin(vDisp * 12.0 + uTime * 0.6));
 totalEmissiveRadiance += rim * fres * 0.9 * uGlow;
+vec3 charge = mix(uA, uB, 0.5 + 0.5 * sin(uTime * 2.2 + vDisp * 8.0));
+totalEmissiveRadiance += charge * uHold * (0.42 + fres * 1.15) * uGlow;
 `;
 
 export function createBlob(detail: number, uniforms: BlobUniforms) {

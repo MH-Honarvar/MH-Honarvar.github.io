@@ -14,6 +14,7 @@ export function initPalette() {
   const items: Item[] = JSON.parse(document.getElementById('site-index')!.textContent!);
   const cmd = document.getElementById('cmd') as HTMLDialogElement;
   const lang = cmd.dataset.lang!;
+  const empty = cmd.dataset.empty ?? '';
   const input = document.getElementById('cmd-input') as HTMLInputElement;
   const list = document.getElementById('cmd-list')!;
   let sel = 0;
@@ -26,9 +27,14 @@ export function initPalette() {
       .sort((a, b) => Number(b.lang === lang) - Number(a.lang === lang))
       .slice(0, 12);
     sel = Math.min(sel, Math.max(shown.length - 1, 0));
-    list.innerHTML = shown
-      .map((i, n) => `<li><a href="${i.url}" class="${n === sel ? 'sel' : ''}" dir="auto"><span>${esc(i.title)}</span><small>${i.kind} · ${i.lang}</small></a></li>`)
-      .join('');
+    list.innerHTML = shown.length
+      ? shown
+          .map(
+            (i, n) =>
+              `<li><a href="${i.url}" class="${n === sel ? 'sel' : ''}" dir="auto" aria-selected="${n === sel}"><span>${esc(i.title)}</span><small>${i.kind} · ${i.lang}</small></a></li>`,
+          )
+          .join('')
+      : `<li class="empty">${esc(empty)}</li>`;
   };
 
   const open = () => {
@@ -44,6 +50,7 @@ export function initPalette() {
     render();
   });
   input.addEventListener('keydown', (e) => {
+    if (!shown.length) return;
     if (e.key === 'ArrowDown') sel = Math.min(sel + 1, shown.length - 1);
     else if (e.key === 'ArrowUp') sel = Math.max(sel - 1, 0);
     else if (e.key === 'Enter' && shown[sel]) location.href = shown[sel].url;

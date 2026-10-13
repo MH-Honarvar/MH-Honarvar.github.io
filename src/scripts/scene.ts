@@ -73,7 +73,8 @@ const finishShader = {
       vec2 off = c * r * uAmount * 4.0;
       vec4 base = texture2D(tDiffuse, vUv);
       vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, base.g, texture2D(tDiffuse, vUv - off).b);
-      float n = fract(sin(dot(vUv * 1000.0 + uTime, vec2(12.9898, 78.233))) * 43758.5453);
+      float gt = floor(uTime * 10.0);
+      float n = fract(sin(dot(vUv * vec2(720.0, 480.0) + gt, vec2(12.9898, 78.233))) * 43758.5453);
       col += (n - 0.5) * uGrain;
       col *= 1.0 - r * 0.55;
       gl_FragColor = vec4(col, base.a);
@@ -134,6 +135,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     uHitAmt: { value: 0 },
     uRipple: { value: new THREE.Vector4(0, 0, 0, -1) },
     uIntensity: { value: 0 },
+    uHold: { value: 0 },
     uA: { value: cssColor('--accent') },
     uB: { value: cssColor('--accent2') },
     uGlow: { value: 1 },
@@ -251,16 +253,19 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     drawText();
     document.fonts?.ready.then(drawText);
 
-    composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.55, 0.72);
-    composer.addPass(bloom);
-    finish = new ShaderPass(finishShader);
-    composer.addPass(finish);
-    composer.addPass(new OutputPass());
+    // Post-processing is the expensive path. Phones stay on the direct renderer.
+    if (!mobile) {
+      composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.55, 0.72);
+      composer.addPass(bloom);
+      finish = new ShaderPass(finishShader);
+      composer.addPass(finish);
+      composer.addPass(new OutputPass());
+    }
   }
 
-  const count = mobile ? 900 : hero ? 2600 : 1800;
+  const count = mobile ? 640 : hero ? 2000 : 1400;
   const pos = new Float32Array(count * 3);
   const seeds = new Float32Array(count);
   for (let i = 0; i < count; i++) {
@@ -349,7 +354,6 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
       basePos.set(dir * (halfW * 0.93 - EXTENT * baseScale), 0.1, 0);
     }
     cornerPos.set(dir * (halfW - 0.5), -HALF_H + 0.55, 0);
-    uTextAmt.value = 0;
   };
   applyTheme();
   if (hero) applyTier();
@@ -361,11 +365,13 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   const ndc = new THREE.Vector2();
   const target = new THREE.Vector2();
   let pointerSeen = false;
+  let pointerDirty = false;
   addEventListener('pointermove', (e) => {
     pointerSeen = true;
+    pointerDirty = true;
     target.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
     ndc.copy(target);
-  });
+  }, { passive: true });
 
   const raycaster = new THREE.Raycaster();
   const hitLocal = new THREE.Vector3();
@@ -379,31 +385,69 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     return true;
   };
   let holding = false;
-  let metal = 0;
-  addEventListener('pointerdown', (e) => {
-    if ((e.target as Element).closest?.('a, button, input, textarea')) return;
+  let holdPointer = -1;
+  let hold = 0;
+  const endHold = () => {
+    holding = false;
+    holdPointer = -1;
+  };
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.button !== 0) return;
+    if ((e.target as Element).closest?.('a, button, input, textarea, select')) return;
     if (blob && uniforms.uMorph.value.x < 0.3 && castBlob()) {
       uniforms.uRipple.value.set(hitLocal.x, hitLocal.y, hitLocal.z, 0);
-      uniforms.uIntensity.value += 0.9;
+      uniforms.uIntensity.value = Math.min(1.2, uniforms.uIntensity.value + 0.35);
       holding = true;
+      holdPointer = e.pointerId;
+      try {
+        document.documentElement.setPointerCapture(e.pointerId);
+      } catch {
+        /* capture is optional; release paths below still restore color */
+      }
       if (localStorage.getItem('sound') === 'on') blip();
     }
+  };
+  const onPointerEnd = (e: PointerEvent) => {
+    if (holdPointer !== -1 && e.pointerId !== holdPointer) return;
+    endHold();
+  };
+  addEventListener('pointerdown', onPointerDown);
+  addEventListener('pointerup', onPointerEnd, true);
+  addEventListener('pointercancel', onPointerEnd, true);
+  addEventListener('pointermove', (e) => {
+    if (holding && e.buttons === 0) endHold();
+  }, { passive: true });
+  document.addEventListener('pointerout', (e) => {
+    if (holding && !e.relatedTarget) endHold();
   });
-  const release = () => (holding = false);
-  addEventListener('pointerup', release);
-  addEventListener('pointercancel', release);
+  addEventListener('blur', endHold);
+  addEventListener('contextmenu', (e) => {
+    if (!holding) return;
+    e.preventDefault();
+    endHold();
+  });
+  document.documentElement.addEventListener('lostpointercapture', (e) => {
+    if (holdPointer !== -1 && e.pointerId === holdPointer) endHold();
+  });
   const lightPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -2.2);
+  const _proj = new THREE.Vector3();
   const lightPos = new THREE.Vector3();
 
   let party = false;
   addEventListener('party', () => (party = !party));
 
   let visible = true;
-  document.addEventListener('visibilitychange', () => (visible = !document.hidden));
+  document.addEventListener('visibilitychange', () => {
+    visible = !document.hidden;
+    if (document.hidden) endHold();
+  });
 
   const mouse = new THREE.Vector2();
   const vel = new THREE.Vector3();
   const springTarget = new THREE.Vector3();
+  const springForce = new THREE.Vector3();
+  const camPos = new THREE.Vector3(0, 0, 6);
+  const camLook = new THREE.Vector3();
   const clock = new THREE.Clock();
   let fpsFrames = 0;
   let fpsTime = 0;
@@ -411,14 +455,17 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
   const frame = () => {
     const dt = Math.min(clock.getDelta(), 0.05);
+    const glide = 1 - Math.exp(-dt * 6);
     uniforms.uTime.value += dt * (party ? 4 : 1);
-    mouse.lerp(target, 0.06);
+    mouse.lerp(target, glide);
     const sp = scrollY / Math.max(innerHeight, 1);
-    uScroll.value += (Math.min(sp, 3) - uScroll.value) * 0.08;
+    uScroll.value += (Math.min(sp, 3) - uScroll.value) * (1 - Math.exp(-dt * 5));
 
-    camera.position.x = mouse.x * 0.4;
-    camera.position.y = mouse.y * 0.3 - uScroll.value * 0.6;
-    camera.lookAt(0, -uScroll.value * 0.6, 0);
+    camPos.x += (mouse.x * 0.32 - camPos.x) * glide;
+    camPos.y += (mouse.y * 0.22 - uScroll.value * 0.5 - camPos.y) * glide;
+    camera.position.copy(camPos);
+    camLook.set(0, -uScroll.value * 0.45, 0);
+    camera.lookAt(camLook);
     points.rotation.y = uniforms.uTime.value * 0.02 + mouse.x * 0.1;
 
     if (blob) {
@@ -428,22 +475,28 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
       const corner = smooth(0.03, 0.75, uScroll.value);
       const follow = 1 - corner;
-      springTarget
-        .lerpVectors(basePos, cornerPos, corner)
-        .add({ x: mouse.x * 0.3 * follow, y: mouse.y * 0.22 * follow - uScroll.value * 0.6, z: 0 } as THREE.Vector3);
-      vel.addScaledVector(springTarget.sub(rig.position), 38 * dt).multiplyScalar(Math.pow(0.0025, dt));
+      springTarget.lerpVectors(basePos, cornerPos, corner);
+      springTarget.x += mouse.x * 0.28 * follow;
+      springTarget.y += mouse.y * 0.2 * follow - uScroll.value * 0.5;
+      // Critically-ish damped spring. Do not subtract in place: that used to
+      // destroy springTarget and make the blob twitch every frame.
+      const omega = 8.5;
+      springForce.copy(springTarget).sub(rig.position).multiplyScalar(omega * omega);
+      springForce.addScaledVector(vel, -2 * 0.86 * omega);
+      vel.addScaledVector(springForce, dt);
+      if (vel.lengthSq() > 36) vel.setLength(6);
       rig.position.addScaledVector(vel, dt);
       const speed = vel.length();
       const scale = THREE.MathUtils.lerp(baseScale, 0.11, corner);
       rig.scale.setScalar(scale);
       m.scale.set(1 + Math.min(Math.abs(vel.x), 3) * 0.06, 1 + Math.min(Math.abs(vel.y), 3) * 0.06, 1);
 
-      const proj = rig.position.clone().project(camera);
+      const proj = _proj.copy(rig.position).project(camera);
       uSph.value.set((proj.x + 1) / 2, (proj.y + 1) / 2, (1.5 * scale) / (2 * HALF_H));
       uHalo.value = 1 - corner * 0.6;
 
       ringGroup.rotation.set(1.15 + mouse.y * 0.35, mouse.x * 0.45, 0);
-      rings.forEach((r, i) => (r.rotation.z = uniforms.uTime.value * (i ? -0.12 : 0.18)));
+      rings.forEach((r, i) => (r.rotation.z = uniforms.uTime.value * (i ? -0.12 : 0.18) * (1 + hold * 1.6)));
 
       for (const d of drops) {
         if (d.t < 0) {
@@ -466,25 +519,34 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
         d.mesh.scale.setScalar(0.17 * Math.pow(out, 0.35));
       }
 
-      if (pointerSeen) {
-        raycaster.setFromCamera(mouse, camera);
-        if (raycaster.ray.intersectPlane(lightPlane, lightPos)) light.position.copy(lightPos);
-      }
-      light.intensity += ((pointerSeen ? (isLight() ? 6 : 14) * follow : 0) - light.intensity) * 0.08;
-
-      metal += ((holding ? 1 : 0) - metal) * (holding ? 0.05 : 0.08);
-      if (tier >= 1) {
+      hold += ((holding ? 1 : 0) - hold) * (1 - Math.exp(-dt * (holding ? 5 : 8)));
+      uniforms.uHold.value = hold;
+      canvas.dataset.hold = hold.toFixed(2);
+      canvas.dataset.holding = holding ? '1' : '0';
+      {
         const mat = blob.material;
-        mat.metalness = metal;
-        mat.transmission = 1 - metal * 0.98;
-        mat.roughness = 0.06 - 0.04 * metal;
-        mat.envMapIntensity = 0.55 + 1.2 * metal;
+        const glass = tier >= 1;
+        mat.transmission = glass ? 1 : 0;
+        mat.metalness = glass ? hold * 0.08 : 0.65;
+        mat.roughness = (glass ? 0.06 : 0.14) - hold * 0.015;
+        mat.envMapIntensity = 0.55 + hold * 0.4;
+        mat.iridescence = glass ? 1 : 0;
       }
 
       m.rotation.y = uniforms.uTime.value * 0.15 + morph.x * 0.6;
       m.rotation.x = mouse.y * 0.3 + morph.x * 0.4;
 
-      hovering = morph.x < 0.3 && castBlob();
+      const tracking = pointerDirty || mouse.distanceToSquared(target) > 1e-5;
+      if (tracking && pointerSeen) {
+        raycaster.setFromCamera(mouse, camera);
+        if (raycaster.ray.intersectPlane(lightPlane, lightPos)) light.position.copy(lightPos);
+        hovering = morph.x < 0.3 && castBlob();
+        pointerDirty = false;
+      } else if (morph.x >= 0.3) hovering = false;
+      const lit = (hovering || holding) ? (isLight() ? 2 : 3.2) * follow * (1 + hold * 0.35) : 0.5;
+      light.intensity += (lit - light.intensity) * (1 - Math.exp(-dt * 8));
+      light.color.copy(uniforms.uB.value).lerp(new THREE.Color(0xffffff), 0.55);
+      if (hold > 0.001) light.color.lerp(uniforms.uA.value, hold * 0.65);
       if (hovering) uniforms.uHit.value.lerp(hitLocal, 0.25);
       uniforms.uHitAmt.value += ((hovering ? 1 : 0) - uniforms.uHitAmt.value) * 0.08;
       const rip = uniforms.uRipple.value;
@@ -492,7 +554,8 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
       uniforms.uIntensity.value += ((party ? 1.6 : Math.min(speed * 0.5, 0.8) + mouse.length() * 0.25) - uniforms.uIntensity.value) * 0.05;
       const coreScale = Math.max(0.001, 1 - morph.x * (1 - morph.y) * 1.15 - morph.y * 0.2);
-      blob.core.scale.setScalar(coreScale);
+      const pulse = 1 + hold * 0.14 * (0.5 + 0.5 * Math.sin(uniforms.uTime.value * 7));
+      blob.core.scale.setScalar(coreScale * pulse);
     }
 
     if (finish) finish.uniforms.uTime.value = uniforms.uTime.value;
@@ -518,7 +581,10 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   };
 
   frame();
-  canvas.classList.add('ready');
+  const revealScene = () => canvas.classList.add('ready');
+  const introEl = document.getElementById('intro');
+  if (introEl && !introEl.classList.contains('out')) addEventListener('introout', revealScene, { once: true });
+  else revealScene();
   if (reduced) return;
 
   renderer.setAnimationLoop(() => visible && frame());
