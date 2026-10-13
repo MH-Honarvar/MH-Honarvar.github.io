@@ -23,12 +23,13 @@ interface Props {
   scene?: 'hero' | 'ambient';
   ogType?: 'website' | 'article';
   published?: Date;
+  modified?: Date;
   crumbs?: Crumb[];
   noindex?: boolean;
   extra?: Record<string, unknown>[];
 }
 
-const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, scene = 'ambient', ogType = 'website', published, crumbs, noindex = false, extra = [] } = Astro.props;
+const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, scene = 'ambient', ogType = 'website', published, modified, crumbs, noindex = false, extra = [] } = Astro.props;
 const tr = t(lang);
 const name = SITE.name[lang];
 const fullTitle = title ? `${title} — ${name}` : name;
@@ -51,16 +52,31 @@ const person = {
   sameAs: [`https://github.com/${SITE.githubUser}`, `https://t.me/${SITE.telegram}`],
   ...(SITE.email ? { email: SITE.email } : {}),
 };
+const searchTarget = new URL(`/${lang}/blog/`, Astro.site).href + '?q={search_term_string}';
 const graph: Record<string, unknown>[] = [
-  { '@type': 'WebSite', name, url: abs(`/${lang}/`), inLanguage, author: { '@id': personId }, publisher: { '@id': personId } },
+  {
+    '@type': 'WebSite',
+    name,
+    url: abs(`/${lang}/`),
+    inLanguage,
+    author: { '@id': personId },
+    publisher: { '@id': personId },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: searchTarget },
+      'query-input': 'required name=search_term_string',
+    },
+  },
   { ...person, '@id': personId },
 ];
+const dateModified = modified ?? published;
 if (ogType === 'article' && published && title) {
   graph.push({
     '@type': 'BlogPosting',
     headline: title,
     description: desc,
     datePublished: published.toISOString(),
+    dateModified: dateModified.toISOString(),
     image: imageUrl,
     inLanguage,
     mainEntityOfPage: pageUrl,
@@ -127,7 +143,9 @@ for (const l of ['fa', 'en'] as const) {
     {showAlt && <meta property="og:locale:alternate" content={lang === 'fa' ? 'en_US' : 'fa_IR'} />}
     <meta property="og:site_name" content={name} />
     {published && <meta property="article:published_time" content={published.toISOString()} />}
+    {published && <meta property="article:modified_time" content={(modified ?? published).toISOString()} />}
     <meta name="twitter:card" content="summary_large_image" />
+    {SITE.twitter && <meta name="twitter:site" content={SITE.twitter} />}
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={desc} />
     <meta name="twitter:image" content={imageUrl} />
@@ -406,7 +424,7 @@ for (const l of ['fa', 'en'] as const) {
     if (reduce) scrollTo(0, 0);
     else document.dispatchEvent(new CustomEvent('site-scroll', { detail: 'top' }));
   });
-  import '../scripts/motion';
-  import '../scripts/theme';
-  import '../scripts/konami';
+  import '../scripts/ui/motion';
+  import '../scripts/ui/theme';
+  import '../scripts/ui/konami';
 </script>

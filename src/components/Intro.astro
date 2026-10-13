@@ -12,6 +12,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
   <canvas></canvas>
 </div>
 <script is:inline>
+  if (new URLSearchParams(location.search).get('intro') === '1') sessionStorage.removeItem('intro-seen');
   if (sessionStorage.getItem('intro-seen') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.getElementById('intro').remove();
   }

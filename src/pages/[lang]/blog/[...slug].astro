@@ -39,6 +39,7 @@ const pageUrl = new URL(postUrl(post), Astro.site).href;
   alternate={hasTwin}
   ogType="article"
   published={post.data.date}
+  modified={post.data.updated}
   crumbs={[
     { name: tr('nav.home'), url: `/${lang}/` },
     { name: tr('nav.blog'), url: `/${lang}/blog/` },

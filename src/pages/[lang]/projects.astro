@@ -759,7 +759,7 @@ const sizeOf = (r: (typeof repos)[number]) =>
     const io = new IntersectionObserver(async ([e]) => {
       if (!e.isIntersecting) return;
       io.disconnect();
-      const { initCity } = await import('../../scripts/city');
+      const { initCity } = await import('../../scripts/scene/city');
       initCity(canvas, JSON.parse(canvas.dataset.days!), canvas.dataset.start!, canvas.dataset.lang as 'fa' | 'en');
     });
     io.observe(canvas);

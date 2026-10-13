@@ -1,7 +1,7 @@
 ---
 import Base from '../../../../layouts/Base.astro';
 import PostCard from '../../../../components/PostCard.astro';
-import { languages, t, type Lang } from '../../../../i18n/ui';
+import { languages, other, pairedTag, t, type Lang } from '../../../../i18n/ui';
 import { getPosts } from '../../../../lib/blog';
 
 export async function getStaticPaths() {
@@ -19,13 +19,15 @@ const lang = Astro.params.lang as Lang;
 const { tag } = Astro.params;
 const { posts } = Astro.props;
 const tr = t(lang);
+const twin = pairedTag(lang, tag);
 ---
 
 <Base
   lang={lang}
   title={`#${tag}`}
   description={`${tr('blog.tagDesc')} #${tag}`}
-  alternate={false}
+  alternate={!!twin}
+  altPath={twin ? `/${other(lang)}/blog/tags/${encodeURIComponent(twin)}/` : undefined}
   crumbs={[
     { name: tr('nav.home'), url: `/${lang}/` },
     { name: tr('nav.blog'), url: `/${lang}/blog/` },

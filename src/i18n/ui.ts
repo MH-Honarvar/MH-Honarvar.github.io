@@ -258,6 +258,11 @@ export const t = (lang: Lang) => (key: UIKey) => ui[lang][key];
 
 export const other = (lang: Lang): Lang => (lang === 'fa' ? 'en' : 'fa');
 
+/** Tag slugs that actually have posts in both languages. Do not invent a twin by swapping the locale prefix. */
+export const tagPairs: readonly { fa: string; en: string }[] = [];
+
+export const pairedTag = (lang: Lang, tag: string) => tagPairs.find((pair) => pair[lang] === tag)?.[other(lang)];
+
 /** "YYYY-MM" to a month-and-year label; Persian uses the Solar Hijri calendar. */
 export const formatMonth = (ym: string, lang: Lang) =>
   new Date(`${ym}-15T12:00:00Z`).toLocaleDateString(lang === 'fa' ? 'fa-IR-u-ca-persian' : 'en-US', { year: 'numeric', month: 'long' });

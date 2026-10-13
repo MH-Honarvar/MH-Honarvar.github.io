@@ -42,24 +42,19 @@
   navigation: auto;
 }
 ::view-transition-old(root) {
-  animation: vt-out 0.4s cubic-bezier(0.6, 0, 0.3, 1) both;
+  animation: vt-out 0.28s ease both;
 }
 ::view-transition-new(root) {
-  animation: vt-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: vt-in 0.28s ease both;
 }
 @keyframes vt-out {
   to {
     opacity: 0;
-    filter: blur(6px);
-    transform: scale(0.985);
   }
 }
 @keyframes vt-in {
   from {
-    clip-path: circle(0% at 50% 0%);
-  }
-  to {
-    clip-path: circle(150% at 50% 0%);
+    opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

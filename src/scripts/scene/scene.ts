@@ -197,14 +197,18 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     backdrop.frustumCulled = false;
     backdrop.renderOrder = -1;
     scene.add(backdrop);
+    scene.add(rig);
+  }
 
+  const mountHeroDetail = () => {
+    if (!hero) return;
+    const started = performance.now();
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     pmrem.dispose();
 
     blob = createBlob(mobile ? 28 : 56, uniforms);
     rig.add(blob.mesh);
-    scene.add(rig);
 
     const dotCanvas = document.createElement('canvas');
     dotCanvas.width = dotCanvas.height = 64;
@@ -253,17 +257,25 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     drawText();
     document.fonts?.ready.then(drawText);
 
-    // Post-processing is the expensive path. Phones stay on the direct renderer.
-    if (!mobile) {
+    if (mobile || performance.now() - started > 34) tier = 0;
+    applyTheme();
+    applyTier();
+
+    requestAnimationFrame(() => {
+      renderer.compile(scene, camera);
+      if (mobile || tier < 2) return;
       composer = new EffectComposer(renderer);
       composer.addPass(new RenderPass(scene, camera));
       bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.55, 0.72);
+      bloom.enabled = false;
       composer.addPass(bloom);
       finish = new ShaderPass(finishShader);
       composer.addPass(finish);
       composer.addPass(new OutputPass());
-    }
-  }
+      applyTheme();
+      bloom.enabled = true;
+    });
+  };
 
   const count = mobile ? 640 : hero ? 2000 : 1400;
   const pos = new Float32Array(count * 3);
@@ -319,9 +331,17 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     if (blob) {
       const m = blob.material;
       m.transmission = tier >= 1 ? 1 : 0;
-      m.metalness = tier >= 1 ? 0 : 0.65;
-      m.roughness = tier >= 1 ? 0.06 : 0.14;
-      blob.core.visible = tier >= 1;
+      m.metalness = tier >= 1 ? 0 : 0.12;
+      m.roughness = tier >= 1 ? 0.06 : 0.38;
+      blob.core.visible = true;
+      if (tier >= 1) {
+        m.color.set(0xffffff);
+        m.emissive.set(0x000000);
+      } else {
+        m.color.copy(uniforms.uA.value);
+        m.emissive.copy(uniforms.uB.value);
+        m.emissiveIntensity = 0.55;
+      }
       m.needsUpdate = true;
     }
     resize();
@@ -333,19 +353,24 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   const cornerPos = new THREE.Vector3();
   let baseScale = 1;
   let stacked = false;
+  let sized = '';
   const resize = () => {
     const w = innerWidth;
     const h = innerHeight;
-    renderer.setSize(w, h, false);
-    composer?.setSize(w, h);
-    bloom?.resolution.set(w / 2, h / 2);
-    camera.aspect = w / h;
-    uAspect.value = w / h;
-    camera.updateProjectionMatrix();
-    const halfW = HALF_H * (w / h);
-    const dir = document.dir === 'rtl' ? -1 : 1;
-    stacked = w < 860 || w / h < 1.05;
-    document.documentElement.classList.toggle('hero-stacked', hero && stacked);
+    const key = `${w}x${h}:${document.dir}`;
+    if (key !== sized) {
+      sized = key;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      uAspect.value = w / h;
+      camera.updateProjectionMatrix();
+      const halfW = HALF_H * (w / h);
+      const dir = document.dir === 'rtl' ? -1 : 1;
+      stacked = w < 860 || w / h < 1.05;
+      const stackClass = hero && stacked;
+      if (document.documentElement.classList.contains('hero-stacked') !== stackClass) {
+        document.documentElement.classList.toggle('hero-stacked', stackClass);
+      }
     if (stacked) {
       baseScale = Math.min(0.5, (halfW * 0.85) / EXTENT, (HALF_H * 0.32) / 1.9);
       basePos.set(0, HALF_H - 1.9 * baseScale - 0.6, 0);
@@ -353,14 +378,20 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
       baseScale = Math.min(0.95, (halfW * 0.48) / EXTENT, (HALF_H * 0.78) / 1.9);
       basePos.set(dir * (halfW * 0.93 - EXTENT * baseScale), 0.1, 0);
     }
-    cornerPos.set(dir * (halfW - 0.5), -HALF_H + 0.55, 0);
+      cornerPos.set(dir * (halfW - 0.5), -HALF_H + 0.55, 0);
+    }
+    composer?.setSize(w, h);
+    bloom?.resolution.set(w / 2, h / 2);
   };
   applyTheme();
   if (hero) applyTier();
   else resize();
   rig.position.copy(basePos);
   addEventListener('resize', resize);
-  addEventListener('themechange', applyTheme);
+  addEventListener('themechange', () => {
+    applyTheme();
+    drawText();
+  });
 
   const ndc = new THREE.Vector2();
   const target = new THREE.Vector2();
@@ -394,6 +425,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   const onPointerDown = (e: PointerEvent) => {
     if (e.button !== 0) return;
     if ((e.target as Element).closest?.('a, button, input, textarea, select')) return;
+    canvas.dataset.casts = String((canvas.dataset.casts ? Number(canvas.dataset.casts) : 0) + 1);
     if (blob && uniforms.uMorph.value.x < 0.3 && castBlob()) {
       uniforms.uRipple.value.set(hitLocal.x, hitLocal.y, hitLocal.z, 0);
       uniforms.uIntensity.value = Math.min(1.2, uniforms.uIntensity.value + 0.35);
@@ -408,6 +440,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     }
   };
   const onPointerEnd = (e: PointerEvent) => {
+    canvas.dataset.end = `${e.type}:${e.pointerId}:${holdPointer}`;
     if (holdPointer !== -1 && e.pointerId !== holdPointer) return;
     endHold();
   };
@@ -493,7 +526,9 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
       const proj = _proj.copy(rig.position).project(camera);
       uSph.value.set((proj.x + 1) / 2, (proj.y + 1) / 2, (1.5 * scale) / (2 * HALF_H));
-      uHalo.value = 1 - corner * 0.6;
+      const sound = localStorage.getItem('sound') === 'on';
+      const amp = sound ? 0.68 + 0.32 * (0.5 + 0.5 * Math.sin(uniforms.uTime.value * 3.1)) : 1;
+      uHalo.value = (1 - corner * 0.6) * amp;
 
       ringGroup.rotation.set(1.15 + mouse.y * 0.35, mouse.x * 0.45, 0);
       rings.forEach((r, i) => (r.rotation.z = uniforms.uTime.value * (i ? -0.12 : 0.18) * (1 + hold * 1.6)));
@@ -527,8 +562,8 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
         const mat = blob.material;
         const glass = tier >= 1;
         mat.transmission = glass ? 1 : 0;
-        mat.metalness = glass ? hold * 0.08 : 0.65;
-        mat.roughness = (glass ? 0.06 : 0.14) - hold * 0.015;
+        mat.metalness = glass ? hold * 0.08 : 0.12;
+        mat.roughness = glass ? 0.06 - hold * 0.015 : 0.38;
         mat.envMapIntensity = 0.55 + hold * 0.4;
         mat.iridescence = glass ? 1 : 0;
       }
@@ -582,6 +617,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
   frame();
   const revealScene = () => canvas.classList.add('ready');
+  requestAnimationFrame(() => requestAnimationFrame(mountHeroDetail));
   const introEl = document.getElementById('intro');
   if (introEl && !introEl.classList.contains('out')) addEventListener('introout', revealScene, { once: true });
   else revealScene();

@@ -4,7 +4,18 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = document.documentElement.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+addEventListener('pageswap', (e) => {
+  const vt = (e as PageSwapEvent).viewTransition;
+  if (!vt) return;
+  if (reduced) {
+    vt.skipTransition();
+    return;
+  }
+  const timer = setTimeout(() => vt.skipTransition(), 400);
+  vt.finished.finally(() => clearTimeout(timer));
+});
 
 // Split by words, not letters: per-letter spans break Persian glyph joining.
 document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {

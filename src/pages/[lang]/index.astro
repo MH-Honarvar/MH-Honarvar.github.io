@@ -128,13 +128,15 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     <div class="head">
       <h2 class="section-title reveal"><span class="snum">{sn(2)}</span>{tr('home.aboutTitle')}</h2>
     </div>
-    <a href={`/${lang}/about/`} class="mini glass reveal" data-tilt>
-      <img src={`https://github.com/${SITE.githubUser}.png?size=200`} alt={SITE.name[lang]} width="96" height="96" loading="lazy" onerror="this.style.visibility='hidden'" />
-      <div>
-        <b>{SITE.name[lang]}</b>
-        <p>{teaser}</p>
-        <span class="all">{tr('home.aboutMore')}</span>
-      </div>
+    <a href={`/${lang}/about/`} class="mini glass reveal">
+      <span class="mini-face" data-tilt>
+        <img src={`https://github.com/${SITE.githubUser}.png?size=200`} alt={SITE.name[lang]} width="96" height="96" loading="lazy" onerror="this.style.visibility='hidden'" />
+        <div>
+          <b>{SITE.name[lang]}</b>
+          <p>{teaser}</p>
+          <span class="all">{tr('home.aboutMore')}</span>
+        </div>
+      </span>
     </a>
   </section>
 
@@ -785,13 +787,17 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     color: var(--fg);
   }
   .mini {
-    display: flex;
-    gap: 1.6rem;
-    align-items: center;
+    display: block;
     padding: 1.5rem 1.7rem;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s ease-out, border-color 0.3s;
+    transition: border-color 0.3s;
+  }
+  .mini-face {
+    display: flex;
+    gap: 1.6rem;
+    align-items: center;
+    width: 100%;
   }
   .mini:hover {
     border-color: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -823,7 +829,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     }
   }
   @media (max-width: 560px) {
-    .mini {
+    .mini-face {
       flex-direction: column;
       text-align: center;
     }
