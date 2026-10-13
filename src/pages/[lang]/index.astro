@@ -7,6 +7,7 @@ import { getRepos, getContributions, languageStats, langColor } from '../../lib/
 import { SITE } from '../../config';
 import RepoIcon from '../../components/RepoIcon.astro';
 import { story } from '../../content/about';
+import { publicCases } from '../../content/cases';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -44,7 +45,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
   <nav class="rail" aria-label={tr('rail.label')}>
     <a href="#latest"><span>{sn(1)}</span><em>{tr('home.latest')}</em></a>
     <a href="#about"><span>{sn(2)}</span><em>{tr('home.aboutTitle')}</em></a>
-    {featured.length > 0 && <a href="#projects"><span>{sn(3)}</span><em>{tr('home.projects')}</em></a>}
+    {(featured.length > 0 || publicCases.length > 0) && <a href="#projects"><span>{sn(3)}</span><em>{tr('home.projects')}</em></a>}
     {strip.length > 0 && <a href="#activity"><span>{sn(4)}</span><em>{tr('home.activity')}</em></a>}
     <a href="#contact"><span>·</span><em>{tr('home.contactTitle')}</em></a>
   </nav>
@@ -141,15 +142,21 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
   </section>
 
   {
-    featured.length > 0 && (
+    (featured.length > 0 || publicCases.length > 0) && (
       <section class="section container" id="projects">
         <div class="head">
           <h2 class="section-title reveal"><span class="snum">{sn(3)}</span>{tr('home.projects')}</h2>
           <a href={`/${lang}/projects/`} class="all">{tr('home.allProjects')}</a>
         </div>
         <div class="projects">
+          {publicCases.map((c) => (
+            <a href={`/${lang}/projects/${c.slug}/`} class="proj glass reveal big" data-tilt>
+              <h3>{c.title[lang]}</h3>
+              <p>{c.summary[lang]}</p>
+            </a>
+          ))}
           {featured.map((r, i) => (
-            <a href={r.description ? `/${lang}/projects/${r.name}/` : r.html_url} class:list={['proj glass reveal', { big: i === 0 }]} data-tilt style={`--c:${langColor(r.language)}`}>
+            <a href={r.description ? `/${lang}/projects/${r.name}/` : r.html_url} class:list={['proj glass reveal', { big: i === 0 && publicCases.length === 0 }]} data-tilt style={`--c:${langColor(r.language)}`}>
               <RepoIcon name={r.name} language={r.language} private={false} />
               <h3 dir="ltr">{r.name}</h3>
               <p>{r.description ?? '—'}</p>

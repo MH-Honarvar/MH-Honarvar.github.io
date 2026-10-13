@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import { languages, t, formatMonth, type Lang } from '../../i18n/ui';
 import { getRepos, getContributions, languageStats, langColor } from '../../lib/github';
+import { publicCases } from '../../content/cases';
 import RepoIcon from '../../components/RepoIcon.astro';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
@@ -89,6 +90,24 @@ const sizeOf = (r: (typeof repos)[number]) =>
   <section class="section container" data-pagefind-body>
     <h1 class="section-title" data-split>{tr('projects.title')}</h1>
     <p class="section-lede">{tr('projects.lede')}</p>
+
+    {
+      publicCases.length > 0 && (
+        <div class="grid">
+          {publicCases.map((c) => (
+            <article class="repo glass reveal wide">
+              <a href={`/${lang}/projects/${c.slug}/`} class="cover" aria-label={c.title[lang]} />
+              <h3>{c.title[lang]}</h3>
+              <p>{c.summary[lang]}</p>
+              <div class="foot">
+                <a class="site" href={`/${lang}/projects/${c.slug}/`}>{tr('blog.read')}</a>
+                <a class="site" href={c.site}>{tr('projects.site')} ↗</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
 
     <div class="top reveal">
       <dl class="pstats glass">
