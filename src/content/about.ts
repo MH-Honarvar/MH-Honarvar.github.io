@@ -39,15 +39,8 @@ export const toolbox: { name: string; level: number; icon: string }[] = [
   { name: 'Figma / UI', level: 78, icon: 'M9 3h6a3 3 0 0 1 0 6H9a3 3 0 0 1 0-6zM9 9h6a3 3 0 1 1 0 6H9M9 15a3 3 0 1 0 3 3v-9' },
 ];
 
-/** Public facts only: project_one (2024), this site's repo (2025), bilingual pages (2026). */
+/** Public facts only: this site's repo (2025), bilingual pages (2026). */
 export const timeline: { year: L; text: L }[] = [
-  {
-    year: { fa: '۱۴۰۳', en: '2024' },
-    text: {
-      fa: 'ریپازیتوری عمومی project_one روی گیت‌هاب است.',
-      en: 'The public repository project_one is on GitHub.',
-    },
-  },
   {
     year: { fa: '۱۴۰۴', en: '2025' },
     text: {
