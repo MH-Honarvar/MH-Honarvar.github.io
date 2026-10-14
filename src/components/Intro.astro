@@ -1,15 +1,17 @@
 ---
 import { SITE } from '../config';
-import type { Lang } from '../i18n/ui';
+import { t, type Lang } from '../i18n/ui';
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
+const tr = t(lang);
 const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE.name.fa];
 ---
 
-<div id="intro" data-lines={JSON.stringify(lines)} aria-hidden="true">
-  <canvas></canvas>
+<div id="intro" data-lines={JSON.stringify(lines)}>
+  <canvas aria-hidden="true"></canvas>
+  <button type="button" class="intro-skip glass" data-intro-skip>{tr('intro.skip')}</button>
 </div>
 <script is:inline>
   if (new URLSearchParams(location.search).get('intro') === '1') sessionStorage.removeItem('intro-seen');
@@ -22,10 +24,22 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
   #intro {
     position: fixed;
     inset: 0;
-    z-index: 10000;
-    background: var(--bg);
+    z-index: 70;
+    background: transparent;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+  }
+  .intro-skip {
+    pointer-events: auto;
+    position: absolute;
+    bottom: 1.4rem;
+    inset-inline-end: 1.4rem;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--fg);
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
     cursor: pointer;
-    transition: opacity 0.9s ease, transform 0.9s ease;
   }
   #intro.out {
     opacity: 0;
@@ -92,7 +106,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
             tx: ((x + 0.5) / cols) * W,
             ty: ((y + 0.5) / rows) * H,
             a: Math.random() > 0.5 ? 0 : 1,
-            d: Math.random() * 0.45,
+            d: Math.random() * 0.18,
           });
         }
 
@@ -105,7 +119,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
         const pathA = new Path2D();
         const pathB = new Path2D();
         for (const p of pts) {
-          const k = Math.min(Math.max((t - p.d) / 1.25, 0), 1);
+          const k = Math.min(Math.max((t - p.d) / 0.55, 0), 1);
           const e = 1 - Math.pow(1 - k, 3);
           const x = p.x + (p.tx - p.x) * e;
           const y = p.y + (p.ty - p.y) * e;
@@ -115,7 +129,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
         ctx.fill(pathA);
         ctx.fillStyle = c2;
         ctx.fill(pathB);
-        if (t < 2.45) frame = requestAnimationFrame(tick);
+        if (t < 1.05) frame = requestAnimationFrame(tick);
         else finish();
       };
       frame = requestAnimationFrame(tick);
@@ -129,6 +143,9 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
         o.fillText(lines[1], cols / 2, rows / 2 + big * 0.55);
         run();
       });
-    root.addEventListener('click', finish);
+    root.querySelector('[data-intro-skip]')?.addEventListener('click', finish);
+    addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') finish();
+    });
   }
 </script>

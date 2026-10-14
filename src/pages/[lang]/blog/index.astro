@@ -2,7 +2,7 @@
 import Base from '../../../layouts/Base.astro';
 import PostCard from '../../../components/PostCard.astro';
 import { languages, t, type Lang } from '../../../i18n/ui';
-import { getPosts } from '../../../lib/blog';
+import { getPosts, postUrl } from '../../../lib/blog';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -18,7 +18,16 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 <Base
   lang={lang}
   title={tr('blog.title')}
-  description={tr('blog.lede')}
+  description={tr('meta.blogDesc')}
+  extra={posts.length ? [{
+    '@type': 'ItemList',
+    itemListElement: posts.map((post, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: post.data.title,
+      url: new URL(postUrl(post), Astro.site).href,
+    })),
+  }] : []}
   crumbs={[
     { name: tr('nav.home'), url: `/${lang}/` },
     { name: tr('nav.blog'), url: `/${lang}/blog/` },

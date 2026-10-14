@@ -1,42 +1,12 @@
 # mh-honarvar.github.io
 
-Public personal site of **Mohammad Honarvar** — bilingual (فارسی / English) blog, projects and about page with an interactive 3D background.
+Public site of **Mohammad Honarvar**. He designs how a page feels the first time someone lands — type, space, and the path the eye takes — and builds marketing and product landing pages and the interface around them. The site is bilingual (Persian / English). Client work stays private.
 
 Live: https://mh-honarvar.github.io/
 
-## Writing a post
-
-Add a Markdown file to `src/content/blog/fa/` or `src/content/blog/en/`:
-
-```md
----
-title: Post title
-description: One-line summary
-date: 2026-10-03
-tags: [design, web]
----
-
-Text...
-```
-
-Use the same file name in both folders to link the two translations. Set `draft: true` to hide a post.
-
-## Local development
+Stack: Astro, TypeScript, Three.js.
 
 ```sh
 npm install
-npm run dev     # http://localhost:4321
-npm run build   # static site + search index in dist/
+npm run dev
 ```
-
-## Deploy
-
-Pushing to `main` builds and publishes through GitHub Actions (also rebuilt daily to refresh GitHub stats). In the repo settings, **Pages → Source** must be set to **GitHub Actions**.
-
-## Comments
-
-Enable Discussions on the repo, get the ids from https://giscus.app and fill `giscus` in `src/config.ts`.
-
-## Hidden extras
-
-`Ctrl K` command palette · `` ` `` terminal · ◐ theme switcher · Konami code.

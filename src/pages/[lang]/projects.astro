@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { languages, t, formatMonth, type Lang } from '../../i18n/ui';
+import { studyFor } from '../../content/studies';
 import { getRepos, getContributions, languageStats, langColor } from '../../lib/github';
 import { publicCases } from '../../content/cases';
 import RepoIcon from '../../components/RepoIcon.astro';
@@ -75,19 +77,32 @@ const spark = (w: number[]) => {
 };
 const sizeOf = (r: (typeof repos)[number]) =>
   r === newestPublic ? 'big' : !r.private && (r.description?.length ?? 0) > 60 || (r.topics?.length ?? 0) > 2 ? 'wide' : '';
+const linked = [
+  ...publicCases.map((c) => ({ name: c.title[lang], url: new URL(`/${lang}/projects/${c.slug}/`, Astro.site).href })),
+  ...repos.flatMap((r) => {
+    if (r.private || !r.html_url) return [];
+    const study = studyFor(r.name);
+    return [{ name: r.name, url: study ? new URL(`/${lang}/projects/${r.name}/`, Astro.site).href : r.html_url }];
+  }),
+];
 ---
 
 <Base
   lang={lang}
   title={tr('projects.title')}
-  description={tr('projects.lede')}
+  description={tr('meta.projectsDesc')}
   image={`/og/${lang}/projects.png`}
   crumbs={[
     { name: tr('nav.home'), url: `/${lang}/` },
     { name: tr('nav.projects'), url: `/${lang}/projects/` },
   ]}
+  extra={linked.length ? [{
+    '@type': 'ItemList',
+    itemListElement: linked.map((item, i) => ({ '@type': 'ListItem', position: i + 1, name: item.name, url: item.url })),
+  }] : []}
 >
   <section class="section container" data-pagefind-body>
+    <Breadcrumbs lang={lang} crumbs={[{ name: tr('nav.home'), url: `/${lang}/` }, { name: tr('nav.projects'), url: `/${lang}/projects/` }]} />
     <h1 class="section-title" data-split>{tr('projects.title')}</h1>
     <p class="section-lede">{tr('projects.lede')}</p>
 
@@ -192,7 +207,7 @@ const sizeOf = (r: (typeof repos)[number]) =>
             </article>
           ) : (
             <article class={`repo glass reveal ${sizeOf(r)}`} data-tilt data-lang={r.language ?? ''} data-name={r.name.toLowerCase()} data-order={i} style={`--c:${langColor(r.language)}`}>
-              <a href={r.description ? `/${lang}/projects/${r.name}/` : r.html_url} class="cover" aria-label={r.name} />
+              <a href={studyFor(r.name) ? `/${lang}/projects/${r.name}/` : r.html_url} class="cover" aria-label={r.name} />
               <div class="head">
                 <RepoIcon name={r.name} language={r.language} private={false} />
                 {r.activity?.recent && <span class="badge live"><i />{tr('projects.working')}</span>}

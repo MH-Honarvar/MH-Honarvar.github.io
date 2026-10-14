@@ -1,8 +1,10 @@
 ---
 import Base from '../../../../layouts/Base.astro';
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import PostCard from '../../../../components/PostCard.astro';
 import { languages, other, pairedTag, t, type Lang } from '../../../../i18n/ui';
 import { getPosts } from '../../../../lib/blog';
+import { tagIndexable, tagIntro } from '../../../../lib/tags';
 
 export async function getStaticPaths() {
   const paths = [];
@@ -20,23 +22,30 @@ const { tag } = Astro.params;
 const { posts } = Astro.props;
 const tr = t(lang);
 const twin = pairedTag(lang, tag);
+const indexable = !!twin && tagIndexable(lang, tag) && tagIndexable(other(lang), twin);
+const intro = tagIntro[tag];
+const crumbs = [
+  { name: tr('nav.home'), url: `/${lang}/` },
+  { name: tr('nav.blog'), url: `/${lang}/blog/` },
+  { name: `#${tag}`, url: `/${lang}/blog/tags/${tag}/` },
+];
 ---
 
 <Base
   lang={lang}
   title={`#${tag}`}
-  description={`${tr('blog.tagDesc')} #${tag}`}
-  alternate={!!twin}
-  altPath={twin ? `/${other(lang)}/blog/tags/${encodeURIComponent(twin)}/` : undefined}
-  crumbs={[
-    { name: tr('nav.home'), url: `/${lang}/` },
-    { name: tr('nav.blog'), url: `/${lang}/blog/` },
-    { name: `#${tag}`, url: `/${lang}/blog/tags/${tag}/` },
-  ]}
+  description={indexable && intro ? intro : `${tr('blog.tagDesc')} #${tag}`}
+  alternate={indexable}
+  noindex={!indexable}
+  motion={false}
+  altPath={indexable && twin ? `/${other(lang)}/blog/tags/${encodeURIComponent(twin)}/` : undefined}
+  crumbs={crumbs}
 >
   <section class="section container">
+    <Breadcrumbs lang={lang} crumbs={crumbs} />
     <p class="kicker">{tr('blog.tag')}</p>
     <h1 class="section-title gradient-text">#{tag}</h1>
+    {intro && indexable && <p class="intro">{intro}</p>}
     <a href={`/${lang}/blog/`} class="back">{tr('blog.back')}</a>
     <div class="grid">
       {posts.map((post) => <PostCard post={post} lang={lang} heading="h2" />)}

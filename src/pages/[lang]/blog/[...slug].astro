@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import Comments from '../../../components/Comments.astro';
 import { formatDate, languages, other, t, type Lang } from '../../../i18n/ui';
 import { getPosts, minutes, postSlug, postUrl } from '../../../lib/blog';
@@ -28,6 +29,11 @@ const { Content, headings } = await render(post);
 const toc = headings.filter((h) => h.depth <= 3);
 const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
 const pageUrl = new URL(postUrl(post), Astro.site).href;
+const crumbs = [
+  { name: tr('nav.home'), url: `/${lang}/` },
+  { name: tr('nav.blog'), url: `/${lang}/blog/` },
+  { name: post.data.title, url: postUrl(post) },
+];
 ---
 
 <Base
@@ -38,32 +44,25 @@ const pageUrl = new URL(postUrl(post), Astro.site).href;
   altPath={hasTwin ? `/${other(lang)}/blog/${slug}/` : `/${other(lang)}/blog/`}
   alternate={hasTwin}
   ogType="article"
+  motion={false}
   published={post.data.date}
   modified={post.data.updated}
-  crumbs={[
-    { name: tr('nav.home'), url: `/${lang}/` },
-    { name: tr('nav.blog'), url: `/${lang}/blog/` },
-    { name: post.data.title, url: postUrl(post) },
-  ]}
+  keywords={post.data.tags}
+  articleSection={post.data.tags[0]}
+  crumbs={crumbs}
 >
   <div id="read-progress"></div>
   <article class:list={['container post', `lang-${lang}`]} data-pagefind-body>
     <header>
       <span class="aura" aria-hidden="true"></span>
-      <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore>
-        <a href={`/${lang}/`}>{tr('nav.home')}</a>
-        <span aria-hidden="true">/</span>
-        <a href={`/${lang}/blog/`}>{tr('nav.blog')}</a>
-        <span aria-hidden="true">/</span>
-        <span>{post.data.title}</span>
-      </nav>
+      <Breadcrumbs lang={lang} crumbs={crumbs} />
       <a href={`/${lang}/blog/`} class="back" data-pagefind-ignore>{tr('blog.back')}</a>
       <h1 style={`view-transition-name: ${vt}`}>{post.data.title}</h1>
       {post.data.description && <p class="desc" data-pagefind-ignore>{post.data.description}</p>}
       <div class="meta" data-pagefind-ignore>
         <img src={`https://github.com/${SITE.githubUser}.png?size=64`} alt={SITE.name[lang]} width="32" height="32" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av-fallback',textContent:this.dataset.i}))" data-i={SITE.name[lang].trim()[0]} />
         <span>
-          {tr('blog.by')} <b>{SITE.name[lang]}</b>
+          {tr('blog.by')} <a href={`/${lang}/about/`}><b>{SITE.name[lang]}</b></a>
           <br />
           <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
           · {minutes(post).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {tr('blog.minutes')}

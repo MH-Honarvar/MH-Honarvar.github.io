@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PostCard from '../../components/PostCard.astro';
+import Scene3D from '../../components/Scene3D.astro';
+import { studyFor } from '../../content/studies';
 import { languages, t, type Lang } from '../../i18n/ui';
 import { getPosts } from '../../lib/blog';
 import { getRepos, getContributions, languageStats, langColor } from '../../lib/github';
@@ -40,7 +42,8 @@ const teaser = story[lang].split(/(?<=[.!?؟])\s/).slice(0, 2).join(' ');
 const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS', 'Node.js', 'Git', 'UI Design', 'Typography', 'Motion'];
 ---
 
-<Base lang={lang} title={tr('meta.homeTitle')} description={tr('hero.lede')} image={`/og/${lang}/home.png`} intro scene="hero">
+<Base lang={lang} title={tr('meta.homeTitle')} description={tr('meta.homeDesc')} image={`/og/${lang}/home.png`} intro>
+  <Scene3D mode="hero" />
   <div id="home-progress" aria-hidden="true"></div>
   <nav class="rail" aria-label={tr('rail.label')}>
     <a href="#latest"><span>{sn(1)}</span><em>{tr('home.latest')}</em></a>
@@ -54,7 +57,14 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
       <p class="status"><span class="dot"></span><span class="live">{tr('hero.status')}</span></p>
       <p class="eyebrow">{tr('hero.eyebrow')}</p>
       <h1 data-split data-highlight={tr('hero.word')}>{tr('hero.title')}</h1>
+      <p class="promise">{tr('hero.promise')}</p>
       <p class="lede reveal">{tr('hero.lede')}</p>
+      <p class="paths">
+        <a href={`/${lang}/services/`}>{tr('home.toServices')}</a>
+        <a href={`/${lang}/blog/persian-rtl-interface/`}>{tr('home.toRtl')}</a>
+        <a href={`/${lang}/blog/type-and-space/`}>{tr('home.toType')}</a>
+        <a href={`/${lang}/blog/static-pages-and-webgl/`}>{tr('home.toGl')}</a>
+      </p>
       <div class="actions reveal">
         <a class="btn primary" href={`/${lang}/blog/`}>{tr('hero.cta')}</a>
         <a class="btn" href={`/${lang}/projects/`}>{tr('hero.cta2')}</a>
@@ -156,7 +166,7 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
             </a>
           ))}
           {featured.map((r, i) => (
-            <a href={r.description ? `/${lang}/projects/${r.name}/` : r.html_url} class:list={['proj glass reveal', { big: i === 0 && publicCases.length === 0 }]} data-tilt style={`--c:${langColor(r.language)}`}>
+            <a href={studyFor(r.name) ? `/${lang}/projects/${r.name}/` : r.html_url} class:list={['proj glass reveal', { big: i === 0 && publicCases.length === 0 }]} data-tilt style={`--c:${langColor(r.language)}`}>
               <RepoIcon name={r.name} language={r.language} private={false} />
               <h3 dir="ltr">{r.name}</h3>
               <p>{r.description ?? '—'}</p>

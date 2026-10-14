@@ -3,7 +3,7 @@ import '../styles/global.css';
 import { t, other, ui, type Lang } from '../i18n/ui';
 import { SITE } from '../config';
 import { getPosts, postUrl } from '../lib/blog';
-import Scene3D from '../components/Scene3D.astro';
+import { toolbox } from '../content/about';
 import Cursor from '../components/Cursor.astro';
 import CommandPalette from '../components/CommandPalette.astro';
 import Intro from '../components/Intro.astro';
@@ -20,8 +20,10 @@ interface Props {
   altPath?: string;
   alternate?: boolean;
   intro?: boolean;
-  scene?: 'hero' | 'ambient';
+  motion?: boolean;
   ogType?: 'website' | 'article';
+  keywords?: string[];
+  articleSection?: string;
   published?: Date;
   modified?: Date;
   crumbs?: Crumb[];
@@ -29,7 +31,7 @@ interface Props {
   extra?: Record<string, unknown>[];
 }
 
-const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, scene = 'ambient', ogType = 'website', published, modified, crumbs, noindex = false, extra = [] } = Astro.props;
+const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, motion = true, ogType = 'website', published, modified, keywords = [], articleSection, crumbs, noindex = false, extra = [] } = Astro.props;
 const tr = t(lang);
 const name = SITE.name[lang];
 const fullTitle = title ? `${title} — ${name}` : name;
@@ -48,11 +50,14 @@ const person = {
   name,
   url: personId,
   image: `https://github.com/${SITE.githubUser}.png`,
-  jobTitle: tr('meta.role'),
+  knowsAbout: [
+    ...toolbox.map((item) => item.name),
+    lang === 'fa' ? 'رابط دوزبانه و راست‌به‌چپ' : 'Bilingual right-to-left interfaces',
+    lang === 'fa' ? 'تایپوگرافی فارسی' : 'Persian typography',
+  ],
   sameAs: [`https://github.com/${SITE.githubUser}`, `https://t.me/${SITE.telegram}`],
   ...(SITE.email ? { email: SITE.email } : {}),
 };
-const searchTarget = new URL(`/${lang}/blog/`, Astro.site).href + '?q={search_term_string}';
 const graph: Record<string, unknown>[] = [
   {
     '@type': 'WebSite',
@@ -61,24 +66,20 @@ const graph: Record<string, unknown>[] = [
     inLanguage,
     author: { '@id': personId },
     publisher: { '@id': personId },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: { '@type': 'EntryPoint', urlTemplate: searchTarget },
-      'query-input': 'required name=search_term_string',
-    },
   },
   { ...person, '@id': personId },
 ];
-const dateModified = modified ?? published;
 if (ogType === 'article' && published && title) {
   graph.push({
     '@type': 'BlogPosting',
     headline: title,
     description: desc,
     datePublished: published.toISOString(),
-    dateModified: dateModified.toISOString(),
+    ...(modified ? { dateModified: modified.toISOString() } : {}),
     image: imageUrl,
     inLanguage,
+    ...(keywords.length ? { keywords: keywords.join(', ') } : {}),
+    ...(articleSection ? { articleSection } : {}),
     mainEntityOfPage: pageUrl,
     url: pageUrl,
     author: { '@id': personId },
@@ -109,13 +110,14 @@ for (const l of ['fa', 'en'] as const) {
     { title: lt('nav.blog'), url: `/${l}/blog/`, kind: 'page', lang: l },
     { title: lt('nav.projects'), url: `/${l}/projects/`, kind: 'page', lang: l },
     { title: lt('nav.about'), url: `/${l}/about/`, kind: 'page', lang: l },
+    { title: lt('nav.services'), url: `/${l}/services/`, kind: 'page', lang: l },
   );
   for (const p of await getPosts(l)) index.push({ title: p.data.title, url: postUrl(p), kind: 'post', lang: l });
 }
 ---
 
 <!doctype html>
-<html lang={htmlLang} dir={ui[lang].dir} data-theme="neon">
+<html lang={htmlLang} dir={ui[lang].dir} data-theme="neon" data-motion={motion ? 'rich' : 'plain'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -126,8 +128,8 @@ for (const l of ['fa', 'en'] as const) {
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://github.com" />
     <link rel="canonical" href={pageUrl} />
-    {!noindex && <link rel="alternate" hreflang={lang} href={pageUrl} />}
-    {showAlt && <link rel="alternate" hreflang={other(lang)} href={abs(switchHref)} />}
+    {!noindex && <link rel="alternate" hreflang={inLanguage} href={pageUrl} />}
+    {showAlt && <link rel="alternate" hreflang={lang === 'fa' ? 'en-US' : 'fa-IR'} href={abs(switchHref)} />}
     {showAlt && <link rel="alternate" hreflang="x-default" href={defaultHref} />}
     <link rel="alternate" type="application/rss+xml" title={name} href={`/${lang}/rss.xml`} />
     <meta name="author" content={name} />
@@ -143,7 +145,7 @@ for (const l of ['fa', 'en'] as const) {
     {showAlt && <meta property="og:locale:alternate" content={lang === 'fa' ? 'en_US' : 'fa_IR'} />}
     <meta property="og:site_name" content={name} />
     {published && <meta property="article:published_time" content={published.toISOString()} />}
-    {published && <meta property="article:modified_time" content={(modified ?? published).toISOString()} />}
+    {modified && <meta property="article:modified_time" content={modified.toISOString()} />}
     <meta name="twitter:card" content="summary_large_image" />
     {SITE.twitter && <meta name="twitter:site" content={SITE.twitter} />}
     <meta name="twitter:title" content={fullTitle} />
@@ -165,7 +167,7 @@ for (const l of ['fa', 'en'] as const) {
   <body>
     <a class="skip" href="#main">{tr('skip')}</a>
     {intro && <Intro lang={lang} />}
-    <Scene3D mode={scene} />
+    <div class="atmosphere" aria-hidden="true"></div>
     <Cursor />
 
     <header class="site-header">
@@ -182,7 +184,7 @@ for (const l of ['fa', 'en'] as const) {
         <div class="tools">
           <button class="icon" id="cmd-open" dir="ltr" aria-label={tr('cmd.hint')} title={tr('cmd.hint')}>⌘K</button>
           <button class="icon" id="theme-btn" aria-label={tr('theme')} title={tr('theme')}>◐</button>
-          <a class="icon lang" href={switchHref} hreflang={other(lang)}>{tr('switch')}</a>
+          <a class="icon lang" href={switchHref} hreflang={lang === 'fa' ? 'en-US' : 'fa-IR'}>{tr('switch')}</a>
         </div>
       </div>
     </header>
@@ -207,6 +209,7 @@ for (const l of ['fa', 'en'] as const) {
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.24 1.07-.87 1.33-1.76.83l-4.87-3.59-2.35 2.26c-.26.26-.48.48-.98.48l.35-4.96 9.03-8.16c.39-.35-.09-.54-.61-.2L6.35 13.1l-4.8-1.5c-1.04-.33-1.06-1.04.22-1.54L20.5 2.85c.87-.32 1.63.2 1.4 1.45z" /></svg>
           Telegram
         </a>
+        <a href={`/${lang}/services/`}>{tr('nav.services')}</a>
         <a href={`/${lang}/rss.xml`} aria-label="RSS">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M5 17a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM3 10a11 11 0 0 1 11 11h-3a8 8 0 0 0-8-8v-3zm0-6a17 17 0 0 1 17 17h-3A14 14 0 0 0 3 7V4z" /></svg>
           RSS
@@ -222,6 +225,16 @@ for (const l of ['fa', 'en'] as const) {
 </html>
 
 <style>
+  .atmosphere {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 50% at 70% 30%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(50% 40% at 20% 80%, color-mix(in srgb, var(--accent2) 14%, transparent), transparent 70%),
+      var(--bg);
+  }
   .skip {
     position: absolute;
     inset-inline-start: 1rem;

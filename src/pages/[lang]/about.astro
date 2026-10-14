@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { languages, t, type Lang } from '../../i18n/ui';
 import { SITE } from '../../config';
 import { getRepos, getContributions } from '../../lib/github';
@@ -41,7 +42,7 @@ const words = story[lang].split(' ');
 <Base
   lang={lang}
   title={tr('about.title')}
-  description={story[lang].split(/(?<=[.!?؟])\s/)[0]}
+  description={tr('meta.aboutDesc')}
   image={`/og/${lang}/about.png`}
   crumbs={[
     { name: tr('nav.home'), url: `/${lang}/` },
@@ -64,6 +65,7 @@ const words = story[lang].split(' ');
   ]}
 >
   <section class="section container about" data-pagefind-body>
+    <Breadcrumbs lang={lang} crumbs={[{ name: tr('nav.home'), url: `/${lang}/` }, { name: tr('nav.about'), url: `/${lang}/about/` }]} />
     <header class="intro">
       <div class="avatar" data-avatar>
         <span class="ring" aria-hidden="true"></span>
@@ -102,6 +104,13 @@ const words = story[lang].split(' ');
     }
 
     <h2 class="sub reveal">{tr('about.story')}</h2>
+    <p class="more">
+      {tr('about.moreA')} <a href={`/${lang}/services/`}>{tr('about.moreServices')}</a> {tr('about.moreB')}
+      <a href={`/${lang}/blog/persian-rtl-interface/`}>{tr('about.moreRtl')}</a>{lang === 'fa' ? '، ' : ', '}
+      <a href={`/${lang}/blog/type-and-space/`}>{tr('about.moreType')}</a>
+      {` ${tr('about.moreAnd')} `}
+      <a href={`/${lang}/blog/static-pages-and-webgl/`}>{tr('about.moreGl')}</a>.
+    </p>
     <p class="story" data-story>
       {words.map((w) => <span>{w} </span>)}
     </p>
@@ -180,7 +189,6 @@ const words = story[lang].split(' ');
             <li class="reveal">
               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d={tl.icon} /></svg>
               <span dir="ltr">{tl.name}</span>
-              <span class="lvl" style={`--l:${tl.level}%`} aria-hidden="true"><i /></span>
             </li>
           ))
         }
@@ -203,7 +211,7 @@ const words = story[lang].split(' ');
       </ol>
     </div>
 
-    <h2 class="sub reveal">{tr('about.faq')}</h2>
+    <h2 class="sub reveal" id="faq">{tr('about.faq')}</h2>
     <div class="faq">
       {
         faq.map((f) => (
@@ -544,34 +552,9 @@ const words = story[lang].split(' ');
   }
   .tools li {
     display: grid;
-    grid-template-columns: 24px 9rem 1fr;
+    grid-template-columns: 24px 1fr;
     align-items: center;
     gap: 0.8rem;
-  }
-  .lvl {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--border);
-    overflow: hidden;
-  }
-  .lvl i {
-    display: block;
-    height: 100%;
-    width: var(--l);
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    transform-origin: left;
-    animation: grow 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 35%;
-  }
-  :global([dir='rtl']) .lvl i {
-    transform-origin: right;
-  }
-  @keyframes grow {
-    from {
-      transform: scaleX(0);
-    }
   }
   .htl-wrap {
     overflow-x: auto;
@@ -744,9 +727,6 @@ const words = story[lang].split(' ');
   @media (max-width: 420px) {
     .tools li {
       grid-template-columns: 24px minmax(0, 1fr);
-    }
-    .lvl {
-      grid-column: 1 / -1;
     }
   }
   @media (prefers-reduced-motion: reduce) {

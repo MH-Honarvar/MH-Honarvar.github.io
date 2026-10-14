@@ -1,10 +1,7 @@
-import Lenis from 'lenis';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import type Lenis from 'lenis';
 
 const reduced = document.documentElement.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rich = document.documentElement.dataset.motion === 'rich';
 
 addEventListener('pageswap', (e) => {
   const vt = (e as PageSwapEvent).viewTransition;
@@ -37,7 +34,13 @@ document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
 
 let lenis: Lenis | undefined;
 
-const startEntrances = () => {
+const startEntrances = async () => {
+if (rich && !reduced) {
+  const { gsap } = await import('gsap');
+  const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+  const { default: Lenis } = await import('lenis');
+  gsap.registerPlugin(ScrollTrigger);
+
 document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
   const end = Number(el.dataset.count);
   if (reduced || !end) return;
@@ -77,7 +80,6 @@ if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
   depth.addEventListener('pointerleave', () => depth.classList.remove('lit'));
 }
 
-if (!reduced) {
   const smooth = new Lenis({ lerp: 0.1 });
   lenis = smooth;
   smooth.on('scroll', ScrollTrigger.update);

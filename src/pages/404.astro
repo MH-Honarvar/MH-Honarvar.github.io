@@ -8,10 +8,11 @@ const links = (lang: 'fa' | 'en', label: (k: string) => string) => [
   [`/${lang}/`, label('nav.home')],
   [`/${lang}/blog/`, label('nav.blog')],
   [`/${lang}/projects/`, label('nav.projects')],
+  [`/${lang}/about/`, label('nav.about')],
 ];
 ---
 
-<Base lang="fa" title={tr('notfound.title')} description={tr('notfound.body')} noindex alternate={false}>
+<Base lang="fa" title={tr('notfound.title')} description={tr('notfound.body')} noindex alternate={false} motion={false}>
   <section class="section container miss">
     <h1 class="section-title">{tr('notfound.title')}</h1>
     <p>{tr('notfound.body')}</p>

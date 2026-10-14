@@ -1,0 +1,42 @@
+---
+import { t, type Lang } from '../i18n/ui';
+
+interface Crumb {
+  name: string;
+  url: string;
+}
+interface Props {
+  lang: Lang;
+  crumbs: Crumb[];
+}
+const { lang, crumbs } = Astro.props;
+const tr = t(lang);
+---
+
+<nav class="crumbs" aria-label={tr('nav.crumbs')} data-pagefind-ignore>
+  {
+    crumbs.flatMap((c, i) => [
+      i > 0 ? <span aria-hidden="true">/</span> : null,
+      i < crumbs.length - 1 ? <a href={c.url}>{c.name}</a> : <span aria-current="page">{c.name}</span>,
+    ])
+  }
+</nav>
+
+<style>
+  .crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0 0 0.8rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .crumbs a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    color: var(--accent);
+  }
+</style>

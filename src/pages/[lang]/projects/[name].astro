@@ -1,7 +1,10 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import { languages, t, type Lang } from '../../../i18n/ui';
-import { getRepos, langColor } from '../../../lib/github';
+import { getRepos, langColor, type Repo } from '../../../lib/github';
+import { SITE_REPO, studyFor, type Study } from '../../../content/studies';
+import { SITE } from '../../../config';
 import RepoIcon from '../../../components/RepoIcon.astro';
 
 export async function getStaticPaths() {
@@ -9,50 +12,81 @@ export async function getStaticPaths() {
   const paths = [];
   for (const lang of languages) {
     for (const repo of repos) {
-      if (repo.private || !repo.description) continue;
-      paths.push({ params: { lang, name: repo.name }, props: { repo } });
+      const study = studyFor(repo.name);
+      if (!study || repo.private) continue;
+      paths.push({ params: { lang, name: repo.name }, props: { repo, study } });
+    }
+  }
+  if (!paths.length) {
+    const repo: Repo = {
+      name: SITE_REPO,
+      description: null,
+      html_url: `https://github.com/${SITE.githubUser}/${SITE_REPO}`,
+      homepage: 'https://mh-honarvar.github.io',
+      language: 'TypeScript',
+      stargazers_count: 0,
+      forks_count: 0,
+      topics: [],
+      fork: false,
+      pushed_at: '',
+      created_at: '',
+      private: false,
+    };
+    const study = studyFor(repo.name);
+    if (study) {
+      for (const lang of languages) paths.push({ params: { lang, name: repo.name }, props: { repo, study } });
     }
   }
   return paths;
 }
 
 const lang = Astro.params.lang as Lang;
-const { repo } = Astro.props;
+const { repo, study } = Astro.props as { repo: Repo; study: Study };
 const tr = t(lang);
+const pageUrl = new URL(`/${lang}/projects/${repo.name}/`, Astro.site).href;
+const crumbs = [
+  { name: tr('nav.home'), url: `/${lang}/` },
+  { name: tr('nav.projects'), url: `/${lang}/projects/` },
+  { name: repo.name, url: `/${lang}/projects/${repo.name}/` },
+];
 ---
 
 <Base
   lang={lang}
-  title={repo.name}
-  description={repo.description!}
+  title={study.title[lang]}
+  description={study.description[lang]}
   image={`/og/${lang}/projects.png`}
-  crumbs={[
-    { name: tr('nav.home'), url: `/${lang}/` },
-    { name: tr('nav.projects'), url: `/${lang}/projects/` },
-    { name: repo.name, url: `/${lang}/projects/${repo.name}/` },
-  ]}
+  crumbs={crumbs}
+  extra={[{
+    '@type': 'SoftwareSourceCode',
+    name: repo.name,
+    description: study.description[lang],
+    codeRepository: repo.html_url,
+    url: pageUrl,
+    ...(repo.language ? { programmingLanguage: repo.language } : {}),
+    author: { '@id': new URL(`/${lang}/about/`, Astro.site).href },
+    inLanguage: lang === 'fa' ? 'fa-IR' : 'en-US',
+  }]}
 >
   <article class="section container case" data-pagefind-body style={`--c:${langColor(repo.language)}`}>
-    <a class="back" href={`/${lang}/projects/`}>{tr('nav.projects')}</a>
+    <Breadcrumbs lang={lang} crumbs={crumbs} />
     <header>
       <RepoIcon name={repo.name} language={repo.language} private={false} />
-      <h1 dir="ltr">{repo.name}</h1>
-      <p>{repo.description}</p>
+      <p class="repo-name" dir="ltr">{repo.name}</p>
+      <h1>{study.title[lang]}</h1>
+      <p class="lede">{study.lede[lang]}</p>
     </header>
-    <dl>
-      {repo.language && (
-        <div>
-          <dt>{tr('projects.langs')}</dt>
-          <dd dir="ltr">{repo.language}</dd>
-        </div>
-      )}
-      {(repo.topics?.length ?? 0) > 0 && (
-        <div>
-          <dt>{tr('blog.tag')}</dt>
-          <dd dir="ltr">{repo.topics!.join(' · ')}</dd>
-        </div>
-      )}
-    </dl>
+    {
+      study.sections.map((section) => (
+        <section>
+          <h2>{section.heading[lang]}</h2>
+          {section.body[lang].map((paragraph) => <p>{paragraph}</p>)}
+        </section>
+      ))
+    }
+    <ul class="further">
+      {study.further.map((link) => <li><a href={`/${lang}${link.path}`}>{link.label[lang]}</a></li>)}
+    </ul>
     <div class="actions">
       <a class="btn primary" href={repo.html_url}>GitHub</a>
       {repo.homepage && <a class="btn" href={repo.homepage}>{tr('projects.site')}</a>}
@@ -61,40 +95,13 @@ const tr = t(lang);
 </Base>
 
 <style>
-  .case {
-    max-width: 46rem;
-  }
-  .back {
-    color: var(--accent);
-    text-decoration: none;
-  }
-  header {
-    margin: 1.2rem 0 1.5rem;
-  }
-  h1 {
-    margin: 0.8rem 0 0.4rem;
-    font-size: clamp(2rem, 5vw, 3rem);
-  }
-  header p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 1.1rem;
-  }
-  dl {
-    display: grid;
-    gap: 0.8rem;
-    margin: 0 0 1.6rem;
-  }
-  dt {
-    color: var(--accent2);
-    font-size: 0.8rem;
-  }
-  dd {
-    margin: 0;
-  }
-  .actions {
-    display: flex;
-    gap: 0.7rem;
-    flex-wrap: wrap;
-  }
+  .case { max-width: 46rem; }
+  header { margin: 0.4rem 0 1.5rem; }
+  .repo-name { margin: 0.8rem 0 0; color: var(--accent2); font-size: 0.9rem; }
+  h1 { margin: 0.3rem 0 0.6rem; font-size: clamp(2rem, 5vw, 3rem); }
+  .lede, section p { margin: 0 0 0.9rem; color: var(--muted); font-size: 1.05rem; }
+  h2 { font-size: 1.35rem; margin: 2rem 0 0.6rem; }
+  .further { margin: 1.4rem 0 1.6rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+  .further a { color: var(--accent2); }
+  .actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
 </style>

@@ -3,8 +3,8 @@ import type { Lang } from '../i18n/ui';
 type L = Record<Lang, string>;
 
 export const story: L = {
-  fa: 'صفحه برای من از حروف و فاصله شروع می‌شود، نه از افکت. اگر فارسی و راست‌به‌چپ همان اول در طرح نباشد، بعداً وصله می‌شود و وصله دیده می‌شود. بیشتر وقتم صرف همین است: رابطی که در هر دو زبان خوانا بماند، حرکت اضافه نداشته باشد، و زود باز شود. کار مشتری‌ها این‌جا نمی‌آید. این سایت سمت عمومی من است؛ جایی که ابزار را امتحان می‌کنم و همان را، ساده، می‌نویسم.',
-  en: 'A page starts with type and space, not with an effect. If Persian and right-to-left are not in the layout from the first day, they get patched in later, and the patch shows. Most of my time goes there: an interface that stays readable in both languages, skips extra motion, and opens quickly. Client work does not appear here. This site is the public side, where I try the tools and write the result down plainly.',
+  fa: 'صفحه برای من از حسِ لحظه‌ی ورود شروع می‌شود: حروف، فاصله، و مسیری که چشم طی می‌کند. صفحه‌ی فرود بازاریابی و محصول می‌سازم، و رابط دور همان صفحه. اگر فارسی و راست‌به‌چپ در همان طرح اول نباشد، بعداً وصله می‌شود و وصله دیده می‌شود. کار مشتری خصوصی می‌ماند. این سایت سمت عمومی است.',
+  en: 'A page, for me, starts with how it feels the first time someone lands: the type, the space, and the path the eye takes. I build marketing and product landing pages, and the interface around them. If Persian and right-to-left are not in that first layout, they get patched in later, and the patch shows. Client work stays private. This site is the public side.',
 };
 
 export const values: { icon: string; title: L; body: L }[] = [
@@ -30,13 +30,13 @@ export const values: { icon: string; title: L; body: L }[] = [
   },
 ];
 
-export const toolbox: { name: string; level: number; icon: string }[] = [
-  { name: 'HTML / CSS', level: 92, icon: 'M4 3l1.5 16L12 21l6.5-2L20 3zM8 8h8l-.5 5-3.5 1-3.5-1' },
-  { name: 'TypeScript', level: 80, icon: 'M3 3h18v18H3zM8 11h6M11 11v7M19 12a2 2 0 0 0-4 0c0 2 4 1 4 3.5a2 2 0 0 1-4 .5' },
-  { name: 'Astro', level: 82, icon: 'M9 17c-1 2 0 4 3 4s4-2 3-4M7 15l5-12 5 12c-3-1-7-1-10 0z' },
-  { name: 'Three.js / GLSL', level: 70, icon: 'M12 2l9 5v10l-9 5-9-5V7zM12 22V12M21 7l-9 5-9-5' },
-  { name: 'GSAP / Motion', level: 75, icon: 'M3 17c4 0 4-10 9-10s5 10 9 10' },
-  { name: 'Figma / UI', level: 78, icon: 'M9 3h6a3 3 0 0 1 0 6H9a3 3 0 0 1 0-6zM9 9h6a3 3 0 1 1 0 6H9M9 15a3 3 0 1 0 3 3v-9' },
+export const toolbox: { name: string; icon: string }[] = [
+  { name: 'HTML / CSS', icon: 'M4 3l1.5 16L12 21l6.5-2L20 3zM8 8h8l-.5 5-3.5 1-3.5-1' },
+  { name: 'TypeScript', icon: 'M3 3h18v18H3zM8 11h6M11 11v7M19 12a2 2 0 0 0-4 0c0 2 4 1 4 3.5a2 2 0 0 1-4 .5' },
+  { name: 'Astro', icon: 'M9 17c-1 2 0 4 3 4s4-2 3-4M7 15l5-12 5 12c-3-1-7-1-10 0z' },
+  { name: 'Three.js / GLSL', icon: 'M12 2l9 5v10l-9 5-9-5V7zM12 22V12M21 7l-9 5-9-5' },
+  { name: 'GSAP / Motion', icon: 'M3 17c4 0 4-10 9-10s5 10 9 10' },
+  { name: 'Figma / UI', icon: 'M9 3h6a3 3 0 0 1 0 6H9a3 3 0 0 1 0-6zM9 9h6a3 3 0 1 1 0 6H9M9 15a3 3 0 1 0 3 3v-9' },
 ];
 
 /** Public facts only: this site's repo (2025), bilingual pages (2026). */
