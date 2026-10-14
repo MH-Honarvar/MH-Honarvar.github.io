@@ -35,7 +35,7 @@ interface Props {
 const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, motion = false, ogType = 'website', published, modified, keywords = [], articleSection, wordCount, crumbs, noindex = false, extra = [] } = Astro.props;
 const tr = t(lang);
 const name = SITE.name[lang];
-const fullTitle = title ? `${title} — ${name}` : name;
+const fullTitle = title ? (title.includes(name) ? title : `${title} — ${name}`) : name;
 const desc = description ?? tr('hero.lede');
 const path = Astro.url.pathname;
 const switchHref = altPath ?? path.replace(/^\/(fa|en)\//, `/${other(lang)}/`);

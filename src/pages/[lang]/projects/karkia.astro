@@ -19,14 +19,14 @@ const crumbs = [
 
 <Base
   lang={lang}
-  title={item.title[lang]}
-  description={item.description[lang]}
+  title={tr('meta.karkiaTitle')}
+  description={tr('meta.karkiaDesc')}
   image={`/og/${lang}/case/${item.slug}.png`}
   crumbs={crumbs}
   extra={[{
     '@type': 'CreativeWork',
     name: item.title[lang],
-    description: item.description[lang],
+    description: tr('meta.karkiaDesc'),
     url: pageUrl,
     author: { '@id': new URL(`/${lang}/about/`, Astro.site).href },
     inLanguage: lang === 'fa' ? 'fa-IR' : 'en-US',
@@ -37,6 +37,9 @@ const crumbs = [
     <header>
       <h1>{item.title[lang]}</h1>
       <p>{item.summary[lang]}</p>
+      <div class="actions">
+        <a class="btn primary" href={item.site}>{tr('projects.site')}</a>
+      </div>
     </header>
     {
       item.sections.map((section) => (
@@ -46,9 +49,6 @@ const crumbs = [
         </section>
       ))
     }
-    <div class="actions">
-      <a class="btn primary" href={item.site}>{tr('projects.site')}</a>
-    </div>
   </article>
 </Base>
 
@@ -77,6 +77,6 @@ const crumbs = [
     display: flex;
     gap: 0.7rem;
     flex-wrap: wrap;
-    margin-top: 1.4rem;
+    margin-top: 0.4rem;
   }
 </style>
