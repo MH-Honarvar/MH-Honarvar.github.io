@@ -59,12 +59,12 @@ const study: Study = {
       body: {
         fa: [
           'Three.js روی خانه‌ی سایت است، برای هیرو، و روی صفحه‌ی پروژه‌ها برای شهر کامیت‌ها، آن هم وقتی بوم به دید بیاید. نوشته، درباره، برچسب و صفحه‌ی همکاری این ماژول را نمی‌گیرند.',
-          'معرفی اول خانه را می‌شود همان لحظه رد کرد. عنوان زیر لایه‌ی شفاف است و چند ثانیه پشت صفحه‌ی مات قفل نمی‌شود. اگر سیستم حرکت کم خواسته باشد، بوم اصلاً ساخته نمی‌شود.',
+          'معرفی اول خانه یک لحظه‌ی تمام‌صفحه است و همان لحظه می‌شود ردش کرد. بعد از تمام شدن، عنوان خانه تنها می‌ماند. اگر سیستم حرکت کم خواسته باشد، این لایه ساخته نمی‌شود.',
           'همان تصمیم در [صفحه‌ی استاتیک و صحنه](/blog/static-pages-and-webgl/) آمده است.',
         ],
         en: [
           'Three.js is on the home page for the hero, and on the projects page for the commit city, and only once that canvas is in view. Posts, about, tags, and the collaboration page do not load the module.',
-          'The opening moment on the home page can be skipped immediately. The heading sits under a transparent layer instead of waiting behind a solid plate. If the system asks for less motion, the canvas is never created.',
+          'The opening moment is its own full-screen frame and can be skipped immediately. After it finishes, the home heading is the only title on the page. If the system asks for less motion, that layer is never created.',
           'That decision is written up in [the static page and the scene](/blog/static-pages-and-webgl/).',
         ],
       },

@@ -62,22 +62,21 @@ void main(){
 }`;
 
 const finishShader = {
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAmount: { value: 0.0025 }, uGrain: { value: 0.018 } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uGrain: { value: 0.018 } },
   vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */ `
-    uniform sampler2D tDiffuse; uniform float uTime; uniform float uAmount; uniform float uGrain;
+    uniform sampler2D tDiffuse; uniform float uTime; uniform float uGrain;
     varying vec2 vUv;
     void main(){
       vec2 c = vUv - 0.5;
       float r = dot(c, c);
-      vec2 off = c * r * uAmount * 4.0;
       vec4 base = texture2D(tDiffuse, vUv);
-      vec3 col = vec3(texture2D(tDiffuse, vUv + off).r, base.g, texture2D(tDiffuse, vUv - off).b);
+      vec3 col = base.rgb;
       float gt = floor(uTime * 10.0);
       float n = fract(sin(dot(vUv * vec2(720.0, 480.0) + gt, vec2(12.9898, 78.233))) * 43758.5453);
       col += (n - 0.5) * uGrain;
-      col *= 1.0 - r * 0.55;
-      gl_FragColor = vec4(col, base.a);
+      col *= 1.0 - r * 0.28;
+      gl_FragColor = vec4(col, 1.0);
     }`,
 };
 
@@ -329,13 +328,13 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     if (bloom) bloom.enabled = tier >= 2;
     if (blob) {
       const m = blob.material;
-      m.transmission = tier >= 1 ? 1 : 0;
-      m.metalness = tier >= 1 ? 0 : 0.65;
-      m.roughness = tier >= 1 ? 0.06 : 0.14;
+      m.transmission = 1;
+      m.metalness = 0;
+      m.roughness = 0.06;
       m.color.set(0xffffff);
       m.emissive.set(0x000000);
       m.emissiveIntensity = 1;
-      blob.core.visible = tier >= 1;
+      blob.core.visible = true;
       m.needsUpdate = true;
     }
     resize();
@@ -554,12 +553,14 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
       canvas.dataset.holding = holding ? '1' : '0';
       {
         const mat = blob.material;
-        const glass = tier >= 1;
-        mat.transmission = glass ? 1 : 0;
-        mat.metalness = glass ? hold * 0.08 : 0.65;
-        mat.roughness = (glass ? 0.06 : 0.14) - hold * 0.015;
+        mat.transmission = 1;
+        mat.metalness = hold * 0.08;
+        mat.roughness = 0.06 - hold * 0.015;
         mat.envMapIntensity = 0.55 + hold * 0.4;
-        mat.iridescence = glass ? 1 : 0;
+        mat.iridescence = 1 - corner * 0.75;
+        mat.color.set(0xffffff);
+        mat.emissive.set(0x000000);
+        blob.core.visible = true;
       }
 
       m.rotation.y = uniforms.uTime.value * 0.15 + morph.x * 0.6;
@@ -582,12 +583,22 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
       if (rip.w >= 0) rip.w = rip.w > 3.5 ? -1 : rip.w + dt;
 
       uniforms.uIntensity.value += ((party ? 1.6 : Math.min(speed * 0.5, 0.8) + mouse.length() * 0.25) - uniforms.uIntensity.value) * 0.05;
-      const coreScale = Math.max(0.001, 1 - morph.x * (1 - morph.y) * 1.15 - morph.y * 0.2);
+      const coreScale = Math.max(0.34, 1 - morph.x * (1 - morph.y) * 0.66 - morph.y * 0.2);
       const pulse = 1 + hold * 0.14 * (0.5 + 0.5 * Math.sin(uniforms.uTime.value * 7));
       blob.core.scale.setScalar(coreScale * pulse);
     }
 
     if (finish) finish.uniforms.uTime.value = uniforms.uTime.value;
+    if (hero && canvas.classList.contains('ready')) {
+      const away = smooth(0.42, 0.95, uScroll.value);
+      if (away > 0.001) {
+        canvas.style.transition = 'opacity 0.35s ease';
+        canvas.style.opacity = (1 - away).toFixed(3);
+      } else if (canvas.style.opacity) {
+        canvas.style.opacity = '';
+        canvas.style.transition = '';
+      }
+    }
     if (composer && tier >= 1) composer.render(dt);
     else renderer.render(scene, camera);
 

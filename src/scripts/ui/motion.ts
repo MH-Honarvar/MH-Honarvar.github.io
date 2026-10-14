@@ -93,6 +93,7 @@ if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
     gsap.from(el.querySelectorAll('.split-word > span'), {
       yPercent: 110,
       opacity: 0,
+      immediateRender: false,
       rotate: inHero ? 0 : 4,
       duration: inHero ? 1.15 : 1,
       ease: inHero ? 'power4.out' : 'expo.out',
@@ -105,14 +106,19 @@ if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
   });
 
   gsap.utils.toArray<HTMLElement>('.reveal').forEach((el, i) => {
-    gsap.to(el, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      ease: 'power3.out',
-      delay: (i % 4) * 0.08,
-      scrollTrigger: { trigger: el, start: 'top 90%' },
-    });
+    gsap.fromTo(
+      el,
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out',
+        delay: (i % 4) * 0.08,
+        immediateRender: false,
+        scrollTrigger: { trigger: el, start: 'top 92%', once: true },
+      },
+    );
   });
 }
 };

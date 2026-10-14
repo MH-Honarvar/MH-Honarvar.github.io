@@ -3,6 +3,7 @@ import Base from '../../../layouts/Base.astro';
 import PostCard from '../../../components/PostCard.astro';
 import { languages, t, type Lang } from '../../../i18n/ui';
 import { getPosts, postUrl } from '../../../lib/blog';
+import { tagIntro } from '../../../lib/tags';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -44,10 +45,14 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 
     {
       tags.length > 0 && (
-        <div class="tags">
+        <div class="tag-grid">
           {tags.map(([tg, n]) => (
-            <a class="pill" href={`/${lang}/blog/tags/${tg}/`} data-tag={tg}>
-              #{tg} <small>{num(n)}</small>
+            <a class="tag-card glass" href={`/${lang}/blog/tags/${tg}/`}>
+              <span class="tag-top">
+                <strong>#{tg}</strong>
+                <small>{num(n)}</small>
+              </span>
+              {tagIntro[tg] && <p>{tagIntro[tg]}</p>}
             </a>
           ))}
         </div>
@@ -99,45 +104,48 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
   .search-wrap:focus-within .search-hint {
     opacity: 0;
   }
-  .pill.on {
-    color: var(--fg);
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 18%, transparent);
+  .tag-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 1rem;
+    margin-bottom: 2.25rem;
   }
-  .tags {
+  .tag-card {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-  }
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.3rem 0.5rem 0.3rem 0.85rem;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--glass);
-    color: var(--muted);
-    font-size: 0.85rem;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1.15rem 1.25rem 1.25rem;
     text-decoration: none;
-    transition: color 0.2s, border-color 0.2s;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.2s;
   }
-  :global([dir='rtl']) .pill {
-    padding: 0.3rem 0.85rem 0.3rem 0.5rem;
+  .tag-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    transform: translateY(-2px);
   }
-  .pill small {
-    min-width: 1.4rem;
-    padding: 0 0.4rem;
+  .tag-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .tag-top strong {
+    font-size: 1.05rem;
+  }
+  .tag-top small {
+    min-width: 1.6rem;
+    padding: 0.1rem 0.5rem;
     border-radius: 999px;
     text-align: center;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     background: color-mix(in srgb, var(--accent) 20%, transparent);
     color: var(--fg);
   }
-  .pill:hover {
-    color: var(--fg);
-    border-color: var(--accent);
+  .tag-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.75;
   }
   .empty {
     padding: 3rem 1.5rem;
@@ -185,44 +193,31 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 </style>
 
 <script>
-  const pills = [...document.querySelectorAll<HTMLAnchorElement>('[data-tag]')];
-  const cards = [...document.querySelectorAll<HTMLElement>('[data-tags]')];
   const query = new URLSearchParams(location.search).get('q')?.trim().toLowerCase() ?? '';
-  let activeTag = '';
-  const apply = () => {
-    cards.forEach((c) => {
-      const tagOk = !activeTag || c.dataset.tags!.split(' ').includes(activeTag);
-      const qOk = !query || (c.textContent ?? '').toLowerCase().includes(query);
-      c.hidden = !(tagOk && qOk);
-    });
+  const bootSearch = () => {
+    const el = document.getElementById('search');
+    if (!el) return;
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/pagefind/pagefind-ui.css';
+    const js = document.createElement('script');
+    js.src = '/pagefind/pagefind-ui.js';
+    js.onload = () => {
+      // @ts-expect-error injected by pagefind-ui.js
+      new window.PagefindUI({ element: el, showSubResults: true, showImages: false, translations: { placeholder: el.dataset.placeholder } });
+      if (!query) return;
+      const input = el.querySelector('input');
+      if (!input) return;
+      input.value = query;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    js.onerror = () => el.closest('.search-wrap')?.remove();
+    document.head.append(css, js);
   };
-  apply();
-  pills.forEach((p) =>
-    p.addEventListener('click', (e) => {
-      e.preventDefault();
-      const on = !p.classList.contains('on');
-      pills.forEach((x) => x.classList.toggle('on', on && x === p));
-      activeTag = on ? p.dataset.tag! : '';
-      if (document.startViewTransition) document.startViewTransition(apply);
-      else apply();
-    }),
-  );
-
-  const el = document.getElementById('search')!;
-  const css = document.createElement('link');
-  css.rel = 'stylesheet';
-  css.href = '/pagefind/pagefind-ui.css';
-  const js = document.createElement('script');
-  js.src = '/pagefind/pagefind-ui.js';
-  js.onload = () => {
-    // @ts-expect-error injected by pagefind-ui.js
-    new window.PagefindUI({ element: el, showSubResults: true, showImages: false, translations: { placeholder: el.dataset.placeholder } });
-    if (!query) return;
-    const input = el.querySelector('input');
-    if (!input) return;
-    input.value = query;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+  const start = () => {
+    if ('requestIdleCallback' in window) requestIdleCallback(bootSearch, { timeout: 1200 });
+    else setTimeout(bootSearch, 1);
   };
-  js.onerror = () => el.closest('.search-wrap')?.remove();
-  document.head.append(css, js);
+  if (document.readyState === 'complete') start();
+  else addEventListener('load', start, { once: true });
 </script>

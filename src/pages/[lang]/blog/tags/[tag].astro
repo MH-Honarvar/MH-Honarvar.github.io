@@ -47,7 +47,7 @@ const crumbs = [
     <Breadcrumbs lang={lang} crumbs={crumbs} />
     <p class="kicker">{tr('blog.tag')}</p>
     <h1 class="section-title gradient-text">#{tag}</h1>
-    {intro && indexable && <p class="intro">{intro}</p>}
+    {intro && <p class="intro">{intro}</p>}
     <a href={`/${lang}/blog/`} class="back">{tr('blog.back')}</a>
     <div class="grid">
       {posts.map((post) => <PostCard post={post} lang={lang} heading="h2" />)}

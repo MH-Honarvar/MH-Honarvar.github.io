@@ -452,8 +452,7 @@ const words = story[lang].split(' ');
     margin: 0;
   }
   .story span {
-    opacity: var(--o, 0.18);
-    transition: opacity 0.25s;
+    opacity: 1;
   }
   .now {
     margin-top: 3rem;
@@ -875,19 +874,6 @@ const words = story[lang].split(' ');
     };
     addEventListener('scroll', update, { passive: true });
     update();
-  }
-
-  const storyEl = document.querySelector<HTMLElement>('[data-story]');
-  if (storyEl && !reduced) {
-    const spans = [...storyEl.children] as HTMLElement[];
-    const scrub = () => {
-      const r = storyEl.getBoundingClientRect();
-      const p = (innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.35);
-      const lit = Math.round(Math.min(1, Math.max(0, p)) * spans.length);
-      spans.forEach((sp, i) => sp.style.setProperty('--o', i < lit ? '1' : '0.18'));
-    };
-    addEventListener('scroll', scrub, { passive: true });
-    scrub();
   }
 
   const av = document.querySelector<HTMLElement>('[data-avatar]');

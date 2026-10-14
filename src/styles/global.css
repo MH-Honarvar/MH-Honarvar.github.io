@@ -45,7 +45,7 @@
   animation: vt-out 0.28s ease both;
 }
 ::view-transition-new(root) {
-  animation: vt-in 0.28s ease both;
+  animation: vt-in 0.28s ease forwards;
 }
 @keyframes vt-out {
   to {
@@ -197,10 +197,6 @@ a {
   background-color: var(--shiki-light-bg);
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-}
 .no-motion .reveal {
   opacity: 1;
   transform: none;
