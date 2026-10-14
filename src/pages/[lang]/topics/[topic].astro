@@ -1,0 +1,69 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { languages, t, type Lang } from '../../../i18n/ui';
+import { articleTitle, topicById, topics, topicsIndex, type Topic } from '../../../content/topics';
+
+export function getStaticPaths() {
+  return languages.flatMap((lang) => topics.map((topic) => ({ params: { lang, topic: topic.id } })));
+}
+
+const lang = Astro.params.lang as Lang;
+const topic = topicById(Astro.params.topic as string) as Topic;
+const tr = t(lang);
+const crumbs = [
+  { name: tr('nav.home'), url: `/${lang}/` },
+  { name: topicsIndex.title[lang], url: `/${lang}/topics/` },
+  { name: topic.title[lang], url: `/${lang}/topics/${topic.id}/` },
+];
+const posts = topic.articles.map((article) => ({
+  href: `/${lang}/blog/${article.slug}/`,
+  title: articleTitle(lang, article),
+}));
+---
+
+<Base
+  lang={lang}
+  title={topic.title[lang]}
+  description={topic.description[lang]}
+  motion={false}
+  crumbs={crumbs}
+  extra={[{
+    '@type': 'ItemList',
+    itemListElement: posts.map((post, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: post.title,
+      url: new URL(post.href, Astro.site).href,
+    })),
+  }]}
+>
+  <article class="section container topic" data-pagefind-body>
+    <Breadcrumbs lang={lang} crumbs={crumbs} />
+    <h1 class="section-title">{topic.title[lang]}</h1>
+    <p class="section-lede">{topic.lede[lang]}</p>
+    <p class="note">
+      {
+        lang === 'fa' ? (
+          <>اگر همکاری مطرح باشد، <a href={`/${lang}/services/`}>صفحه‌ی همکاری</a> جدا از این فهرست است.</>
+        ) : (
+          <>If collaboration is the question, the <a href={`/${lang}/services/`}>collaboration page</a> is separate from this list.</>
+        )
+      }
+    </p>
+    <ul class="articles">
+      {posts.map((post) => (
+        <li><a href={post.href}>{post.title}</a></li>
+      ))}
+    </ul>
+  </article>
+</Base>
+
+<style>
+  .topic { max-width: 46rem; }
+  .topic .section-lede { margin-bottom: 0.8rem; }
+  .note { color: var(--muted); margin: 0 0 1.4rem; }
+  .note a, .articles a { color: var(--accent2); text-decoration: none; }
+  .articles { list-style: none; padding: 0; margin: 0; }
+  .articles li { margin: 0 0 0.55rem; }
+</style>

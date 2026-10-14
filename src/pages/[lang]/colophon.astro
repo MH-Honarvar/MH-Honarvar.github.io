@@ -1,0 +1,60 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { languages, t, type Lang } from '../../i18n/ui';
+import { SITE } from '../../config';
+import { colophonPage } from '../../content/colophon';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const page = colophonPage;
+const crumbs = [
+  { name: tr('nav.home'), url: `/${lang}/` },
+  { name: page.title[lang], url: `/${lang}/colophon/` },
+];
+---
+
+<Base lang={lang} title={page.title[lang]} description={page.description[lang]} motion={false} crumbs={crumbs}>
+  <article class="section container work" data-pagefind-body>
+    <Breadcrumbs lang={lang} crumbs={crumbs} />
+    <h1 class="section-title">{page.h1[lang]}</h1>
+    <p class="section-lede">{page.lede[lang]}</p>
+    <p class="by">
+      <a href={`/${lang}/about/#author`}>{SITE.name[lang]}</a>
+      <span aria-hidden="true"> · </span>
+      {tr('meta.role')}
+    </p>
+    {
+      page.sections.map((section) => (
+        <section>
+          <h2>{section.heading[lang]}</h2>
+          {section.body[lang].map((paragraph) => <p>{paragraph}</p>)}
+        </section>
+      ))
+    }
+    <section>
+      <h2>{page.linksHeading[lang]}</h2>
+      <ul class="further">
+        {page.links.map((link) => <li><a href={`/${lang}${link.path}`}>{link.label[lang]}</a></li>)}
+      </ul>
+    </section>
+    <p class="actions">
+      <a class="btn primary" href={`https://t.me/${SITE.telegram}`}>Telegram @{SITE.telegram}</a>
+      <a class="btn" href={`/${lang}/about/`}>{tr('nav.about')}</a>
+    </p>
+  </article>
+</Base>
+
+<style>
+  .work { max-width: 46rem; }
+  .work .section-lede { margin-bottom: 0.7rem; }
+  .by { margin: 0 0 0.2rem; }
+  .by a { color: var(--fg); font-weight: 700; }
+  h2 { font-size: 1.35rem; margin: 2.2rem 0 0.6rem; }
+  p { color: var(--muted); margin: 0 0 0.9rem; }
+  .further { margin: 0.2rem 0 1.2rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+  .further a { color: var(--accent2); }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.4rem; }
+</style>

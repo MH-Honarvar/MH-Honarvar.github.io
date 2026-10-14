@@ -24,14 +24,15 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
   #intro {
     position: fixed;
     inset: 0;
-    z-index: 70;
+    z-index: auto;
     background: transparent;
     pointer-events: none;
-    transition: opacity 0.45s ease;
+    transition: opacity 0.28s ease;
   }
   .intro-skip {
     pointer-events: auto;
-    position: absolute;
+    position: fixed;
+    z-index: 80;
     bottom: 1.4rem;
     inset-inline-end: 1.4rem;
     font: inherit;
@@ -43,12 +44,15 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
   }
   #intro.out {
     opacity: 0;
-    transform: scale(1.08);
     pointer-events: none;
   }
   canvas {
-    width: 100%;
-    height: 100%;
+    position: fixed;
+    z-index: 0;
+    display: block;
+    width: 0;
+    height: 0;
+    pointer-events: none;
   }
 </style>
 
@@ -68,19 +72,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
     const c1 = css.getPropertyValue('--accent').trim();
     const c2 = css.getPropertyValue('--accent2').trim();
 
-    const cols = Math.min(220, Math.max(80, Math.round(W / 8)));
-    const rows = Math.max(48, Math.round(cols * (H / W)));
-    const off = document.createElement('canvas');
-    off.width = cols;
-    off.height = rows;
-    const o = off.getContext('2d', { willReadFrequently: true })!;
-    const big = Math.min(cols / 7, 28);
     const family = '"Vazirmatn Variable", "Inter Variable", sans-serif';
-    o.fillStyle = '#fff';
-    o.textAlign = 'center';
-    o.textBaseline = 'middle';
-    o.direction = document.dir === 'rtl' ? 'rtl' : 'ltr';
-
     let frame = 0;
     let leaving = false;
     const finish = () => {
@@ -90,36 +82,66 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
       sessionStorage.setItem('intro-seen', '1');
       root.classList.add('out');
       window.dispatchEvent(new Event('introout'));
-      setTimeout(() => root.remove(), 900);
+      setTimeout(() => root.remove(), 320);
     };
 
-    const run = () => {
+    const heading = document.querySelector<HTMLElement>('.hero h1');
+    const box = heading?.getBoundingClientRect();
+    const pad = 24;
+    let rx = pad;
+    let ry = pad;
+    let rw = Math.max(0, W - pad * 2);
+    let rh = Math.max(0, H - pad * 2);
+    if (box && box.width > 8 && box.height > 8) {
+      const stacked = box.width > W * 0.62;
+      if (stacked && box.top > pad * 3) {
+        rh = Math.max(0, box.top - pad * 2);
+      } else if (document.dir === 'rtl') {
+        rw = Math.max(0, box.left - pad * 2);
+      } else {
+        rx = box.right + pad;
+        rw = Math.max(0, W - pad - rx);
+      }
+    }
+    if (rw < 140 || rh < 96) {
+      finish();
+    } else {
+      canvas.style.left = `${rx}px`;
+      canvas.style.top = `${ry}px`;
+      canvas.style.width = `${rw}px`;
+      canvas.style.height = `${rh}px`;
+      canvas.width = rw * dpr;
+      canvas.height = rh * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const run = (o: CanvasRenderingContext2D, cols: number, rows: number) => {
       const data = o.getImageData(0, 0, cols, rows).data;
-      const step = W < 700 ? 2 : 3;
+      const step = rw < 700 ? 2 : 3;
       const pts: { x: number; y: number; tx: number; ty: number; a: number; d: number }[] = [];
       for (let y = 0; y < rows; y += step)
         for (let x = 0; x < cols; x += step) {
           if (data[(y * cols + x) * 4 + 3] < 128) continue;
           pts.push({
-            x: Math.random() * W,
-            y: Math.random() * H,
-            tx: ((x + 0.5) / cols) * W,
-            ty: ((y + 0.5) / rows) * H,
+            x: Math.random() * rw,
+            y: Math.random() * rh,
+            tx: ((x + 0.5) / cols) * rw,
+            ty: ((y + 0.5) / rows) * rh,
             a: Math.random() > 0.5 ? 0 : 1,
-            d: Math.random() * 0.18,
+            d: Math.random() * 0.1,
           });
         }
 
-      const size = Math.max(2.2, (W / cols) * step * 0.72);
+      const size = Math.max(2.2, (rw / cols) * step * 0.72);
       const start = performance.now();
       const tick = (now: number) => {
         if (leaving) return;
         const t = (now - start) / 1000;
-        ctx.clearRect(0, 0, W, H);
+        ctx.clearRect(0, 0, rw, rh);
         const pathA = new Path2D();
         const pathB = new Path2D();
         for (const p of pts) {
-          const k = Math.min(Math.max((t - p.d) / 0.55, 0), 1);
+          const k = Math.min(Math.max((t - p.d) / 0.38, 0), 1);
           const e = 1 - Math.pow(1 - k, 3);
           const x = p.x + (p.tx - p.x) * e;
           const y = p.y + (p.ty - p.y) * e;
@@ -129,20 +151,33 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
         ctx.fill(pathA);
         ctx.fillStyle = c2;
         ctx.fill(pathB);
-        if (t < 1.05) frame = requestAnimationFrame(tick);
+        if (t < 0.62) frame = requestAnimationFrame(tick);
         else finish();
       };
       frame = requestAnimationFrame(tick);
     };
-    Promise.all(lines.map((l) => document.fonts.load(`800 40px ${family}`, l)))
-      .catch(() => {})
-      .then(() => {
+    if (!leaving) {
+      const cols = Math.min(180, Math.max(64, Math.round(rw / 6)));
+      const rows = Math.max(36, Math.round(cols * (rh / rw)));
+      const off = document.createElement('canvas');
+      off.width = cols;
+      off.height = rows;
+      const o = off.getContext('2d', { willReadFrequently: true })!;
+      const big = Math.min(cols / 7, rows / 3.2, 28);
+      o.fillStyle = '#fff';
+      o.textAlign = 'center';
+      o.textBaseline = 'middle';
+      o.direction = document.dir === 'rtl' ? 'rtl' : 'ltr';
+      const fontsReady = Promise.all(lines.map((l) => document.fonts.load(`800 40px ${family}`, l))).catch(() => {});
+      Promise.race([fontsReady, new Promise((resolve) => setTimeout(resolve, 120))]).then(() => {
+        if (leaving) return;
         o.font = `800 ${big}px ${family}`;
         o.fillText(lines[0], cols / 2, rows / 2 - big * 0.4);
         o.font = `600 ${big * 0.42}px ${family}`;
         o.fillText(lines[1], cols / 2, rows / 2 + big * 0.55);
-        run();
+        run(o, cols, rows);
       });
+    }
     root.querySelector('[data-intro-skip]')?.addEventListener('click', finish);
     addEventListener('keydown', (e) => {
       if (e.key === 'Escape') finish();

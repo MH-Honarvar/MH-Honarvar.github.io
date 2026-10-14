@@ -5,7 +5,8 @@ import { languages, t, type Lang } from '../../i18n/ui';
 import { SITE } from '../../config';
 import { getRepos, getContributions } from '../../lib/github';
 import { getPosts, postUrl } from '../../lib/blog';
-import { story, values, toolbox, faq, timeline } from '../../content/about';
+import { story, values, toolbox, faq, timeline, areas, colophonLink } from '../../content/about';
+import { workLinks } from '../../content/services';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -82,7 +83,7 @@ const words = story[lang].split(' ');
       </div>
       <div>
         <p class="kicker">{tr('about.title')}</p>
-        <h1 data-split>{SITE.name[lang]}</h1>
+        <h1 id="author" data-split>{SITE.name[lang]}</h1>
         <p class="typed" aria-label={tr('about.roles').replaceAll('|', '، ')}>
           <span data-roles={tr('about.roles')}>{tr('about.roles').split('|')[0]}</span><i aria-hidden="true"></i>
         </p>
@@ -158,6 +159,23 @@ const words = story[lang].split(' ');
         ))
       }
     </div>
+
+    <h2 class="sub reveal" id="areas">{areas.heading[lang]}</h2>
+    <p class="areas-lede">
+      <a href="#author">{SITE.name[lang]}</a>{lang === 'fa' ? '، ' : ', '}{areas.same[lang]}{' '}
+      <a rel="me" href={`https://github.com/${SITE.githubUser}`}>GitHub</a>{lang === 'fa' ? '، ' : ', '}{areas.writes[lang]}{' '}
+      <a rel="me" href={`https://t.me/${SITE.telegram}`}>Telegram @{SITE.telegram}</a>.
+    </p>
+    <ul class="areas">
+      {
+        workLinks.map((link) => (
+          <li>
+            <a href={`/${lang}${link.path}`} aria-current={link.path === '/about/' ? 'page' : undefined}>{link.label[lang]}</a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="colophon-link"><a href={`/${lang}/colophon/`}>{colophonLink[lang]}</a></p>
 
     <h2 class="sub reveal">{tr('about.values')}</h2>
     <div class="values">
@@ -355,6 +373,36 @@ const words = story[lang].split(' ');
   .sub {
     font-size: 1.5rem;
     margin: 3.5rem 0 1.2rem;
+  }
+  .areas-lede {
+    margin: -0.3rem 0 1rem;
+    color: var(--muted);
+    max-width: 62ch;
+  }
+  .areas-lede a {
+    color: var(--fg);
+    font-weight: 700;
+  }
+  .areas-lede a[rel='me'] {
+    color: var(--accent2);
+    font-weight: 600;
+  }
+  .areas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1.1rem;
+  }
+  .areas a {
+    color: var(--accent2);
+  }
+  .colophon-link {
+    margin: 1rem 0 0;
+  }
+  .colophon-link a {
+    color: var(--accent2);
   }
   .doing {
     display: grid;

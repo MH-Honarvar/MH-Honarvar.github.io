@@ -1,7 +1,8 @@
 import type Lenis from 'lenis';
 
 const reduced = document.documentElement.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
-const rich = document.documentElement.dataset.motion === 'rich';
+const reading = !!document.getElementById('read-progress');
+const rich = document.documentElement.dataset.motion === 'rich' && !reading;
 
 addEventListener('pageswap', (e) => {
   const vt = (e as PageSwapEvent).viewTransition;
@@ -88,6 +89,7 @@ if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
 
   document.querySelectorAll<HTMLElement>('[data-split]').forEach((el) => {
     const inHero = !!el.closest('.hero');
+    if (inHero && el.tagName === 'H1') return;
     gsap.from(el.querySelectorAll('.split-word > span'), {
       yPercent: 110,
       opacity: 0,

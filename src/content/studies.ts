@@ -32,10 +32,12 @@ const study: Study = {
         fa: [
           'ریپازیتوری mh-honarvar.github.io منبع همین دامنه است و روی GitHub Pages سرو می‌شود. ساخت با Astro است و خروجی‌اش فایل استاتیک است: هر زبان یک مسیر دارد، نوشته‌ها مارک‌داون هستند، و تصویری که برای اشتراک ساخته می‌شود موقع build در می‌آید.',
           'صفحه برای آزمایش ابزار عمومی است. در درباره‌ی سایت همین را گفته‌ام: کار مشتری این‌جا نمی‌آید. اگر در فهرست پروژه‌ها کارت خصوصی می‌بینی، فقط نام و بازه‌ی فعالیت است، چون توضیح و لینک پیش از رسیدن به قالب پاک شده‌اند.',
+          'اگر همکاری مطرح باشد، [صفحه‌ی همکاری](/services/) جای این شرح است.',
         ],
         en: [
           'The repository mh-honarvar.github.io is the source of this domain, served on GitHub Pages. The build is Astro and the output is static files: each language has its own path, posts are markdown, and the image used for sharing is drawn at build time.',
           'The page is where I try tools in public. The about copy says the same thing: client work does not appear here. A private card on the project list is only a name and an activity window, because the description and the link are removed before the template sees them.',
+          'If collaboration is the question, the [collaboration page](/services/) is separate from this write-up.',
         ],
       },
     },
@@ -58,18 +60,18 @@ const study: Study = {
         fa: [
           'Three.js روی خانه‌ی سایت است، برای هیرو، و روی صفحه‌ی پروژه‌ها برای شهر کامیت‌ها، آن هم وقتی بوم به دید بیاید. نوشته، درباره، برچسب و صفحه‌ی همکاری این ماژول را نمی‌گیرند.',
           'معرفی اول خانه را می‌شود همان لحظه رد کرد. عنوان زیر لایه‌ی شفاف است و چند ثانیه پشت صفحه‌ی مات قفل نمی‌شود. اگر سیستم حرکت کم خواسته باشد، بوم اصلاً ساخته نمی‌شود.',
+          'همان تصمیم در [صفحه‌ی استاتیک و صحنه](/blog/static-pages-and-webgl/) آمده است.',
         ],
         en: [
           'Three.js is on the home page for the hero, and on the projects page for the commit city, and only once that canvas is in view. Posts, about, tags, and the collaboration page do not load the module.',
           'The opening moment on the home page can be skipped immediately. The heading sits under a transparent layer instead of waiting behind a solid plate. If the system asks for less motion, the canvas is never created.',
+          'That decision is written up in [the static page and the scene](/blog/static-pages-and-webgl/).',
         ],
       },
     },
   ],
   further: [
     { path: '/blog/persian-rtl-interface/', label: { fa: 'دو مسیر فارسی و انگلیسی', en: 'The two language routes' } },
-    { path: '/blog/static-pages-and-webgl/', label: { fa: 'صفحه‌ی استاتیک و صحنه‌ی سه‌بعدی', en: 'The static page and the 3D scene' } },
-    { path: '/services/', label: { fa: 'همکاری', en: 'Collaborate' } },
     { path: '/about/', label: { fa: 'درباره', en: 'About' } },
   ],
 };

@@ -1,0 +1,58 @@
+---
+import type { Lang } from '../i18n/ui';
+
+interface Item {
+  title: string;
+  url: string;
+}
+interface Props {
+  lang: Lang;
+  posts: Item[];
+}
+const { lang, posts } = Astro.props;
+const label = lang === 'fa' ? 'نوشته‌های مرتبط' : 'Related posts';
+---
+
+{
+  posts.length > 0 && (
+    <nav class="related" aria-label={label} data-pagefind-ignore>
+      <h2>{label}</h2>
+      <ul>
+        {posts.map((post) => (
+          <li>
+            <a class="glass" href={post.url}>{post.title}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .related {
+    max-width: 70ch;
+    margin-top: 2.5rem;
+  }
+  .related h2 {
+    font-size: 1.15rem;
+    margin: 0 0 0.8rem;
+  }
+  .related ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .related a {
+    display: block;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .related a:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+</style>

@@ -49,13 +49,26 @@ const crumbs = [
   { name: tr('nav.projects'), url: `/${lang}/projects/` },
   { name: repo.name, url: `/${lang}/projects/${repo.name}/` },
 ];
+const linkRe = /\[([^\]]+)\]\((\/[^)\s]+)\)/g;
+function parts(text: string) {
+  const out: { text: string; href?: string }[] = [];
+  let last = 0;
+  for (const match of text.matchAll(linkRe)) {
+    const index = match.index ?? 0;
+    if (index > last) out.push({ text: text.slice(last, index) });
+    out.push({ text: match[1], href: `/${lang}${match[2]}` });
+    last = index + match[0].length;
+  }
+  if (last < text.length) out.push({ text: text.slice(last) });
+  return out;
+}
 ---
 
 <Base
   lang={lang}
   title={study.title[lang]}
   description={study.description[lang]}
-  image={`/og/${lang}/projects.png`}
+  image={`/og/${lang}/case/${repo.name}.png`}
   crumbs={crumbs}
   extra={[{
     '@type': 'SoftwareSourceCode',
@@ -80,7 +93,11 @@ const crumbs = [
       study.sections.map((section) => (
         <section>
           <h2>{section.heading[lang]}</h2>
-          {section.body[lang].map((paragraph) => <p>{paragraph}</p>)}
+          {section.body[lang].map((paragraph) => (
+            <p>
+              {parts(paragraph).map((part) => (part.href ? <a href={part.href}>{part.text}</a> : part.text))}
+            </p>
+          ))}
         </section>
       ))
     }
@@ -100,6 +117,7 @@ const crumbs = [
   .repo-name { margin: 0.8rem 0 0; color: var(--accent2); font-size: 0.9rem; }
   h1 { margin: 0.3rem 0 0.6rem; font-size: clamp(2rem, 5vw, 3rem); }
   .lede, section p { margin: 0 0 0.9rem; color: var(--muted); font-size: 1.05rem; }
+  section a { color: var(--accent2); }
   h2 { font-size: 1.35rem; margin: 2rem 0 0.6rem; }
   .further { margin: 1.4rem 0 1.6rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
   .further a { color: var(--accent2); }

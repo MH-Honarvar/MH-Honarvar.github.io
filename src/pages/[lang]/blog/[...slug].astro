@@ -1,8 +1,10 @@
 ---
 import { render } from 'astro:content';
+import readingTime from 'reading-time';
 import Base from '../../../layouts/Base.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import Comments from '../../../components/Comments.astro';
+import RelatedPosts from '../../../components/RelatedPosts.astro';
 import { formatDate, languages, other, t, type Lang } from '../../../i18n/ui';
 import { getPosts, minutes, postSlug, postUrl } from '../../../lib/blog';
 import { SITE } from '../../../config';
@@ -26,6 +28,15 @@ const lang = Astro.params.lang as Lang;
 const tr = t(lang);
 const slug = postSlug(post);
 const { Content, headings } = await render(post);
+const words = readingTime(post.body ?? '').words;
+const shared = new Set(post.data.tags);
+const related = (await getPosts(lang))
+  .filter((item) => postSlug(item) !== slug)
+  .map((item) => ({ item, n: item.data.tags.filter((tag) => shared.has(tag)).length }))
+  .filter((entry) => entry.n > 0)
+  .sort((a, b) => b.n - a.n || b.item.data.date.valueOf() - a.item.data.date.valueOf())
+  .slice(0, 3)
+  .map(({ item }) => ({ title: item.data.title, url: postUrl(item) }));
 const toc = headings.filter((h) => h.depth <= 3);
 const vt = `post-${slug.replace(/[^a-z0-9-]/gi, '')}`;
 const pageUrl = new URL(postUrl(post), Astro.site).href;
@@ -49,6 +60,7 @@ const crumbs = [
   modified={post.data.updated}
   keywords={post.data.tags}
   articleSection={post.data.tags[0]}
+  wordCount={words > 0 ? words : undefined}
   crumbs={crumbs}
 >
   <div id="read-progress"></div>
@@ -123,6 +135,8 @@ const crumbs = [
         )
       }
     </div>
+
+    <RelatedPosts lang={lang} posts={related} />
 
     <div data-pagefind-ignore><Comments lang={lang} /></div>
   </article>

@@ -42,7 +42,7 @@ const teaser = story[lang].split(/(?<=[.!?؟])\s/).slice(0, 2).join(' ');
 const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS', 'Node.js', 'Git', 'UI Design', 'Typography', 'Motion'];
 ---
 
-<Base lang={lang} title={tr('meta.homeTitle')} description={tr('meta.homeDesc')} image={`/og/${lang}/home.png`} intro>
+<Base lang={lang} title={tr('meta.homeTitle')} description={tr('meta.homeDesc')} image={`/og/${lang}/home.png`} intro motion>
   <Scene3D mode="hero" />
   <div id="home-progress" aria-hidden="true"></div>
   <nav class="rail" aria-label={tr('rail.label')}>
@@ -370,6 +370,22 @@ const skills = ['TypeScript', 'Astro', 'Three.js', 'WebGL', 'GLSL', 'GSAP', 'CSS
     font-size: 1.15rem;
     max-width: 50ch;
     margin: 0 0 2rem;
+  }
+  .paths {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.05rem;
+    margin: -1.15rem 0 1.7rem;
+    max-width: 42rem;
+    font-size: 0.92rem;
+  }
+  .paths a {
+    color: var(--muted);
+    text-underline-offset: 0.18em;
+    text-decoration-color: color-mix(in srgb, var(--accent2) 55%, transparent);
+  }
+  .paths a:hover {
+    color: var(--accent2);
   }
   .actions {
     display: flex;

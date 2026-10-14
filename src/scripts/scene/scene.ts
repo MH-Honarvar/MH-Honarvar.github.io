@@ -202,7 +202,6 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
   const mountHeroDetail = () => {
     if (!hero) return;
-    const started = performance.now();
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     pmrem.dispose();
@@ -257,7 +256,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     drawText();
     document.fonts?.ready.then(drawText);
 
-    if (mobile || performance.now() - started > 34) tier = 0;
+    // Mesh build often exceeds a frame. That is not a signal to drop the glass tier.
     applyTheme();
     applyTier();
 
@@ -331,17 +330,12 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     if (blob) {
       const m = blob.material;
       m.transmission = tier >= 1 ? 1 : 0;
-      m.metalness = tier >= 1 ? 0 : 0.12;
-      m.roughness = tier >= 1 ? 0.06 : 0.38;
-      blob.core.visible = true;
-      if (tier >= 1) {
-        m.color.set(0xffffff);
-        m.emissive.set(0x000000);
-      } else {
-        m.color.copy(uniforms.uA.value);
-        m.emissive.copy(uniforms.uB.value);
-        m.emissiveIntensity = 0.55;
-      }
+      m.metalness = tier >= 1 ? 0 : 0.65;
+      m.roughness = tier >= 1 ? 0.06 : 0.14;
+      m.color.set(0xffffff);
+      m.emissive.set(0x000000);
+      m.emissiveIntensity = 1;
+      blob.core.visible = tier >= 1;
       m.needsUpdate = true;
     }
     resize();
@@ -562,8 +556,8 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
         const mat = blob.material;
         const glass = tier >= 1;
         mat.transmission = glass ? 1 : 0;
-        mat.metalness = glass ? hold * 0.08 : 0.12;
-        mat.roughness = glass ? 0.06 - hold * 0.015 : 0.38;
+        mat.metalness = glass ? hold * 0.08 : 0.65;
+        mat.roughness = (glass ? 0.06 : 0.14) - hold * 0.015;
         mat.envMapIntensity = 0.55 + hold * 0.4;
         mat.iridescence = glass ? 1 : 0;
       }
@@ -603,7 +597,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
         fpsFrames++;
         fpsTime += dt;
         if (fpsTime > 2.5) {
-          if (fpsFrames / fpsTime < 45) {
+          if (fpsFrames / fpsTime < 45 && tier > 1) {
             tier--;
             applyTier();
             warmup = 1.5;

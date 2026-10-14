@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { other, pairedTag } from './src/i18n/ui.ts';
+import { other } from './src/i18n/ui.ts';
 import { studyFor } from './src/content/studies.ts';
-import { tagIndexable } from './src/lib/tags.ts';
+import { pairedTag, postLastmod, tagIndexable } from './src/lib/tags.ts';
 
 const originOf = (url) => new URL(url).origin;
 
@@ -16,6 +16,7 @@ export default defineConfig({
         if (path === '/') return false;
         if (path.startsWith('/og/')) return false;
         if (path.endsWith('/rss.xml')) return false;
+        if (/^\/(fa|en)\/(?:topics(?:\/(?:rtl|type|speed))?|colophon|map|services)\/$/.test(path)) return true;
         const tag = path.match(/^\/(fa|en)\/blog\/tags\/([^/]+)\/$/);
         if (tag && !tagIndexable(tag[1], tag[2])) return false;
         const project = path.match(/^\/(fa|en)\/projects\/([^/]+)\/$/);
@@ -28,6 +29,11 @@ export default defineConfig({
       },
       serialize(item) {
         const path = decodeURIComponent(new URL(item.url).pathname);
+        const post = path.match(/^\/(fa|en)\/blog\/(?!tags\/)(.+)\/$/);
+        if (post) {
+          const lastmod = postLastmod(post[1], post[2]);
+          if (lastmod) item = { ...item, lastmod };
+        }
         const tag = path.match(/^\/(fa|en)\/blog\/tags\/([^/]+)\/$/);
         if (tag) {
           const lang = tag[1];

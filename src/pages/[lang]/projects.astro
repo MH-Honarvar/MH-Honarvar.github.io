@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { languages, t, formatMonth, type Lang } from '../../i18n/ui';
-import { studyFor } from '../../content/studies';
+import { SITE_REPO, studyFor } from '../../content/studies';
 import { getRepos, getContributions, languageStats, langColor } from '../../lib/github';
 import { publicCases } from '../../content/cases';
 import RepoIcon from '../../components/RepoIcon.astro';
@@ -85,6 +85,11 @@ const linked = [
     return [{ name: r.name, url: study ? new URL(`/${lang}/projects/${r.name}/`, Astro.site).href : r.html_url }];
   }),
 ];
+const siteStudy = studyFor(SITE_REPO);
+const writeups = [
+  ...(siteStudy ? [{ href: `/${lang}/projects/${SITE_REPO}/`, name: siteStudy.title[lang] }] : []),
+  ...publicCases.map((c) => ({ href: `/${lang}/projects/${c.slug}/`, name: c.title[lang] })),
+];
 ---
 
 <Base
@@ -92,6 +97,7 @@ const linked = [
   title={tr('projects.title')}
   description={tr('meta.projectsDesc')}
   image={`/og/${lang}/projects.png`}
+  motion
   crumbs={[
     { name: tr('nav.home'), url: `/${lang}/` },
     { name: tr('nav.projects'), url: `/${lang}/projects/` },
@@ -105,6 +111,22 @@ const linked = [
     <Breadcrumbs lang={lang} crumbs={[{ name: tr('nav.home'), url: `/${lang}/` }, { name: tr('nav.projects'), url: `/${lang}/projects/` }]} />
     <h1 class="section-title" data-split>{tr('projects.title')}</h1>
     <p class="section-lede">{tr('projects.lede')}</p>
+    {
+      writeups.length > 0 && (
+        <p class="hub">
+          {lang === 'fa' ? 'شرح جدا فقط برای همین صفحه‌هاست: ' : 'A separate page exists only for these: '}
+          {writeups.map((w, i) => (
+            <>
+              {i === 0 ? '' : i === writeups.length - 1 ? (lang === 'fa' ? ' و ' : ' and ') : (lang === 'fa' ? '، ' : ', ')}
+              <a href={w.href}>{w.name}</a>
+            </>
+          ))}
+          {lang === 'fa'
+            ? '. مخزن عمومی بدون شرح به گیت‌هاب می‌رود و آدرس تازه‌ای این‌جا نمی‌گیرد.'
+            : '. A public repository without a write-up goes to GitHub and does not get a new address here.'}
+        </p>
+      )
+    }
 
     {
       publicCases.length > 0 && (
@@ -185,8 +207,9 @@ const linked = [
 
     <div class="grid">
       {
-        repos.map((r, i) =>
-          r.private ? (
+        repos.map((r, i) => {
+          const study = r.private ? undefined : studyFor(r.name);
+          return r.private ? (
             <article class="repo glass reveal private" data-pagefind-ignore data-lang={r.language ?? ''} data-name={r.name.toLowerCase()} data-order={i} style={`--c:${langColor(r.language)}`}>
               <div class="head">
                 <RepoIcon name={r.name} language={r.language} private />
@@ -207,7 +230,7 @@ const linked = [
             </article>
           ) : (
             <article class={`repo glass reveal ${sizeOf(r)}`} data-tilt data-lang={r.language ?? ''} data-name={r.name.toLowerCase()} data-order={i} style={`--c:${langColor(r.language)}`}>
-              <a href={studyFor(r.name) ? `/${lang}/projects/${r.name}/` : r.html_url} class="cover" aria-label={r.name} />
+              <a href={study ? `/${lang}/projects/${r.name}/` : r.html_url} class="cover" aria-label={r.name} />
               <div class="head">
                 <RepoIcon name={r.name} language={r.language} private={false} />
                 {r.activity?.recent && <span class="badge live"><i />{tr('projects.working')}</span>}
@@ -227,12 +250,13 @@ const linked = [
                 {r.stargazers_count > 0 && <span dir="ltr">★ {r.stargazers_count}</span>}
                 {r.forks_count > 0 && <span dir="ltr">⑂ {r.forks_count}</span>}
                 {r.pushed_at && <span class="ago">{ago(r.pushed_at)}</span>}
+                {study && <a class="site" href={`/${lang}/projects/${r.name}/`}>{tr('blog.read')}</a>}
                 <a class="site" href={r.html_url}>GitHub</a>
                 {r.homepage && <a class="site" href={r.homepage}>{tr('projects.site')} ↗</a>}
               </div>
             </article>
-          ),
-        )
+          );
+        })
       }
     </div>
   </section>
@@ -283,6 +307,17 @@ const linked = [
 </Base>
 
 <style>
+  .section-lede:has(+ .hub) {
+    margin-bottom: 0.75rem;
+  }
+  .hub {
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 0 0 2.5rem;
+  }
+  .hub a {
+    color: var(--accent2);
+  }
   .top {
     display: grid;
     grid-template-columns: 1fr 1.3fr;

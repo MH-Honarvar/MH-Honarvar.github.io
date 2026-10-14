@@ -2,9 +2,9 @@
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import PostCard from '../../../../components/PostCard.astro';
-import { languages, other, pairedTag, t, type Lang } from '../../../../i18n/ui';
+import { languages, other, t, type Lang } from '../../../../i18n/ui';
 import { getPosts } from '../../../../lib/blog';
-import { tagIndexable, tagIntro } from '../../../../lib/tags';
+import { pairedTag, tagIndexable, tagIntro } from '../../../../lib/tags';
 
 export async function getStaticPaths() {
   const paths = [];
@@ -22,7 +22,9 @@ const { tag } = Astro.params;
 const { posts } = Astro.props;
 const tr = t(lang);
 const twin = pairedTag(lang, tag);
-const indexable = !!twin && tagIndexable(lang, tag) && tagIndexable(other(lang), twin);
+const indexable = tagIndexable(lang, tag);
+const linked = indexable && !!twin && tagIndexable(other(lang), twin);
+const twinExists = !!twin && (await getPosts(other(lang))).some((post) => post.data.tags.includes(twin));
 const intro = tagIntro[tag];
 const crumbs = [
   { name: tr('nav.home'), url: `/${lang}/` },
@@ -35,10 +37,10 @@ const crumbs = [
   lang={lang}
   title={`#${tag}`}
   description={indexable && intro ? intro : `${tr('blog.tagDesc')} #${tag}`}
-  alternate={indexable}
+  alternate={linked}
   noindex={!indexable}
   motion={false}
-  altPath={indexable && twin ? `/${other(lang)}/blog/tags/${encodeURIComponent(twin)}/` : undefined}
+  altPath={twinExists && twin ? `/${other(lang)}/blog/tags/${encodeURIComponent(twin)}/` : undefined}
   crumbs={crumbs}
 >
   <section class="section container">
@@ -57,6 +59,13 @@ const crumbs = [
   .kicker {
     color: var(--muted);
     margin: 0;
+  }
+  .intro {
+    max-width: 62ch;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin: 0.4rem 0 0.2rem;
   }
   .back {
     display: inline-block;

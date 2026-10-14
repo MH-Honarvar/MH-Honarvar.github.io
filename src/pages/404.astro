@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { t } from '../i18n/ui';
+import { topics, topicsIndex } from '../content/topics';
 
 const tr = t('fa');
 const en = t('en');
@@ -8,7 +9,10 @@ const links = (lang: 'fa' | 'en', label: (k: string) => string) => [
   [`/${lang}/`, label('nav.home')],
   [`/${lang}/blog/`, label('nav.blog')],
   [`/${lang}/projects/`, label('nav.projects')],
+  [`/${lang}/services/`, label('nav.services')],
   [`/${lang}/about/`, label('nav.about')],
+  [`/${lang}/topics/`, topicsIndex.title[lang]],
+  ...topics.map((topic) => [`/${lang}/topics/${topic.id}/`, topic.title[lang]]),
 ];
 ---
 

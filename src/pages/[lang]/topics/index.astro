@@ -1,0 +1,56 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { languages, t, type Lang } from '../../../i18n/ui';
+import { topics, topicsIndex } from '../../../content/topics';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const crumbs = [
+  { name: tr('nav.home'), url: `/${lang}/` },
+  { name: topicsIndex.title[lang], url: `/${lang}/topics/` },
+];
+---
+
+<Base
+  lang={lang}
+  title={topicsIndex.title[lang]}
+  description={topicsIndex.description[lang]}
+  motion={false}
+  crumbs={crumbs}
+  extra={[{
+    '@type': 'ItemList',
+    itemListElement: topics.map((topic, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: topic.title[lang],
+      url: new URL(`/${lang}/topics/${topic.id}/`, Astro.site).href,
+    })),
+  }]}
+>
+  <article class="section container topics" data-pagefind-body>
+    <Breadcrumbs lang={lang} crumbs={crumbs} />
+    <h1 class="section-title">{topicsIndex.title[lang]}</h1>
+    <p class="section-lede">{topicsIndex.lede[lang]}</p>
+    <ul class="hubs">
+      {
+        topics.map((topic) => (
+          <li>
+            <a href={`/${lang}/topics/${topic.id}/`}>{topic.title[lang]}</a>
+            <p>{topic.summary[lang]}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </article>
+</Base>
+
+<style>
+  .topics { max-width: 46rem; }
+  .hubs { list-style: none; padding: 0; margin: 0; }
+  .hubs li { margin: 0 0 1.3rem; }
+  .hubs a { color: var(--accent2); font-size: 1.2rem; text-decoration: none; }
+  .hubs p { color: var(--muted); margin: 0.25rem 0 0; }
+</style>

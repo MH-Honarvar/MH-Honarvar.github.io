@@ -1,0 +1,167 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { languages, t, type Lang } from '../../i18n/ui';
+import { getPosts, postSlug } from '../../lib/blog';
+import { servicesPage } from '../../content/services';
+import { colophonPage } from '../../content/colophon';
+import { publicCases } from '../../content/cases';
+import { SITE_REPO, studyFor } from '../../content/studies';
+import { topicById } from '../../content/topics';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const posts = await getPosts(lang);
+const titleBySlug = new Map(posts.map((post) => [postSlug(post), post.data.title]));
+
+const copy = {
+  fa: {
+    title: 'نقشه‌ی سایت',
+    description: 'فهرست صفحه‌های فارسی برای گشتن آدم: خانه، درباره، همکاری، شناسنامه‌ی سایت، پروژه‌ها، سه موضوع، نوشته‌ها، و دو نمونه‌ی کار.',
+    lede: 'همین صفحه‌ها، گروه‌بندی‌شده، تا از یکی به دیگری بروی.',
+    pages: 'صفحه‌ها',
+    topics: 'موضوع‌ها',
+    notes: 'نوشته‌ها',
+    cases: 'نمونه‌ها',
+  },
+  en: {
+    title: 'Map',
+    description: 'A human list of the English pages: home, about, collaboration, the colophon, projects, three topics, the notes, and two cases.',
+    lede: 'The same pages, grouped, so you can walk from one to the next.',
+    pages: 'Pages',
+    topics: 'Topics',
+    notes: 'Notes',
+    cases: 'Cases',
+  },
+}[lang];
+
+const fallbackTitle: Record<string, string> = {
+  fa: {
+    rtl: 'راست‌به‌چپ را از روز اول بگذار',
+    'focus-and-rtl': 'تمرکز از همان لبه‌ای شروع می‌شود که خواندن',
+    'two-language-urls': 'نشانی متعارف خود صفحه است',
+    'hello-world': 'سلام دنیا؛ چرا این سایت را از نو ساختم',
+  },
+  en: {
+    rtl: 'Put right-to-left in on day one',
+    'focus-and-rtl': 'Focus starts where the reading starts',
+    'two-language-urls': 'The canonical address is the page itself',
+    'hello-world': 'Hello world — why I rebuilt this site',
+  },
+}[lang];
+
+const noteSlugs = [
+  'persian-rtl-interface',
+  'rtl',
+  'persian-numerals-and-fonts',
+  'why-css-direction-is-not-enough',
+  'separate-locale-routes',
+  'focus-and-rtl',
+  'two-language-urls',
+  'type-and-space',
+  'reading-measure-and-rhythm',
+  'static-pages-and-webgl',
+  'when-to-skip-the-animation',
+  'what-a-static-page-owes-the-reader',
+  'hello-world',
+];
+
+const href = (path: string) => `/${lang}${path}`;
+const siteStudy = studyFor(SITE_REPO);
+const karkia = publicCases.find((item) => item.slug === 'karkia');
+
+const groups = [
+  {
+    heading: copy.pages,
+    links: [
+      { href: href('/'), label: tr('nav.home') },
+      { href: href('/about/'), label: tr('about.title') },
+      { href: href('/services/'), label: servicesPage.title[lang] },
+      { href: href('/colophon/'), label: colophonPage.title[lang] },
+      { href: href('/projects/'), label: tr('projects.title') },
+    ],
+  },
+  {
+    heading: copy.topics,
+    links: [
+      { href: href('/topics/rtl/'), label: topicById('rtl')?.title[lang] ?? 'rtl' },
+      { href: href('/topics/type/'), label: topicById('type')?.title[lang] ?? 'type' },
+      { href: href('/topics/speed/'), label: topicById('speed')?.title[lang] ?? 'speed' },
+    ],
+  },
+  {
+    heading: copy.notes,
+    links: [
+      { href: href('/blog/'), label: tr('blog.title') },
+      ...noteSlugs.map((slug) => ({
+        href: href(`/blog/${slug}/`),
+        label: titleBySlug.get(slug) ?? fallbackTitle[slug] ?? slug,
+      })),
+    ],
+  },
+  {
+    heading: copy.cases,
+    links: [
+      { href: href(`/projects/${SITE_REPO}/`), label: siteStudy?.title[lang] ?? SITE_REPO },
+      { href: href('/projects/karkia/'), label: karkia?.title[lang] ?? 'karkia' },
+    ],
+  },
+];
+
+const crumbs = [
+  { name: tr('nav.home'), url: href('/') },
+  { name: copy.title, url: href('/map/') },
+];
+---
+
+<Base lang={lang} title={copy.title} description={copy.description} motion={false} crumbs={crumbs}>
+  <section class="section container map" data-pagefind-body>
+    <Breadcrumbs lang={lang} crumbs={crumbs} />
+    <h1 class="section-title">{copy.title}</h1>
+    <p class="section-lede">{copy.lede}</p>
+    {
+      groups.map((group) => (
+        <section>
+          <h2>{group.heading}</h2>
+          <ul>
+            {group.links.map((link) => (
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </section>
+</Base>
+
+<style>
+  .map {
+    max-width: 46rem;
+  }
+  .map .section-lede {
+    margin-bottom: 0.4rem;
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin: 2rem 0 0.45rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li + li {
+    margin-top: 0.25rem;
+  }
+  a {
+    color: var(--accent2);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+</style>

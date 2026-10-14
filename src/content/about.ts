@@ -57,6 +57,20 @@ export const timeline: { year: L; text: L }[] = [
   },
 ];
 
+export const colophonLink: L = {
+  fa: 'شناسنامه‌ی ساخت سایت',
+  en: 'Colophon',
+};
+
+export const areas: { heading: L; same: L; writes: L } = {
+  heading: { fa: 'حوزه‌های کار', en: 'Areas of work' },
+  same: { fa: 'همان شخص در', en: 'the same person on' },
+  writes: {
+    fa: 'این موضوع‌ها را علنی می‌نویسد: رابط فارسی از طرح اول، حروف و فاصله، و صفحه‌ای که زود باز شود. پیام در',
+    en: 'writes about these in public: a Persian interface from the first layout, type and space, and a page that opens quickly. A message goes to',
+  },
+};
+
 export const faq: { q: L; a: L }[] = [
   {
     q: { fa: 'پروژه‌ی سفارشی هم قبول می‌کنی؟', en: 'Do you take on custom projects?' },
