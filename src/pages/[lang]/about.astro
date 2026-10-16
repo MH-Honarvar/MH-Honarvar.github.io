@@ -86,7 +86,7 @@ const words = story[lang].split(' ');
       <div>
         <p class="kicker">{tr('about.title')}</p>
         <h1 id="author" data-split>{SITE.name[lang]}</h1>
-        <p class="typed" aria-label={tr('about.roles').replaceAll('|', '، ')}>
+        <p class="typed" aria-label={tr('about.roles').replaceAll('|', lang === 'fa' ? '، ' : ', ')}>
           <span data-roles={tr('about.roles')}>{tr('about.roles').split('|')[0]}</span><i aria-hidden="true"></i>
         </p>
         <p class="body reveal">{tr('about.body')}</p>
@@ -900,7 +900,11 @@ const words = story[lang].split(' ');
   document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => {
     const label = b.textContent;
     b.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(b.dataset.copy!);
+      try {
+        await navigator.clipboard.writeText(b.dataset.copy!);
+      } catch {
+        return;
+      }
       b.textContent = b.dataset.done!;
       setTimeout(() => (b.textContent = label), 1600);
     });

@@ -31,12 +31,12 @@ const study: Study = {
       body: {
         fa: [
           'ریپازیتوری mh-honarvar.github.io منبع همین دامنه است و روی GitHub Pages سرو می‌شود. ساخت با Astro است و خروجی‌اش فایل استاتیک است: هر زبان یک مسیر دارد، نوشته‌ها مارک‌داون هستند، و تصویری که برای اشتراک ساخته می‌شود موقع build در می‌آید.',
-          'صفحه برای آزمایش ابزار عمومی است. در درباره‌ی سایت همین را گفته‌ام: کار مشتری این‌جا نمی‌آید. اگر در فهرست پروژه‌ها کارت خصوصی می‌بینی، فقط نام و بازه‌ی فعالیت است، چون توضیح و لینک پیش از رسیدن به قالب پاک شده‌اند.',
+          'صفحه برای آزمایش ابزار عمومی است. در درباره‌ی سایت همین را گفته‌ام: کار مشتری این‌جا نمی‌آید و در فهرست پروژه‌ها هم نام نمی‌آید.',
           'اگر همکاری مطرح باشد، [صفحه‌ی همکاری](/services/) جای این شرح است.',
         ],
         en: [
           'The repository mh-honarvar.github.io is the source of this domain, served on GitHub Pages. The build is Astro and the output is static files: each language has its own path, posts are markdown, and the image used for sharing is drawn at build time.',
-          'The page is where I try tools in public. The about copy says the same thing: client work does not appear here. A private card on the project list is only a name and an activity window, because the description and the link are removed before the template sees them.',
+          'The page is where I try tools in public. The about copy says the same thing: client work does not appear here, and it is not named on the project list.',
           'If collaboration is the question, the [collaboration page](/services/) is separate from this write-up.',
         ],
       },

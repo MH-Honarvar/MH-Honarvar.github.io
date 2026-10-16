@@ -47,12 +47,12 @@ document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
   if (reduced || !end) return;
   const fmt = new Intl.NumberFormat(document.documentElement.lang.startsWith('fa') ? 'fa-IR' : 'en-US');
   const state = { v: 0 };
-  el.textContent = fmt.format(0);
   gsap.to(state, {
     v: end,
     duration: 1.8,
     ease: 'power3.out',
     delay: 0.4,
+    onStart: () => (el.textContent = fmt.format(0)),
     onUpdate: () => (el.textContent = fmt.format(Math.round(state.v))),
     scrollTrigger: { trigger: el, start: 'top 95%' },
   });
@@ -153,8 +153,12 @@ if (progress) {
   update();
 }
 
+const canTilt = !reduced && matchMedia('(hover: hover) and (pointer: fine)').matches;
 document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
-  if (reduced) return;
+  if (!canTilt) return;
+  const rest = () => {
+    card.style.transform = '';
+  };
   card.addEventListener('pointermove', (e) => {
     const r = card.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width - 0.5;
@@ -163,17 +167,33 @@ document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
     card.style.setProperty('--mx', `${(x + 0.5) * 100}%`);
     card.style.setProperty('--my', `${(y + 0.5) * 100}%`);
   });
-  card.addEventListener('pointerleave', () => (card.style.transform = ''));
+  card.addEventListener('pointerleave', rest);
+  card.addEventListener('pointercancel', rest);
 });
 
+const fa = document.documentElement.lang.startsWith('fa');
+const copyLabel = fa ? 'کپی' : 'copy';
+const copiedLabel = fa ? 'کپی شد' : 'copied';
 document.querySelectorAll('pre').forEach((pre) => {
+  if (pre.querySelector('.copy-btn')) return;
   const btn = document.createElement('button');
+  btn.type = 'button';
   btn.className = 'copy-btn';
-  btn.textContent = 'copy';
+  btn.textContent = copyLabel;
+  btn.setAttribute('aria-label', fa ? 'کپی کردن کد' : 'Copy code');
   btn.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(pre.querySelector('code')?.innerText ?? '');
-    btn.textContent = '✓';
-    setTimeout(() => (btn.textContent = 'copy'), 1500);
+    const code = pre.querySelector('code')?.textContent ?? '';
+    try {
+      await navigator.clipboard.writeText(code);
+      btn.textContent = '✓';
+      btn.setAttribute('aria-label', copiedLabel);
+    } catch {
+      btn.setAttribute('aria-label', fa ? 'کپی ناموفق بود' : 'Copy failed');
+    }
+    setTimeout(() => {
+      btn.textContent = copyLabel;
+      btn.setAttribute('aria-label', fa ? 'کپی کردن کد' : 'Copy code');
+    }, 1500);
   });
   pre.append(btn);
 });

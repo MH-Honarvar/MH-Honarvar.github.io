@@ -14,8 +14,16 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
   <button type="button" class="intro-skip glass" data-intro-skip>{tr('intro.skip')}</button>
 </div>
 <script is:inline>
-  if (new URLSearchParams(location.search).get('intro') === '1') sessionStorage.removeItem('intro-seen');
-  if (sessionStorage.getItem('intro-seen') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const introStore = {
+    get() {
+      try { return sessionStorage.getItem('intro-seen'); } catch { return null; }
+    },
+    clear() {
+      try { sessionStorage.removeItem('intro-seen'); } catch { /* storage disabled */ }
+    },
+  };
+  if (new URLSearchParams(location.search).get('intro') === '1') introStore.clear();
+  if (introStore.get() || matchMedia('(prefers-reduced-motion: reduce)').matches) {
     document.getElementById('intro').remove();
   }
 </script>
@@ -67,22 +75,42 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
       return { w, h };
     };
     let { w: W, h: H } = resize();
+    type Dot = { x: number; y: number; tx: number; ty: number; a: number; d: number };
+    let pts: Dot[] = [];
+    const onResize = () => {
+      const prevW = W;
+      const prevH = H;
+      ({ w: W, h: H } = resize());
+      if (!prevW || !prevH || (prevW === W && prevH === H)) return;
+      for (const p of pts) {
+        p.x *= W / prevW;
+        p.y *= H / prevH;
+        p.tx *= W / prevW;
+        p.ty *= H / prevH;
+      }
+    };
     const css = getComputedStyle(document.documentElement);
     const c1 = css.getPropertyValue('--accent').trim();
     const c2 = css.getPropertyValue('--accent2').trim();
 
-    const cols = Math.min(220, Math.max(80, Math.round(W / 8)));
-    const rows = Math.max(48, Math.round(cols * (H / W)));
+    let cols = Math.min(220, Math.max(80, Math.round(W / 8)));
+    let rows = Math.max(48, Math.round(cols * (H / W)));
     const off = document.createElement('canvas');
     off.width = cols;
     off.height = rows;
     const o = off.getContext('2d', { willReadFrequently: true })!;
-    const big = Math.min(cols / 7, 28);
     const family = '"Vazirmatn Variable", "Inter Variable", sans-serif';
-    o.fillStyle = '#fff';
-    o.textAlign = 'center';
-    o.textBaseline = 'middle';
-    o.direction = document.dir === 'rtl' ? 'rtl' : 'ltr';
+    const paintMask = () => {
+      const big = Math.min(cols / 7, 28);
+      o.fillStyle = '#fff';
+      o.textAlign = 'center';
+      o.textBaseline = 'middle';
+      o.direction = document.dir === 'rtl' ? 'rtl' : 'ltr';
+      o.font = `800 ${big}px ${family}`;
+      o.fillText(lines[0], cols / 2, rows / 2 - big * 0.4);
+      o.font = `600 ${big * 0.42}px ${family}`;
+      o.fillText(lines[1], cols / 2, rows / 2 + big * 0.55);
+    };
 
     let frame = 0;
     let leaving = false;
@@ -90,7 +118,8 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
       if (leaving) return;
       leaving = true;
       cancelAnimationFrame(frame);
-      sessionStorage.setItem('intro-seen', '1');
+      removeEventListener('resize', onResize);
+      try { sessionStorage.setItem('intro-seen', '1'); } catch { /* storage disabled; still dismiss */ }
       root.classList.add('out');
       window.dispatchEvent(new Event('introout'));
       setTimeout(() => root.remove(), 500);
@@ -98,9 +127,14 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
 
     const run = () => {
       ({ w: W, h: H } = resize());
+      cols = Math.min(220, Math.max(80, Math.round(W / 8)));
+      rows = Math.max(48, Math.round(cols * (H / W)));
+      off.width = cols;
+      off.height = rows;
+      paintMask();
       const data = o.getImageData(0, 0, cols, rows).data;
       const step = W < 700 ? 2 : 3;
-      const pts: { x: number; y: number; tx: number; ty: number; a: number; d: number }[] = [];
+      pts = [];
       for (let y = 0; y < rows; y += step)
         for (let x = 0; x < cols; x += step) {
           if (data[(y * cols + x) * 4 + 3] < 128) continue;
@@ -141,10 +175,7 @@ const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE
     const fontsReady = Promise.all(lines.map((l) => document.fonts.load(`800 40px ${family}`, l))).catch(() => {});
     Promise.race([fontsReady, new Promise((resolve) => setTimeout(resolve, 400))]).then(() => {
       if (leaving) return;
-      o.font = `800 ${big}px ${family}`;
-      o.fillText(lines[0], cols / 2, rows / 2 - big * 0.4);
-      o.font = `600 ${big * 0.42}px ${family}`;
-      o.fillText(lines[1], cols / 2, rows / 2 + big * 0.55);
+      addEventListener('resize', onResize);
       run();
     });
     root.querySelector('[data-intro-skip]')?.addEventListener('click', finish);

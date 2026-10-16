@@ -15,6 +15,7 @@ export function initPalette() {
   const cmd = document.getElementById('cmd') as HTMLDialogElement;
   const lang = cmd.dataset.lang!;
   const empty = cmd.dataset.empty ?? '';
+  const kindLabel = (kind: string) => (kind === 'post' ? cmd.dataset.post : cmd.dataset.page) ?? kind;
   const input = document.getElementById('cmd-input') as HTMLInputElement;
   const list = document.getElementById('cmd-list')!;
   let sel = 0;
@@ -31,10 +32,11 @@ export function initPalette() {
       ? shown
           .map(
             (i, n) =>
-              `<li><a href="${i.url}" class="${n === sel ? 'sel' : ''}" dir="auto" aria-selected="${n === sel}"><span>${esc(i.title)}</span><small>${i.kind} · ${i.lang}</small></a></li>`,
+              `<li><a href="${i.url}" class="${n === sel ? 'sel' : ''}" dir="auto" aria-selected="${n === sel}"><span>${esc(i.title)}</span><small>${esc(kindLabel(i.kind))} · ${i.lang}</small></a></li>`,
           )
           .join('')
       : `<li class="empty">${esc(empty)}</li>`;
+    list.querySelectorAll('a')[sel]?.scrollIntoView({ block: 'nearest' });
   };
 
   const open = () => {
@@ -49,12 +51,26 @@ export function initPalette() {
     sel = 0;
     render();
   });
+  list.addEventListener('mousemove', (e) => {
+    const a = (e.target as HTMLElement).closest('a');
+    if (!a) return;
+    const n = [...list.querySelectorAll('a')].indexOf(a);
+    if (n < 0 || n === sel) return;
+    sel = n;
+    list.querySelectorAll('a').forEach((link, i) => {
+      link.classList.toggle('sel', i === sel);
+      link.setAttribute('aria-selected', String(i === sel));
+    });
+  });
   input.addEventListener('keydown', (e) => {
     if (!shown.length) return;
     if (e.key === 'ArrowDown') sel = Math.min(sel + 1, shown.length - 1);
     else if (e.key === 'ArrowUp') sel = Math.max(sel - 1, 0);
-    else if (e.key === 'Enter' && shown[sel]) location.href = shown[sel].url;
-    else return;
+    else if (e.key === 'Enter' && shown[sel]) {
+      e.preventDefault();
+      location.href = shown[sel].url;
+      return;
+    } else return;
     e.preventDefault();
     render();
   });
@@ -78,7 +94,7 @@ export function initPalette() {
         esc([
           'help              list commands',
           'ls [posts|pages]  list content',
-          'open <n|page>     open post #n or a page (blog, projects, about)',
+          'open <n|page>     open post #n or a page (blog, projects, about, services, map)',
           'cat about         who is this?',
           'whoami            you',
           `theme <name>      ${THEMES.join(' | ')}`,
@@ -95,7 +111,7 @@ export function initPalette() {
       const n = Number(target);
       const post = posts()[n - 1];
       if (post) location.href = post.url;
-      else if (['blog', 'projects', 'about'].includes(target)) location.href = `/${lang}/${target}/`;
+      else if (['blog', 'projects', 'about', 'services', 'map', 'colophon', 'topics'].includes(target ?? '')) location.href = `/${lang}/${target}/`;
       else print(`open: ${esc(target ?? '')}: not found`);
     },
     cat: ([f]) =>

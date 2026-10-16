@@ -72,11 +72,15 @@ const period = (r: (typeof repos)[number]) => {
     : `${tr('projects.activeFrom')} ${formatMonth(a.first, lang)} ${tr('projects.until')} ${end}`;
 };
 const spark = (w: number[]) => {
+  if (w.length < 2) return '0,22 100,22';
   const m = Math.max(1, ...w);
   return w.map((v, i) => `${(i / (w.length - 1)) * 100},${22 - (v / m) * 20}`).join(' ');
 };
-const sizeOf = (r: (typeof repos)[number]) =>
-  r === newestPublic ? 'big' : !r.private && (r.description?.length ?? 0) > 60 || (r.topics?.length ?? 0) > 2 ? 'wide' : '';
+const sizeOf = (r: (typeof repos)[number]) => {
+  if (r === newestPublic) return 'big';
+  if (!r.private && ((r.description?.length ?? 0) > 60 || (r.topics?.length ?? 0) > 2)) return 'wide';
+  return '';
+};
 const linked = [
   ...publicCases.map((c) => ({ name: c.title[lang], url: new URL(`/${lang}/projects/${c.slug}/`, Astro.site).href })),
   ...repos.flatMap((r) => {
@@ -205,7 +209,7 @@ const writeups = [
       </div>
     </div>
 
-    <div class="grid">
+    <div class="grid repos">
       {
         repos.map((r, i) => {
           const study = r.private ? undefined : studyFor(r.name);
@@ -835,8 +839,8 @@ const writeups = [
   }
 
   const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
-  const cards = [...document.querySelectorAll<HTMLElement>('.repo')];
-  const grid = document.querySelector<HTMLElement>('.grid');
+  const grid = document.querySelector<HTMLElement>('.grid.repos');
+  const cards = [...document.querySelectorAll<HTMLElement>('.grid.repos > .repo')];
   const pill = document.querySelector<HTMLElement>('.pill');
   const movePill = (chip: HTMLElement) => {
     if (!pill) return;
@@ -866,7 +870,7 @@ const writeups = [
   const center = document.querySelector<HTMLElement>('[data-donut-center]');
   const centerHTML = center?.innerHTML ?? '';
   document.querySelectorAll<SVGCircleElement>('.donut circle').forEach((c) => {
-    const li = document.querySelector(`.donut li[data-name="${c.dataset.name}"]`);
+    const li = [...document.querySelectorAll<HTMLElement>('.donut li')].find((el) => el.dataset.name === c.dataset.name);
     c.addEventListener('mouseenter', () => {
       if (center) center.innerHTML = `<b>${c.dataset.pct}</b><small dir="ltr">${c.dataset.name}</small>`;
       li?.classList.add('on');

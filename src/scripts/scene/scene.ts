@@ -116,7 +116,8 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     return;
   }
 
-  // Quality tiers: 2 = transmission + bloom, 1 = transmission only, 0 = no post-processing, chrome-like blob.
+  // Quality tiers: 2 = glass + bloom, 1 = glass without bloom, 0 = glass, no post.
+  // Transmission stays on at every tier. Dropping it is what turned the sphere into a pale matte blob.
   let tier = !hero ? 0 : mobile ? 0 : 2;
   const dprFor = (t: number) => Math.min(devicePixelRatio, [1, 1.25, 1.75][t]);
   renderer.setPixelRatio(hero ? dprFor(tier) : Math.min(devicePixelRatio, mobile ? 1.25 : 2));
@@ -259,6 +260,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     applyTheme();
     applyTier();
 
+    if (reduced) return;
     requestAnimationFrame(() => {
       renderer.compile(scene, camera);
       if (mobile || tier < 2) return;
@@ -323,7 +325,9 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   };
 
   const applyTier = () => {
-    renderer.setPixelRatio(dprFor(tier));
+    const ratio = dprFor(tier);
+    renderer.setPixelRatio(ratio);
+    composer?.setPixelRatio(ratio);
     canvas.dataset.tier = String(tier);
     if (bloom) bloom.enabled = tier >= 2;
     if (blob) {
@@ -347,10 +351,11 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   let baseScale = 1;
   let stacked = false;
   let sized = '';
+  let reducedPainted = false;
   const resize = () => {
     const w = innerWidth;
     const h = innerHeight;
-    const key = `${w}x${h}:${document.dir}`;
+    const key = `${w}x${h}:${document.dir}:${renderer.getPixelRatio()}`;
     if (key !== sized) {
       sized = key;
       renderer.setSize(w, h, false);
@@ -375,6 +380,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     }
     composer?.setSize(w, h);
     bloom?.resolution.set(w / 2, h / 2);
+    if (reduced && reducedPainted) frame();
   };
   applyTheme();
   if (hero) applyTier();
@@ -384,17 +390,21 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   addEventListener('themechange', () => {
     applyTheme();
     drawText();
+    if (reduced && reducedPainted) frame();
   });
 
   const ndc = new THREE.Vector2();
   const target = new THREE.Vector2();
   let pointerSeen = false;
   let pointerDirty = false;
-  addEventListener('pointermove', (e) => {
+  const placePointer = (e: PointerEvent) => {
     pointerSeen = true;
     pointerDirty = true;
     target.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
     ndc.copy(target);
+  };
+  addEventListener('pointermove', (e) => {
+    placePointer(e);
   }, { passive: true });
 
   const raycaster = new THREE.Raycaster();
@@ -411,19 +421,31 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   let holding = false;
   let holdPointer = -1;
   let hold = 0;
+  let holdAt = 0;
   const endHold = () => {
+    const id = holdPointer;
     holding = false;
     holdPointer = -1;
+    holdAt = 0;
+    if (id !== -1 && document.documentElement.hasPointerCapture?.(id)) {
+      try {
+        document.documentElement.releasePointerCapture(id);
+      } catch {
+        /* already released */
+      }
+    }
   };
   const onPointerDown = (e: PointerEvent) => {
     if (e.button !== 0) return;
     if ((e.target as Element).closest?.('a, button, input, textarea, select')) return;
+    placePointer(e);
     canvas.dataset.casts = String((canvas.dataset.casts ? Number(canvas.dataset.casts) : 0) + 1);
     if (blob && uniforms.uMorph.value.x < 0.3 && castBlob()) {
       uniforms.uRipple.value.set(hitLocal.x, hitLocal.y, hitLocal.z, 0);
       uniforms.uIntensity.value = Math.min(1.2, uniforms.uIntensity.value + 0.35);
       holding = true;
       holdPointer = e.pointerId;
+      holdAt = performance.now();
       try {
         document.documentElement.setPointerCapture(e.pointerId);
       } catch {
@@ -434,7 +456,10 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
   };
   const onPointerEnd = (e: PointerEvent) => {
     canvas.dataset.end = `${e.type}:${e.pointerId}:${holdPointer}`;
-    if (holdPointer !== -1 && e.pointerId !== holdPointer) return;
+    if (holdPointer === -1) return;
+    // A long press can report pointerup with a different id while buttons are already clear.
+    // Ignoring that event left `holding` true and the glass charge stuck at white.
+    if (e.pointerId !== holdPointer && e.buttons !== 0) return;
     endHold();
   };
   addEventListener('pointerdown', onPointerDown);
@@ -547,6 +572,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
         d.mesh.scale.setScalar(0.17 * Math.pow(out, 0.35));
       }
 
+      if (holding && holdAt && performance.now() - holdAt > 8000) endHold();
       hold += ((holding ? 1 : 0) - hold) * (1 - Math.exp(-dt * (holding ? 5 : 8)));
       uniforms.uHold.value = hold;
       canvas.dataset.hold = hold.toFixed(2);
@@ -620,13 +646,19 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     }
   };
 
-  frame();
   const revealScene = () => canvas.classList.add('ready');
-  requestAnimationFrame(() => requestAnimationFrame(mountHeroDetail));
-  const introEl = document.getElementById('intro');
-  if (introEl && !introEl.classList.contains('out')) addEventListener('introout', revealScene, { once: true });
-  else revealScene();
-  if (reduced) return;
-
-  renderer.setAnimationLoop(() => visible && frame());
+  if (!reduced) frame();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    mountHeroDetail();
+    if (!reduced) return;
+    reducedPainted = true;
+    frame();
+    revealScene();
+  }));
+  if (!reduced) {
+    const introEl = document.getElementById('intro');
+    if (introEl && !introEl.classList.contains('out')) addEventListener('introout', revealScene, { once: true });
+    else revealScene();
+    renderer.setAnimationLoop(() => visible && frame());
+  }
 }

@@ -579,7 +579,7 @@ const crumbs = [
           if (e.isIntersecting) {
             const reduce = document.documentElement.classList.contains('no-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
             links.forEach((a) => {
-              const on = a.hash === `#${e.target.id}`;
+              const on = decodeURIComponent(a.hash.slice(1)) === e.target.id;
               a.classList.toggle('on', on);
               a.closest('li')?.classList.toggle('on', on);
               if (on && matchMedia('(max-width: 900px)').matches) a.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
@@ -638,7 +638,11 @@ const crumbs = [
   const share = document.querySelector<HTMLButtonElement>('[data-share-copy]');
   share?.addEventListener('click', async () => {
     const label = share.textContent;
-    await navigator.clipboard.writeText(location.href);
+    try {
+      await navigator.clipboard.writeText(location.href);
+    } catch {
+      return;
+    }
     share.textContent = share.dataset.done!;
     setTimeout(() => (share.textContent = label), 1600);
   });

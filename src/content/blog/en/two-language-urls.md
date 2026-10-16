@@ -19,7 +19,7 @@ Interface copy is chosen from `src/i18n/ui.ts` while the page is built. The brow
 
 On a page that is not `noindex`, `hreflang` for the page itself is always there: `fa-IR` or `en-US`. The other language and `x-default` are added only when `alternate` is on. `x-default` points at the Persian URL of that pair, not at the site root. `og:locale:alternate` uses the same condition.
 
-A post takes this flag from `hasTwin`. A Persian copy dropped into the English folder is not a translation. This post and its English twin share the slug, so the flag is on for them. [Put right-to-left in on day one](/en/blog/rtl/) has a twin too. A tag page is different. `tagPairs` today pairs `راست‌به‌چپ` with `rtl`, and `تایپوگرافی` with `typography`. The names `bilingual` and `persian` are not in that table, so those tag archives do not claim a translated tag. The post still does.
+A post takes this flag from `hasTwin`. A Persian copy dropped into the English folder is not a translation. This post and its English twin share the slug, so the flag is on for them. [Put right-to-left in on day one](/en/blog/rtl/) has a twin too. A tag page is different. `tagPairs` today pairs `راست‌به‌چپ` with `rtl`, `تایپوگرافی` with `typography`, `فارسی` with `persian`, and `دوزبانه` with `bilingual`, among others. A name that is not in that table does not claim a translated tag. The post still pairs by slug.
 
 ## The root is the exception
 
@@ -33,6 +33,6 @@ The 404 is Persian, `noindex`, and has no `alternate`. It is not either language
 
 Direction, type, and Tab order are decided on the document whose address is canonical. A Persian page has `dir="rtl"`, and the skip link goes to the right edge. An English page does not do that. If both were one file and only a property changed, one URL would stay canonical and the other would be a shadow. Here each has its own file. [Focus starts where the reading starts](/en/blog/focus-and-rtl/) is the order of that document.
 
-[This site](/en/blog/this-site/) is the short introduction. [Hello world — why I rebuilt this site](/en/blog/hello-world/) is why it was rebuilt. The [collaboration](/en/services/) page is not in the header nav. It is reached from the footer, and its only public contact is Telegram, [@MH759](https://t.me/MH759).
+[This site](/en/blog/this-site/) is the short introduction. [Why I rebuilt this site](/en/blog/hello-world/) is why it was rebuilt. The [collaboration](/en/services/) page is not in the header nav. It is reached from the footer, and its only public contact is Telegram, [@MH759](https://t.me/MH759).
 
 If one thing stays, it is this: I do not announce a translation by flipping `dir`. A second file is required, and until that file exists the canonical address stays this page.

@@ -106,13 +106,14 @@ async function fromGraphQL(): Promise<Contributions | undefined> {
     w.contributionDays.map((d) => ({ date: d.date, count: d.contributionCount, level: LEVELS[d.contributionLevel] ?? 0 })),
   );
   const byRepo = new Map<string, Activity>();
-  let privateTotal = c.restrictedContributionsCount ?? 0;
-  for (const r of c.commitContributionsByRepository as GqlRepo[]) {
-    const a = activityOf(r.contributions.nodes);
+  let privateCommits = 0;
+  for (const r of (c.commitContributionsByRepository ?? []) as GqlRepo[]) {
+    const a = activityOf(r.contributions?.nodes ?? []);
     if (!a) continue;
     byRepo.set(r.repository.name, a);
-    if (r.repository.isPrivate) privateTotal += a.count;
+    if (r.repository.isPrivate) privateCommits += a.count;
   }
+  const privateTotal = Math.max(c.restrictedContributionsCount ?? 0, privateCommits);
   return { days, total: c.contributionCalendar.totalContributions, privateTotal, byRepo };
 }
 
@@ -141,10 +142,10 @@ export function getRepos() {
       .catch(() => []),
     getContributions(),
   ]).then(([list, { byRepo }]: [Repo[], Contributions]) =>
-    list
-      .filter((r) => !r.fork)
+    (Array.isArray(list) ? list : [])
+      .filter((r) => !r.fork && !r.private)
       .map((r) => ({ ...scrub(r), activity: byRepo.get(r.name) }))
-      .sort((a, b) => (b.activity?.last ?? b.pushed_at.slice(0, 7)).localeCompare(a.activity?.last ?? a.pushed_at.slice(0, 7))),
+      .sort((a, b) => (b.activity?.last ?? (b.pushed_at || '').slice(0, 7)).localeCompare(a.activity?.last ?? (a.pushed_at || '').slice(0, 7))),
   );
   return reposCache;
 }
@@ -189,7 +190,10 @@ export function languageStats(repos: Repo[]) {
   const counts = new Map<string, number>();
   for (const r of repos) if (r.language) counts.set(r.language, (counts.get(r.language) ?? 0) + 1);
   const total = [...counts.values()].reduce((a, b) => a + b, 0) || 1;
-  return [...counts.entries()]
+  const rows = [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([name, n]) => ({ name, pct: Math.round((n / total) * 100) }));
+  const drift = rows.reduce((sum, row) => sum + row.pct, 0) - 100;
+  if (rows.length && drift) rows[0].pct -= drift;
+  return rows;
 }

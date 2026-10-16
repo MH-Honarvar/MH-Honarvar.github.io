@@ -2,7 +2,7 @@
 import Base from '../../../layouts/Base.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import { languages, t, type Lang } from '../../../i18n/ui';
-import { articleTitle, topicById, topics, topicsIndex, type Topic } from '../../../content/topics';
+import { articlePublished, articleTitle, topicById, topics, topicsIndex, type Topic } from '../../../content/topics';
 
 export function getStaticPaths() {
   return languages.flatMap((lang) => topics.map((topic) => ({ params: { lang, topic: topic.id } })));
@@ -16,10 +16,12 @@ const crumbs = [
   { name: topicsIndex.title[lang], url: `/${lang}/topics/` },
   { name: topic.title[lang], url: `/${lang}/topics/${topic.id}/` },
 ];
-const posts = topic.articles.map((article) => ({
-  href: `/${lang}/blog/${article.slug}/`,
-  title: articleTitle(lang, article),
-}));
+const posts = topic.articles
+  .filter((article) => articlePublished(lang, article.slug))
+  .map((article) => ({
+    href: `/${lang}/blog/${article.slug}/`,
+    title: articleTitle(lang, article),
+  }));
 ---
 
 <Base

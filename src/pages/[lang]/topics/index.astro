@@ -2,12 +2,13 @@
 import Base from '../../../layouts/Base.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import { languages, t, type Lang } from '../../../i18n/ui';
-import { topics, topicsIndex } from '../../../content/topics';
+import { articlePublished, articleTitle, topics, topicsIndex } from '../../../content/topics';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
 const lang = Astro.params.lang as Lang;
 const tr = t(lang);
+const loose = topicsIndex.articles.filter((article) => articlePublished(lang, article.slug));
 const crumbs = [
   { name: tr('nav.home'), url: `/${lang}/` },
   { name: topicsIndex.title[lang], url: `/${lang}/topics/` },
@@ -44,6 +45,16 @@ const crumbs = [
         ))
       }
     </ul>
+    {
+      loose.length > 0 && (
+        <p class="aside">
+          {topicsIndex.aside[lang]}{' '}
+          {loose.map((article) => (
+            <a href={`/${lang}/blog/${article.slug}/`}>{articleTitle(lang, article)}</a>
+          ))}
+        </p>
+      )
+    }
   </article>
 </Base>
 
@@ -53,4 +64,6 @@ const crumbs = [
   .hubs li { margin: 0 0 1.3rem; }
   .hubs a { color: var(--accent2); font-size: 1.2rem; text-decoration: none; }
   .hubs p { color: var(--muted); margin: 0.25rem 0 0; }
+  .aside { color: var(--muted); margin: 0.2rem 0 0; }
+  .aside a { color: var(--accent2); text-decoration: none; }
 </style>

@@ -12,7 +12,7 @@ const tr = t(lang);
 const posts = await getPosts(lang);
 const counts = new Map<string, number>();
 for (const p of posts) for (const tg of p.data.tags) counts.set(tg, (counts.get(tg) ?? 0) + 1);
-const tags = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+const tags = [...counts.entries()].filter(([tg]) => tagIntro[tg]).sort((a, b) => b[1] - a[1]);
 const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 ---
 

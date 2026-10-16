@@ -1,21 +1,61 @@
+---
+import '../styles/global.css';
+---
+
 <!doctype html>
-<html lang="fa">
+<html lang="fa" dir="rtl" data-theme="neon">
   <head>
     <meta charset="utf-8" />
     <title>محمد هنرور</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, follow" />
     <meta name="description" content="سایت محمد هنرور. برای فارسی به /fa/ و برای انگلیسی به /en/ برو." />
+    <meta name="theme-color" content="#07060d" />
     <noscript><meta http-equiv="refresh" content="0; url=/fa/" /></noscript>
     <link rel="canonical" href="https://mh-honarvar.github.io/fa/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>
       location.replace(navigator.language.startsWith('fa') ? '/fa/' : '/en/');
     </script>
-    <style>
-      html { background: #07060d; }
-    </style>
   </head>
   <body>
-    <p><a href="/fa/">فارسی</a> · <a href="/en/">English</a></p>
+    <main class="gate container">
+      <p class="mark gradient-text">م.ه</p>
+      <h1>محمد هنرور</h1>
+      <p class="section-lede">سایت محمد هنرور. برای فارسی به /fa/ و برای انگلیسی به /en/ برو.</p>
+      <div class="choices">
+        <a class="btn primary" href="/fa/">فارسی</a>
+        <a class="btn" href="/en/" lang="en" dir="ltr">English</a>
+      </div>
+    </main>
   </body>
 </html>
+
+<style>
+  .gate {
+    min-height: 100vh;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 0.75rem;
+  }
+  .mark {
+    margin: 0;
+    font-weight: 800;
+    font-size: 1.15rem;
+  }
+  h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.2;
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+</style>

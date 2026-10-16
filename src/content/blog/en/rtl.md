@@ -30,7 +30,7 @@ The [collaboration](/en/services/) page states the same limit for contact. The o
 
 ## Which notes sit beside this one
 
-[Hello world — why I rebuilt this site](/en/blog/hello-world/) says what the tools are and when motion is allowed. [This site](/en/blog/this-site/) is the very short version of that introduction. This page wants right-to-left on day one. The longer pages walk the same code more slowly.
+[Why I rebuilt this site](/en/blog/hello-world/) says what the tools are and when motion is allowed. [This site](/en/blog/this-site/) is the very short version of that introduction. This page wants right-to-left on day one. The longer pages walk the same code more slowly.
 
 ## The start edge, not a last-minute mirror
 

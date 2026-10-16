@@ -102,7 +102,8 @@ body {
   margin: 0;
   min-height: 100vh;
   line-height: 1.7;
-  overflow-x: hidden;
+  /* clip does not force overflow-y to auto, so the sticky header still sticks */
+  overflow-x: clip;
   transition: background 0.4s, color 0.4s;
 }
 
@@ -154,8 +155,12 @@ a {
   border: 0;
   box-shadow: var(--shadow);
 }
-.btn:hover {
+.btn:hover,
+.btn:focus-visible {
   transform: translateY(-2px);
+}
+pre .copy-btn:focus-visible {
+  opacity: 1;
 }
 
 .section {
@@ -223,9 +228,41 @@ html.no-motion .reveal {
     transition-duration: 0.01ms !important;
   }
   .reveal,
-  html.is-motion .reveal {
+  html.is-motion .reveal,
+  html.no-motion .reveal {
     opacity: 1;
     transform: none;
+  }
+  .btn:hover,
+  .btn:focus-visible {
+    transform: none;
+  }
+  body.konami {
+    animation: none;
+  }
+}
+html.no-motion .btn:hover,
+html.no-motion .btn:focus-visible {
+  transform: none;
+}
+html.no-motion body.konami {
+  animation: none;
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
+  }
+  .gradient-text {
+    background: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+  }
+  .btn.primary {
+    background: ButtonFace;
+    color: ButtonText;
+    border: 1px solid ButtonText;
+    box-shadow: none;
   }
 }
 

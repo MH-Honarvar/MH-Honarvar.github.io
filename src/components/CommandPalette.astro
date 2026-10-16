@@ -8,9 +8,9 @@ const { lang, index } = Astro.props;
 const tr = t(lang);
 ---
 
-<script type="application/json" id="site-index" set:html={JSON.stringify(index)} />
+<script type="application/json" id="site-index" set:html={JSON.stringify(index).replace(/</g, '\\u003c')} />
 
-<dialog id="cmd" class="glass" data-lang={lang} data-empty={tr('cmd.empty')}>
+<dialog id="cmd" class="glass" data-lang={lang} data-empty={tr('cmd.empty')} data-page={tr('cmd.page')} data-post={tr('cmd.post')}>
   <input id="cmd-input" type="text" placeholder={tr('cmd.placeholder')} autocomplete="off" />
   <ul id="cmd-list"></ul>
   <p class="foot"><kbd>↑</kbd><kbd>↓</kbd><kbd>Enter</kbd><kbd>Esc</kbd></p>

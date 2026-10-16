@@ -45,12 +45,13 @@ const { mode } = Astro.props;
 
 <script>
   const canvas = document.getElementById('scene') as HTMLCanvasElement | null;
-  if (canvas && matchMedia('(prefers-reduced-motion: reduce)').matches) canvas.remove();
-  else if (canvas) {
+  if (canvas) {
     const start = () => {
       import('../scripts/scene/scene').then(({ initScene }) => initScene(canvas, canvas.dataset.mode as 'hero' | 'ambient'));
     };
-    if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 700 });
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) start();
+    else if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 700 });
     else requestAnimationFrame(start);
   }
 </script>

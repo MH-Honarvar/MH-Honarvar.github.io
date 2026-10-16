@@ -78,7 +78,7 @@ export const faq: { q: L; a: L }[] = [
   },
   {
     q: { fa: 'چرا بعضی پروژه‌ها خصوصی‌اند؟', en: 'Why are some projects private?' },
-    a: { fa: 'کار مشتری‌ها و چیزهایی که هنوز آماده نیستند. فقط اینکه وجود دارند را اینجا می‌بینی.', en: "Client work and things that aren't ready yet. Here you only see that they exist." },
+    a: { fa: 'کار مشتری و چیزی که هنوز آماده نیست روی این سایت نمی‌آید.', en: 'Client work, and anything that is not ready, does not appear on this site.' },
   },
   {
     q: { fa: 'این سایت با چه ساخته شده؟', en: 'What is this site built with?' },

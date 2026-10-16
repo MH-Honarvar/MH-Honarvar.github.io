@@ -1,6 +1,6 @@
 ---
 title: The translation is a second file
-description: An hreflang pair is the same filename in the other language folder. The new tags on these posts are not in tagPairs, so those archives stay out of the index.
+description: "An hreflang pair is the same filename in the other language folder. A tag archive is indexed only when that name is in tagPairs."
 date: 2026-10-14
 tags: [persian, bilingual]
 ---
@@ -35,9 +35,9 @@ The 404 is separate. Its language is Persian, it is `noindex`, and it has no `al
 
 ## A post pair is not a tag pair
 
-A tag archive is indexed only when its name is in `tagPairs`, both sides have a multi-sentence introduction, and the tag list is a real subset of the blog rather than a copy of the whole index. The pairs listed today are `راست‌به‌چپ` with `rtl`, and `تایپوگرافی` with `typography`.
+A tag archive is indexed only when its name is in `tagPairs`, both sides have a multi-sentence introduction, and the tag list is a real subset of the blog rather than a copy of the whole index. The pairs listed today are `راست‌به‌چپ` with `rtl`, `تایپوگرافی` with `typography`, `اعداد` with `numerals`, `فارسی` with `persian`, `دوزبانه` with `bilingual`, `خواندن` with `reading`, `سرعت` with `performance`, `حرکت` with `motion`, and `ایستا` with `static`.
 
-The tags on these three posts — `اعداد`, `فارسی`, `دوزبانه`, and their English names — are not in that list. Their archives stay `noindex` and out of the sitemap, even where the English name is a translation of the Persian one. The post itself still pairs by slug. A tag archive does not do that automatically.
+Names that are not in that table stay `noindex` and out of the sitemap, even where the English word is a translation of the Persian one. `تمرکز` and `focus`, `سه‌بعدی` and `webgl`, and the single labels `وب`, `web`, `طراحی`, and `design` are in that leftover set. The post itself still pairs by slug. A tag archive does not do that automatically.
 
 If two tags were joined just by swapping the locale prefix, a Persian archive would point at a meaningless English URL. The code does not do that. `pairedTag` only knows the table. The tag link on the post still works, and it goes to `/fa/blog/tags/…/` or `/en/blog/tags/…/`. Leaving an archive out of the index is not the same as removing the page.
 

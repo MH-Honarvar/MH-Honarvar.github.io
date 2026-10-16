@@ -11,10 +11,10 @@ export const colophonPage: {
   linksHeading: L;
   links: { path: string; label: L }[];
 } = {
-  title: { fa: 'شناسنامه‌ی سایت', en: 'Colophon' },
+  title: { fa: 'ساخت استاتیک این سایت', en: 'The static build of this site' },
   description: {
-    fa: 'شناسنامه‌ی سایت محمد هنرور: Astro استاتیک، فایل جدا برای فارسی و انگلیسی، راست‌به‌چپ از طرح اول. تماس فقط تلگرام @MH759 است. ایمیل، آمارگیر و مشتری ساختگی نیست.',
-    en: 'How Mohammad Honarvar’s site is built: static Astro, separate /fa and /en files, RTL from the start. Only Telegram @MH759. No email, analytics, or invented clients.',
+    fa: 'خروجی Astro فایل استاتیک است و فارسی و انگلیسی دو فایل جدا هستند. آمارگیر روی صفحه نیست. ایمیل عمومی ندارم؛ پیام فقط به تلگرام @MH759 می‌رسد.',
+    en: 'Astro writes static files. Persian and English are separate files. There is no analytics. I have no public email; a message goes only to Telegram @MH759.',
   },
   h1: { fa: 'این سایت چطور ساخته شده', en: 'How this site is built' },
   lede: {

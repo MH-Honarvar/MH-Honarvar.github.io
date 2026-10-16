@@ -22,7 +22,7 @@ The first screen may ask for a scene. A blog post turns rich motion off. Lenis a
 
 `Ctrl` and `K` open the palette. The palette lists both languages and does not merge the page. Keyboard focus has another order: the skip link is first, then the header, then `#main`. That order is opened up in [Focus starts where the reading starts](/en/blog/focus-and-rtl/).
 
-The first post, [Hello world — why I rebuilt this site](/en/blog/hello-world/), says the same tools with the reason the site was rebuilt.
+The first post, [Why I rebuilt this site](/en/blog/hello-world/), says the same tools with the reason the site was rebuilt.
 
 ## What does not appear
 

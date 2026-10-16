@@ -7,7 +7,7 @@ import { servicesPage } from '../../content/services';
 import { colophonPage } from '../../content/colophon';
 import { publicCases } from '../../content/cases';
 import { SITE_REPO, studyFor } from '../../content/studies';
-import { topicById } from '../../content/topics';
+import { topicById, topics, topicsIndex } from '../../content/topics';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -15,42 +15,9 @@ const lang = Astro.params.lang as Lang;
 const tr = t(lang);
 const posts = await getPosts(lang);
 const titleBySlug = new Map(posts.map((post) => [postSlug(post), post.data.title]));
-
-const copy = {
-  fa: {
-    title: 'نقشه‌ی سایت',
-    description: 'فهرست صفحه‌های فارسی برای گشتن آدم: خانه، درباره، همکاری، شناسنامه‌ی سایت، پروژه‌ها، سه موضوع، نوشته‌ها، و دو نمونه‌ی کار.',
-    lede: 'همین صفحه‌ها، گروه‌بندی‌شده، تا از یکی به دیگری بروی.',
-    pages: 'صفحه‌ها',
-    topics: 'موضوع‌ها',
-    notes: 'نوشته‌ها',
-    cases: 'نمونه‌ها',
-  },
-  en: {
-    title: 'Map',
-    description: 'A human list of the English pages: home, about, collaboration, the colophon, projects, three topics, the notes, and two cases.',
-    lede: 'The same pages, grouped, so you can walk from one to the next.',
-    pages: 'Pages',
-    topics: 'Topics',
-    notes: 'Notes',
-    cases: 'Cases',
-  },
-}[lang];
-
-const fallbackTitle: Record<string, string> = {
-  fa: {
-    rtl: 'راست‌به‌چپ را از روز اول بگذار',
-    'focus-and-rtl': 'تمرکز از همان لبه‌ای شروع می‌شود که خواندن',
-    'two-language-urls': 'نشانی متعارف خود صفحه است',
-    'hello-world': 'سلام دنیا؛ چرا این سایت را از نو ساختم',
-  },
-  en: {
-    rtl: 'Put right-to-left in on day one',
-    'focus-and-rtl': 'Focus starts where the reading starts',
-    'two-language-urls': 'The canonical address is the page itself',
-    'hello-world': 'Hello world — why I rebuilt this site',
-  },
-}[lang];
+const fallbackTitle = new Map(
+  [...topics.flatMap((topic) => topic.articles), ...topicsIndex.articles].map((article) => [article.slug, article.fallback[lang]]),
+);
 
 const noteSlugs = [
   'persian-rtl-interface',
@@ -60,13 +27,40 @@ const noteSlugs = [
   'separate-locale-routes',
   'focus-and-rtl',
   'two-language-urls',
+  'topic-hubs',
+  'sharing-in-two-languages',
   'type-and-space',
   'reading-measure-and-rhythm',
+  'the-next-article',
   'static-pages-and-webgl',
   'when-to-skip-the-animation',
   'what-a-static-page-owes-the-reader',
   'hello-world',
+  'visible-before-motion',
+  'the-html-map',
+  'author-and-trust',
 ];
+
+const copy = {
+  fa: {
+    title: t('fa')('nav.map'),
+    description: 'فهرست صفحه‌های فارسی برای گشتن آدم: خانه، درباره، همکاری، شناسنامه‌ی سایت، پروژه‌ها، سه موضوع، نوشته‌ها، و دو نمونه‌ی کار.',
+    lede: 'همین صفحه‌ها، گروه‌بندی‌شده، تا از یکی به دیگری بروی.',
+    pages: 'صفحه‌ها',
+    topics: 'موضوع‌ها',
+    notes: 'نوشته‌ها',
+    cases: 'نمونه‌ها',
+  },
+  en: {
+    title: t('en')('nav.map'),
+    description: 'A human list of the English pages: home, about, collaboration, the colophon, projects, three topics, the notes, and two cases.',
+    lede: 'The same pages, grouped, so you can walk from one to the next.',
+    pages: 'Pages',
+    topics: 'Topics',
+    notes: 'Notes',
+    cases: 'Cases',
+  },
+}[lang];
 
 const href = (path: string) => `/${lang}${path}`;
 const siteStudy = studyFor(SITE_REPO);
@@ -86,6 +80,7 @@ const groups = [
   {
     heading: copy.topics,
     links: [
+      { href: href('/topics/'), label: topicsIndex.title[lang] },
       { href: href('/topics/rtl/'), label: topicById('rtl')?.title[lang] ?? 'rtl' },
       { href: href('/topics/type/'), label: topicById('type')?.title[lang] ?? 'type' },
       { href: href('/topics/speed/'), label: topicById('speed')?.title[lang] ?? 'speed' },
@@ -97,7 +92,7 @@ const groups = [
       { href: href('/blog/'), label: tr('blog.title') },
       ...noteSlugs.map((slug) => ({
         href: href(`/blog/${slug}/`),
-        label: titleBySlug.get(slug) ?? fallbackTitle[slug] ?? slug,
+        label: titleBySlug.get(slug) ?? fallbackTitle.get(slug) ?? slug,
       })),
     ],
   },

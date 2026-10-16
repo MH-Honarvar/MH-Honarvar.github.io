@@ -39,6 +39,6 @@ The page atmosphere, the footer glow, and the scene canvas are `aria-hidden`. Cl
 
 This behavior is tied to the language. An English page has a left-to-right document, and the same skip link goes to the left edge. They are two files, not one page that only slides the ring. [The canonical address is the page itself](/en/blog/two-language-urls/).
 
-The [collaboration](/en/services/) page keeps contact apart from this machinery. The only public way is Telegram, [@MH759](https://t.me/MH759). How the site is built is in [Hello world — why I rebuilt this site](/en/blog/hello-world/), and the short version is [This site](/en/blog/this-site/).
+The [collaboration](/en/services/) page keeps contact apart from this machinery. The only public way is Telegram, [@MH759](https://t.me/MH759). How the site is built is in [Why I rebuilt this site](/en/blog/hello-world/), and the short version is [This site](/en/blog/this-site/).
 
 If one thing stays, it is this: I did not force focus to the right with a `tabindex` number. The document is arranged in reading order, and `dir` shows that order from the right edge.

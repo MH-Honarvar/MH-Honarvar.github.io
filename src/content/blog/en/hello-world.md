@@ -1,5 +1,5 @@
 ---
-title: "Hello world — why I rebuilt this site"
+title: "Why I rebuilt this site"
 description: "The first post on this blog: the site is static Astro and Three.js, and motion loads only when that page asks for it and reduced motion is off."
 date: 2026-10-03
 updated: 2026-10-14
@@ -26,7 +26,7 @@ The `` ` `` key opens a terminal. That dialog is `dir="ltr"`. `help` means somet
 
 ## What stays public
 
-A private repository card shows a name, a language, an activity window, and the past year’s commit count. The description, topics, link, and commit text never reach the template. No client name is invented.
+A private repository does not reach this page: not the name, not the description, not the link. No client name is invented.
 
 The [collaboration](/en/services/) page says what kind of work is welcome. The only public contact is Telegram, [@MH759](https://t.me/MH759).
 

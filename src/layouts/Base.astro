@@ -4,6 +4,10 @@ import { t, other, ui, type Lang } from '../i18n/ui';
 import { SITE } from '../config';
 import { getPosts, postUrl } from '../lib/blog';
 import { toolbox } from '../content/about';
+import { publicCases } from '../content/cases';
+import { colophonPage } from '../content/colophon';
+import { SITE_REPO, studyFor } from '../content/studies';
+import { topics, topicsIndex } from '../content/topics';
 import Cursor from '../components/Cursor.astro';
 import CommandPalette from '../components/CommandPalette.astro';
 import Intro from '../components/Intro.astro';
@@ -38,7 +42,7 @@ const name = SITE.name[lang];
 const fullTitle = title ? (title.includes(name) ? title : `${title} — ${name}`) : name;
 const desc = description ?? tr('hero.lede');
 const path = Astro.url.pathname;
-const switchHref = altPath ?? path.replace(/^\/(fa|en)\//, `/${other(lang)}/`);
+const switchHref = altPath ?? (path.startsWith(`/${lang}/`) ? path.replace(/^\/(fa|en)\//, `/${other(lang)}/`) : `/${other(lang)}/`);
 const abs = (p: string) => new URL(p, Astro.site).href;
 const pageUrl = abs(path);
 const imageUrl = abs(image);
@@ -113,7 +117,14 @@ for (const l of ['fa', 'en'] as const) {
     { title: lt('nav.projects'), url: `/${l}/projects/`, kind: 'page', lang: l },
     { title: lt('nav.about'), url: `/${l}/about/`, kind: 'page', lang: l },
     { title: lt('nav.services'), url: `/${l}/services/`, kind: 'page', lang: l },
+    { title: lt('nav.map'), url: `/${l}/map/`, kind: 'page', lang: l },
+    { title: colophonPage.title[l], url: `/${l}/colophon/`, kind: 'page', lang: l },
+    { title: topicsIndex.title[l], url: `/${l}/topics/`, kind: 'page', lang: l },
   );
+  for (const topic of topics) index.push({ title: topic.title[l], url: `/${l}/topics/${topic.id}/`, kind: 'page', lang: l });
+  for (const item of publicCases) index.push({ title: item.title[l], url: `/${l}/projects/${item.slug}/`, kind: 'page', lang: l });
+  const siteStudy = studyFor(SITE_REPO);
+  if (siteStudy) index.push({ title: siteStudy.title[l], url: `/${l}/projects/${SITE_REPO}/`, kind: 'page', lang: l });
   for (const p of await getPosts(l)) index.push({ title: p.data.title, url: postUrl(p), kind: 'post', lang: l });
 }
 ---
@@ -158,8 +169,9 @@ for (const l of ['fa', 'en'] as const) {
     <script is:inline type="application/ld+json" set:html={jsonLd} />
     <script is:inline>
       (() => {
+        const allowed = ['neon', 'cyber', 'light'];
         const t = localStorage.getItem('theme');
-        if (t) document.documentElement.dataset.theme = t;
+        if (t && allowed.includes(t)) document.documentElement.dataset.theme = t;
         const theme = document.documentElement.dataset.theme;
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute('content', theme === 'light' ? '#f6f4fb' : theme === 'cyber' ? '#030807' : '#07060d');
@@ -178,7 +190,7 @@ for (const l of ['fa', 'en'] as const) {
         <a href={`/${lang}/`} class="logo" data-magnetic style="view-transition-name: site-logo">
           <span class="gradient-text">{lang === 'fa' ? 'م.ه' : 'M.H'}</span>
         </a>
-        <nav>
+        <nav class="site-nav">
           {nav.map((n) => {
             const on = n.href === path || (n.href !== `/${lang}/` && path.startsWith(n.href));
             return <a href={n.href} class:list={{ active: on }} aria-current={on ? 'page' : undefined}>{n.label}</a>;
@@ -187,7 +199,7 @@ for (const l of ['fa', 'en'] as const) {
         <div class="tools">
           <button class="icon" id="cmd-open" dir="ltr" aria-label={tr('cmd.hint')} title={tr('cmd.hint')}>⌘K</button>
           <button class="icon" id="theme-btn" aria-label={tr('theme')} title={tr('theme')}>◐</button>
-          <a class="icon lang" href={switchHref} hreflang={lang === 'fa' ? 'en-US' : 'fa-IR'}>{tr('switch')}</a>
+          <a class="icon lang" href={switchHref} dir={lang === 'fa' ? 'ltr' : 'rtl'} hreflang={lang === 'fa' ? 'en-US' : 'fa-IR'}>{tr('switch')}</a>
         </div>
       </div>
     </header>
@@ -267,7 +279,8 @@ for (const l of ['fa', 'en'] as const) {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.55rem 0.8rem 0.55rem 1.1rem;
+    padding-block: 0.55rem;
+    padding-inline: 1.1rem 0.8rem;
     border-radius: 999px;
   }
   .logo {
@@ -279,6 +292,7 @@ for (const l of ['fa', 'en'] as const) {
     display: flex;
     gap: 0.25rem;
     margin-inline: auto;
+    min-width: 0;
   }
   nav a {
     text-decoration: none;
@@ -288,12 +302,14 @@ for (const l of ['fa', 'en'] as const) {
     transition: color 0.2s, background 0.2s;
   }
   nav a:hover,
+  nav a:focus-visible,
   nav a.active {
     color: var(--fg);
     background: var(--glass);
   }
   .tools {
     display: flex;
+    flex-shrink: 0;
     gap: 0.35rem;
   }
   .icon {
@@ -307,8 +323,15 @@ for (const l of ['fa', 'en'] as const) {
     cursor: pointer;
     text-decoration: none;
   }
-  .icon:hover {
+  .icon:hover,
+  .icon:focus-visible {
     border-color: var(--accent);
+  }
+  /* Rings stay inside the glass bar. backdrop-filter clips outline-offset. */
+  .bar :focus-visible,
+  .to-top:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
   }
   .site-header .bar {
     transition: padding 0.35s, background 0.35s, box-shadow 0.35s, transform 0.35s;
@@ -355,7 +378,10 @@ for (const l of ['fa', 'en'] as const) {
   }
   .links {
     display: flex;
-    gap: 1.1rem;
+    flex-wrap: wrap;
+    gap: 0.65rem 1.1rem;
+    min-width: 0;
+    max-width: 100%;
   }
   .links a {
     display: inline-flex;
@@ -364,7 +390,8 @@ for (const l of ['fa', 'en'] as const) {
     text-decoration: none;
     transition: color 0.2s;
   }
-  .links a:hover {
+  .links a:hover,
+  .links a:focus-visible {
     color: var(--fg);
   }
   .hint {
@@ -401,16 +428,29 @@ for (const l of ['fa', 'en'] as const) {
     transition: none;
   }
   @media (max-width: 720px) {
+    /* backdrop-filter and transform on .bar would trap this fixed nav. */
+    .bar {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      background: color-mix(in srgb, var(--bg2) 88%, transparent);
+    }
+    :global(html.scrolled) .site-header .bar {
+      transform: none;
+    }
     nav {
       position: fixed;
       bottom: 1rem;
       inset-inline: 1rem;
       justify-content: space-around;
+      margin-inline: 0;
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 999px;
       padding: 0.35rem;
       z-index: 40;
+    }
+    nav a {
+      padding-inline: 0.55rem;
     }
     .bar {
       justify-content: space-between;

@@ -11,5 +11,5 @@ export const minutes = (p: Post) => Math.max(1, Math.round(readingTime(p.body ??
 
 export async function getPosts(lang: Lang) {
   const all = await getCollection('blog', (p) => postLang(p) === lang && (import.meta.env.DEV || !p.data.draft));
-  return all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  return all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf() || postSlug(a).localeCompare(postSlug(b)));
 }
