@@ -1,0 +1,236 @@
+<div class="lost" aria-hidden="true">
+  <svg viewBox="0 0 480 300" fill="none" focusable="false" aria-hidden="true">
+    <defs>
+      <linearGradient id="lost-measure-grad" x1="0" y1="0" x2="1" y2="0.176" gradientUnits="objectBoundingBox">
+        <stop offset="0%" stop-color="var(--accent)" />
+        <stop offset="100%" stop-color="var(--accent2)" />
+      </linearGradient>
+    </defs>
+
+    <path class="origin" d="M456 116 V132 H470" />
+    <line class="cap" x1="456" y1="112" x2="300" y2="112" />
+
+    <text
+      class="ghost"
+      x="228"
+      y="132"
+      text-anchor="middle"
+      font-family="'Inter Variable', sans-serif"
+      font-size="46"
+      font-weight="520"
+      letter-spacing="3.4"
+    >404</text>
+
+    <line class="base" x1="456" y1="132" x2="168" y2="132" />
+
+    <g class="rhythm">
+      <circle cx="442" cy="132" r="2.3" />
+      <circle cx="431" cy="132" r="2.3" />
+      <line x1="419" y1="132" x2="419" y2="108" />
+      <circle cx="407" cy="132" r="2.3" />
+
+      <circle cx="386" cy="132" r="2.3" />
+      <circle cx="375" cy="132" r="2.3" />
+      <line x1="363" y1="132" x2="363" y2="116" />
+      <circle cx="351" cy="132" r="2.3" />
+      <circle cx="339" cy="132" r="2.3" />
+
+      <circle cx="318" cy="132" r="2.3" />
+      <circle cx="307" cy="132" r="2.3" />
+      <line x1="295" y1="132" x2="295" y2="110" />
+    </g>
+
+    <g class="slip" transform="rotate(-14 150 154)">
+      <line class="slug" x1="146" y1="154" x2="54" y2="154" />
+      <circle class="bead" cx="130" cy="154" r="2.3" />
+      <circle class="bead mid" cx="112" cy="154" r="2.3" />
+      <circle class="bead far" cx="90" cy="154" r="2.3" />
+      <line class="bead far" x1="70" y1="154" x2="70" y2="140" />
+    </g>
+
+    <g transform="translate(104 250) rotate(-8)">
+      <text
+        class="num"
+        x="0"
+        y="0"
+        text-anchor="middle"
+        font-family="'Vazirmatn Variable', 'Inter Variable', sans-serif"
+        font-size="84"
+        font-weight="800"
+        letter-spacing="2"
+        fill="url(#lost-measure-grad)"
+      >۴۰۴</text>
+      <line class="own" x1="-66" y1="16" x2="52" y2="16" />
+    </g>
+  </svg>
+
+  <span class="caret"></span>
+</div>
+
+<style>
+  .lost {
+    position: relative;
+    width: 100%;
+    max-width: 28rem;
+    margin-inline: auto;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .lost svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    direction: ltr;
+  }
+
+  .origin,
+  .base,
+  .slug {
+    stroke: var(--muted);
+    stroke-width: 1.35;
+    stroke-linecap: butt;
+  }
+
+  .origin {
+    stroke-width: 1.15;
+    opacity: 0.8;
+  }
+
+  .cap {
+    stroke: var(--muted);
+    stroke-width: 0.75;
+    opacity: 0.4;
+  }
+
+  .ghost {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.65;
+    opacity: 0.62;
+  }
+
+  .rhythm {
+    fill: var(--fg);
+    opacity: 0.45;
+  }
+
+  .rhythm line {
+    stroke: var(--fg);
+    stroke-width: 1.45;
+    stroke-linecap: butt;
+  }
+
+  .slip {
+    opacity: 0.92;
+  }
+
+  .bead {
+    fill: var(--fg);
+    stroke: var(--fg);
+    stroke-width: 1.35;
+    stroke-linecap: butt;
+    opacity: 0.5;
+  }
+
+  .bead.mid {
+    opacity: 0.36;
+  }
+
+  .bead.far {
+    opacity: 0.24;
+  }
+
+  circle.bead {
+    stroke: none;
+  }
+
+  .num {
+    fill: url(#lost-measure-grad);
+  }
+
+  .own {
+    stroke: var(--accent);
+    stroke-width: 1.15;
+    opacity: 0.55;
+  }
+
+  /*
+    Baseline is y=132 (44% of the viewBox) from the origin at x=456 (95%)
+    to the break at x=168 (35%). The mark is parked on the break.
+  */
+  .caret {
+    position: absolute;
+    left: 35%;
+    top: 44%;
+    width: max(1.5px, 0.34%);
+    height: 6.67%;
+    transform: translate(-50%, -100%);
+    background: var(--accent2);
+    border-radius: 999px;
+    opacity: 1;
+    animation: lost-measure-read 6.4s linear infinite;
+  }
+
+  .caret::before,
+  .caret::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    background: var(--accent2);
+    border-radius: 999px;
+  }
+
+  .caret::before {
+    top: 0;
+    width: 100%;
+    height: max(1.5px, 0.5%);
+    transform: translate(-50%, -50%) scaleX(4.4);
+  }
+
+  .caret::after {
+    bottom: 0;
+    width: max(4px, 0.9%);
+    height: max(4px, 0.9%);
+    transform: translate(-50%, 50%);
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  @keyframes lost-measure-read {
+    0% {
+      left: 95%;
+      opacity: 0;
+    }
+    8% {
+      opacity: 1;
+    }
+    62% {
+      left: 35%;
+      opacity: 1;
+    }
+    86% {
+      left: 35%;
+      opacity: 1;
+    }
+    100% {
+      left: 35%;
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret {
+      animation: none;
+      opacity: 1;
+      left: 35%;
+    }
+  }
+
+  :global(html.no-motion) .caret {
+    animation: none;
+    opacity: 1;
+    left: 35%;
+  }
+</style>

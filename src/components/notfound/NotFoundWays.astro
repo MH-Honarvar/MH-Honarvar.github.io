@@ -1,0 +1,154 @@
+---
+import { notFoundCopy, notFoundPaths } from '../../content/notfound';
+
+const { fa, en } = notFoundCopy;
+---
+
+<div class="ways">
+  <div class="actions">
+    <a class="btn primary" href="/fa/">{fa.homeCta}</a>
+    <button type="button" class="btn" id="notfound-search">{fa.search}</button>
+  </div>
+
+  <nav class="paths" aria-labelledby="notfound-paths">
+    <h2 id="notfound-paths">{fa.also}</h2>
+    <ul>
+      {
+        notFoundPaths.map((item) => (
+          <li>
+            <a href={`/fa/${item.id}/`}>{item.fa}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="mirror" lang="en" dir="ltr">
+    <h2>{en.title}</h2>
+    <p>{en.body}</p>
+    <a class="btn primary" href="/en/">{en.homeCta}</a>
+    <p class="also">{en.also}</p>
+    <ul>
+      {
+        notFoundPaths.map((item) => (
+          <li>
+            <a href={`/en/${item.id}/`}>{item.en}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <p class="missed" id="notfound-missed" hidden>{fa.missed} <code id="notfound-path"></code></p>
+</div>
+
+<script>
+  document.getElementById('notfound-search')?.addEventListener('click', () => {
+    document.getElementById('cmd-open')?.click();
+  });
+
+  const requested = location.pathname + location.search;
+  const unset = requested === '' || requested === '/' || requested === '/404' || requested === '/404/';
+  if (!unset) {
+    const code = document.getElementById('notfound-path');
+    const line = document.getElementById('notfound-missed');
+    if (code && line) {
+      code.textContent = requested.length > 80 ? requested.slice(0, 80) : requested;
+      line.hidden = false;
+    }
+  }
+</script>
+
+<style>
+  .ways {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 0.75rem;
+    align-items: center;
+  }
+
+  .paths {
+    margin-top: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    line-height: 1.45;
+    margin: 0 0 0.75rem;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .paths a,
+  .mirror ul a {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .paths a:hover,
+  .paths a:focus-visible,
+  .mirror ul a:hover,
+  .mirror ul a:focus-visible {
+    color: var(--accent);
+  }
+
+  .mirror {
+    margin-top: 2rem;
+    width: 100%;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.35rem;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .mirror p {
+    color: var(--muted);
+    margin: 0 0 1rem;
+    max-width: 65ch;
+  }
+
+  .mirror .btn {
+    margin-bottom: 1.15rem;
+  }
+
+  .mirror .also {
+    font-size: 1.05rem;
+    line-height: 1.45;
+    color: inherit;
+    margin: 0 0 0.75rem;
+    max-width: none;
+  }
+
+  .missed {
+    margin: 1.5rem 0 0;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+
+  .missed code {
+    overflow-wrap: anywhere;
+  }
+</style>
