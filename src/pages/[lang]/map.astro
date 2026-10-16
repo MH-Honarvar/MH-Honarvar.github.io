@@ -2,44 +2,18 @@
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { languages, t, type Lang } from '../../i18n/ui';
-import { getPosts, postSlug } from '../../lib/blog';
+import { getPosts, postUrl } from '../../lib/blog';
 import { servicesPage } from '../../content/services';
 import { colophonPage } from '../../content/colophon';
 import { publicCases } from '../../content/cases';
 import { SITE_REPO, studyFor } from '../../content/studies';
-import { topicById, topics, topicsIndex } from '../../content/topics';
+import { topicById, topicsIndex } from '../../content/topics';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
 const lang = Astro.params.lang as Lang;
 const tr = t(lang);
 const posts = await getPosts(lang);
-const titleBySlug = new Map(posts.map((post) => [postSlug(post), post.data.title]));
-const fallbackTitle = new Map(
-  [...topics.flatMap((topic) => topic.articles), ...topicsIndex.articles].map((article) => [article.slug, article.fallback[lang]]),
-);
-
-const noteSlugs = [
-  'persian-rtl-interface',
-  'rtl',
-  'persian-numerals-and-fonts',
-  'why-css-direction-is-not-enough',
-  'separate-locale-routes',
-  'focus-and-rtl',
-  'two-language-urls',
-  'topic-hubs',
-  'sharing-in-two-languages',
-  'type-and-space',
-  'reading-measure-and-rhythm',
-  'the-next-article',
-  'static-pages-and-webgl',
-  'when-to-skip-the-animation',
-  'what-a-static-page-owes-the-reader',
-  'hello-world',
-  'visible-before-motion',
-  'the-html-map',
-  'author-and-trust',
-];
 
 const copy = {
   fa: {
@@ -90,9 +64,9 @@ const groups = [
     heading: copy.notes,
     links: [
       { href: href('/blog/'), label: tr('blog.title') },
-      ...noteSlugs.map((slug) => ({
-        href: href(`/blog/${slug}/`),
-        label: titleBySlug.get(slug) ?? fallbackTitle.get(slug) ?? slug,
+      ...posts.map((post) => ({
+        href: postUrl(post),
+        label: post.data.title,
       })),
     ],
   },
