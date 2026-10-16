@@ -47,13 +47,16 @@ const work = publicCases[0];
   <script>
     const btn = document.querySelector<HTMLButtonElement>('[data-sound]');
     if (btn) {
+      const read = () => {
+        try { return localStorage.getItem('sound') === 'on'; } catch { return false; }
+      };
       const sync = () => {
-        const on = localStorage.getItem('sound') === 'on';
+        const on = read();
         btn.setAttribute('aria-pressed', String(on));
         btn.title = btn.ariaLabel = on ? btn.dataset.on! : btn.dataset.off!;
       };
       btn.addEventListener('click', () => {
-        localStorage.setItem('sound', localStorage.getItem('sound') === 'on' ? 'off' : 'on');
+        try { localStorage.setItem('sound', read() ? 'off' : 'on'); } catch { /* storage blocked */ }
         sync();
       });
       sync();

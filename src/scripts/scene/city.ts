@@ -1,7 +1,14 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const cssColor = (name: string) => new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(name).trim());
+const cssColor = (name: string, fallback: string) => {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  try {
+    return new THREE.Color(value || fallback);
+  } catch {
+    return new THREE.Color(fallback);
+  }
+};
 const isLight = () => document.documentElement.dataset.theme === 'light';
 
 const DAY_GAP = 1.1;
@@ -235,9 +242,9 @@ export function initCity(canvas: HTMLCanvasElement, counts: number[], start: str
   scene.add(flag);
 
   const applyTheme = () => {
-    const a = cssColor('--accent');
-    const b = cssColor('--accent2');
-    const bg = cssColor('--bg');
+    const a = cssColor('--accent', '#7c5cff');
+    const b = cssColor('--accent2', '#3ee0c5');
+    const bg = cssColor('--bg', '#07060d');
     uA.value.copy(a);
     uB.value.copy(b);
     uBg.value.copy(bg);

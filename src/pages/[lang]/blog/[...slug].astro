@@ -634,7 +634,9 @@ const crumbs = [
     a.href = `#${h.id}`;
     a.textContent = '#';
     a.setAttribute('aria-hidden', 'true');
-    a.addEventListener('click', () => navigator.clipboard?.writeText(location.href.split('#')[0] + a.hash));
+    a.addEventListener('click', () => {
+      navigator.clipboard?.writeText(location.href.split('#')[0] + a.hash).catch(() => {});
+    });
     h.prepend(a);
   });
 

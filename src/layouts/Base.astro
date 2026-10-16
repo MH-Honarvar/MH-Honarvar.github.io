@@ -170,8 +170,10 @@ for (const l of ['fa', 'en'] as const) {
     <script is:inline>
       (() => {
         const allowed = ['neon', 'cyber', 'light'];
-        const t = localStorage.getItem('theme');
-        if (t && allowed.includes(t)) document.documentElement.dataset.theme = t;
+        try {
+          const t = localStorage.getItem('theme');
+          if (t && allowed.includes(t)) document.documentElement.dataset.theme = t;
+        } catch { /* storage blocked; keep the default theme */ }
         const theme = document.documentElement.dataset.theme;
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute('content', theme === 'light' ? '#f6f4fb' : theme === 'cyber' ? '#030807' : '#07060d');

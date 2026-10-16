@@ -3,7 +3,7 @@ export const THEMES = ['neon', 'cyber', 'light'] as const;
 export function setTheme(name: string) {
   if (!THEMES.includes(name as (typeof THEMES)[number])) return false;
   document.documentElement.dataset.theme = name;
-  localStorage.setItem('theme', name);
+  try { localStorage.setItem('theme', name); } catch { /* storage blocked; the theme still applies */ }
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', name === 'light' ? '#f6f4fb' : name === 'cyber' ? '#030807' : '#07060d');
   window.dispatchEvent(new CustomEvent('themechange'));
   return true;
