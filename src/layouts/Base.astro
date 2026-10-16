@@ -34,9 +34,11 @@ interface Props {
   crumbs?: Crumb[];
   noindex?: boolean;
   extra?: Record<string, unknown>[];
+  /** 404 only: broken-baseline mark in the shared header slot. */
+  mark?: 'lost';
 }
 
-const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, motion = false, ogType = 'website', published, modified, keywords = [], articleSection, wordCount, crumbs, noindex = false, extra = [] } = Astro.props;
+const { lang, title, description, image = '/og/default.png', altPath, alternate = true, intro = false, motion = false, ogType = 'website', published, modified, keywords = [], articleSection, wordCount, crumbs, noindex = false, extra = [], mark } = Astro.props;
 const tr = t(lang);
 const name = SITE.name[lang];
 const fullTitle = title ? (title.includes(name) ? title : `${title} — ${name}`) : name;
@@ -189,8 +191,26 @@ for (const l of ['fa', 'en'] as const) {
 
     <header class="site-header">
       <div class="container bar glass">
-        <a href={`/${lang}/`} class="logo" data-magnetic style="view-transition-name: site-logo">
-          <span class="gradient-text">{lang === 'fa' ? 'م.ه' : 'M.H'}</span>
+        <a href={`/${lang}/`} class:list={['logo', mark === 'lost' && 'logo-lost']} data-magnetic style="view-transition-name: site-logo" aria-label={mark === 'lost' ? tr('nav.home') : undefined}>
+          {mark === 'lost' ? (
+            <svg class="logo-mark" viewBox="0 0 26 31" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="header-lost-mark" gradientUnits="userSpaceOnUse" x1="2" y1="8" x2="24" y2="28">
+                  <stop offset="0%" stop-color="var(--accent)" />
+                  <stop offset="100%" stop-color="var(--accent2)" />
+                </linearGradient>
+              </defs>
+              <g fill="none" stroke="url(#header-lost-mark)" stroke-width="2" stroke-linecap="round">
+                <path d="M24 18.2 H11" />
+                <path d="M21.2 18.2 V8.4" />
+                <path d="M16.4 18.2 V12.2" />
+                <path d="M8.2 21.6 L2.4 27.2" />
+              </g>
+              <circle cx="6.2" cy="23.6" r="1.2" fill="url(#header-lost-mark)" />
+            </svg>
+          ) : (
+            <span class="gradient-text">{lang === 'fa' ? 'م.ه' : 'M.H'}</span>
+          )}
         </a>
         <nav class="site-nav">
           {nav.map((n) => {
@@ -289,6 +309,14 @@ for (const l of ['fa', 'en'] as const) {
     font-weight: 800;
     font-size: 1.15rem;
     text-decoration: none;
+  }
+  .logo-lost {
+    line-height: 0;
+  }
+  .logo-mark {
+    display: block;
+    width: 1.625rem;
+    height: 1.9375rem;
   }
   nav {
     display: flex;
