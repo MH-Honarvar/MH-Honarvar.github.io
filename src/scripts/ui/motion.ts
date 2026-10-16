@@ -105,6 +105,10 @@ if (depth && !reduced && matchMedia('(pointer: fine)').matches) {
     });
   });
 
+  // Hide .reveal only after GSAP is loaded and this route will animate.
+  // Reduced motion never reaches here, so is-motion is never added.
+  if (!reduced) document.documentElement.classList.add('is-motion');
+
   gsap.utils.toArray<HTMLElement>('.reveal').forEach((el, i) => {
     gsap.fromTo(
       el,

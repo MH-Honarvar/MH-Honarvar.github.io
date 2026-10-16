@@ -197,7 +197,20 @@ a {
   background-color: var(--shiki-light-bg);
 }
 
-.no-motion .reveal {
+/* Readable text is visible unless this page is actually animating.
+   motion.ts adds is-motion only after GSAP will run here (home, projects).
+   html:not(.is-motion) beats a bare `.reveal { opacity: 0 }`, so that
+   default cannot blank about, blog, or any route that never animates. */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+html.is-motion .reveal {
+  opacity: 0;
+  transform: translateY(30px);
+}
+html:not(.is-motion) .reveal,
+html.no-motion .reveal {
   opacity: 1;
   transform: none;
 }
@@ -209,7 +222,8 @@ a {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-  .reveal {
+  .reveal,
+  html.is-motion .reveal {
     opacity: 1;
     transform: none;
   }
