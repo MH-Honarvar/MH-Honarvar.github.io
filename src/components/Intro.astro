@@ -1,186 +1,97 @@
 ---
-import { SITE } from '../config';
-import { t, type Lang } from '../i18n/ui';
+import type { Lang } from '../i18n/ui';
+
 interface Props {
   lang: Lang;
 }
-const { lang } = Astro.props;
-const tr = t(lang);
-const lines = lang === 'fa' ? [SITE.name.fa, SITE.name.en] : [SITE.name.en, SITE.name.fa];
 ---
 
-<div id="intro" data-lines={JSON.stringify(lines)}>
-  <canvas aria-hidden="true"></canvas>
-  <button type="button" class="intro-skip glass" data-intro-skip>{tr('intro.skip')}</button>
+<div id="intro">
+  <div class="mark" aria-hidden="true">
+    <span class="rule"></span>
+  </div>
 </div>
 <script is:inline>
-  const introStore = {
-    get() {
-      try { return sessionStorage.getItem('intro-seen'); } catch { return null; }
-    },
-    clear() {
-      try { sessionStorage.removeItem('intro-seen'); } catch { /* storage disabled */ }
-    },
-  };
-  if (new URLSearchParams(location.search).get('intro') === '1') introStore.clear();
-  if (introStore.get() || matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.getElementById('intro').remove();
-  }
+  (() => {
+    const root = document.getElementById('intro');
+    if (!root) return;
+    try {
+      if (new URLSearchParams(location.search).get('intro') === '1') sessionStorage.removeItem('intro-seen');
+    } catch { /* storage disabled */ }
+    let seen = null;
+    try { seen = sessionStorage.getItem('intro-seen'); } catch { /* storage disabled */ }
+    if (seen || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      root.remove();
+      return;
+    }
+
+    let leaving = false;
+    let timer = 0;
+    const onKey = (event) => {
+      if (event.key === 'Escape') leave();
+    };
+    const leave = () => {
+      if (leaving) return;
+      leaving = true;
+      clearTimeout(timer);
+      removeEventListener('keydown', onKey);
+      try { sessionStorage.setItem('intro-seen', '1'); } catch { /* storage disabled; still dismiss */ }
+      root.classList.add('out');
+      window.dispatchEvent(new Event('introout'));
+      setTimeout(() => root.remove(), 700);
+    };
+    // The line finishes drawing at 900ms. Leave after a short rest.
+    timer = setTimeout(leave, 980);
+    root.addEventListener('click', leave);
+    addEventListener('keydown', onKey);
+  })();
 </script>
 
 <style>
   #intro {
     position: fixed;
     inset: 0;
-    z-index: 70;
+    z-index: 90;
+    display: grid;
+    place-items: center;
     background: var(--bg);
-    transition: opacity 0.45s ease;
-  }
-  .intro-skip {
-    position: absolute;
-    z-index: 2;
-    bottom: 1.4rem;
-    inset-inline-end: 1.4rem;
-    font: inherit;
-    font-size: 0.9rem;
-    color: var(--fg);
-    padding: 0.55rem 1rem;
-    border-radius: 999px;
+    transform: scale(1.02);
     cursor: pointer;
   }
-  #intro.out {
-    opacity: 0;
-    pointer-events: none;
+  .mark {
+    inline-size: min(36rem, 72vw);
   }
-  canvas {
+  .rule {
     display: block;
-    width: 100%;
-    height: 100%;
+    inline-size: 100%;
+    block-size: 1px;
+    background: linear-gradient(to left, var(--accent), var(--accent2));
+    box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 55%, transparent);
+    transform: scaleX(0);
+    transform-origin: right center;
+    animation: intro-rule 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  :global([dir='ltr']) .rule {
+    background: linear-gradient(to right, var(--accent), var(--accent2));
+    transform-origin: left center;
+  }
+  #intro.out {
+    pointer-events: none;
+    animation: intro-curtain 0.62s ease forwards;
+  }
+  @keyframes intro-rule {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes intro-curtain {
+    from {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1);
+    }
   }
 </style>
-
-<script>
-  const root = document.getElementById('intro');
-  if (root) {
-    const lines: string[] = JSON.parse(root.dataset.lines!);
-    const canvas = root.querySelector('canvas')!;
-    const ctx = canvas.getContext('2d')!;
-    const dpr = Math.min(devicePixelRatio, 2);
-    const resize = () => {
-      const w = innerWidth;
-      const h = innerHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return { w, h };
-    };
-    let { w: W, h: H } = resize();
-    type Dot = { x: number; y: number; tx: number; ty: number; a: number; d: number };
-    let pts: Dot[] = [];
-    const onResize = () => {
-      const prevW = W;
-      const prevH = H;
-      ({ w: W, h: H } = resize());
-      if (!prevW || !prevH || (prevW === W && prevH === H)) return;
-      for (const p of pts) {
-        p.x *= W / prevW;
-        p.y *= H / prevH;
-        p.tx *= W / prevW;
-        p.ty *= H / prevH;
-      }
-    };
-    const css = getComputedStyle(document.documentElement);
-    const c1 = css.getPropertyValue('--accent').trim();
-    const c2 = css.getPropertyValue('--accent2').trim();
-
-    let cols = Math.min(220, Math.max(80, Math.round(W / 8)));
-    let rows = Math.max(48, Math.round(cols * (H / W)));
-    const off = document.createElement('canvas');
-    off.width = cols;
-    off.height = rows;
-    const o = off.getContext('2d', { willReadFrequently: true })!;
-    const family = '"Vazirmatn Variable", "Inter Variable", sans-serif';
-    const paintMask = () => {
-      const big = Math.min(cols / 7, 28);
-      o.fillStyle = '#fff';
-      o.textAlign = 'center';
-      o.textBaseline = 'middle';
-      o.direction = document.dir === 'rtl' ? 'rtl' : 'ltr';
-      o.font = `800 ${big}px ${family}`;
-      o.fillText(lines[0], cols / 2, rows / 2 - big * 0.4);
-      o.font = `600 ${big * 0.42}px ${family}`;
-      o.fillText(lines[1], cols / 2, rows / 2 + big * 0.55);
-    };
-
-    let frame = 0;
-    let leaving = false;
-    const finish = () => {
-      if (leaving) return;
-      leaving = true;
-      cancelAnimationFrame(frame);
-      removeEventListener('resize', onResize);
-      try { sessionStorage.setItem('intro-seen', '1'); } catch { /* storage disabled; still dismiss */ }
-      root.classList.add('out');
-      window.dispatchEvent(new Event('introout'));
-      setTimeout(() => root.remove(), 500);
-    };
-
-    const run = () => {
-      ({ w: W, h: H } = resize());
-      cols = Math.min(220, Math.max(80, Math.round(W / 8)));
-      rows = Math.max(48, Math.round(cols * (H / W)));
-      off.width = cols;
-      off.height = rows;
-      paintMask();
-      const data = o.getImageData(0, 0, cols, rows).data;
-      const step = W < 700 ? 2 : 3;
-      pts = [];
-      for (let y = 0; y < rows; y += step)
-        for (let x = 0; x < cols; x += step) {
-          if (data[(y * cols + x) * 4 + 3] < 128) continue;
-          pts.push({
-            x: Math.random() * W,
-            y: Math.random() * H,
-            tx: ((x + 0.5) / cols) * W,
-            ty: ((y + 0.5) / rows) * H,
-            a: Math.random() > 0.5 ? 0 : 1,
-            d: Math.random() * 0.18,
-          });
-        }
-
-      const size = Math.max(2.2, (W / cols) * step * 0.72);
-      const start = performance.now();
-      const tick = (now: number) => {
-        if (leaving) return;
-        const t = (now - start) / 1000;
-        ctx.clearRect(0, 0, W, H);
-        const pathA = new Path2D();
-        const pathB = new Path2D();
-        for (const p of pts) {
-          const k = Math.min(Math.max((t - p.d) / 0.55, 0), 1);
-          const e = 1 - Math.pow(1 - k, 3);
-          const x = p.x + (p.tx - p.x) * e;
-          const y = p.y + (p.ty - p.y) * e;
-          (p.a ? pathB : pathA).rect(x, y, size, size);
-        }
-        ctx.fillStyle = c1;
-        ctx.fill(pathA);
-        ctx.fillStyle = c2;
-        ctx.fill(pathB);
-        if (t < 1.05) frame = requestAnimationFrame(tick);
-        else finish();
-      };
-      frame = requestAnimationFrame(tick);
-    };
-    const fontsReady = Promise.all(lines.map((l) => document.fonts.load(`800 40px ${family}`, l))).catch(() => {});
-    Promise.race([fontsReady, new Promise((resolve) => setTimeout(resolve, 400))]).then(() => {
-      if (leaving) return;
-      addEventListener('resize', onResize);
-      run();
-    });
-    root.querySelector('[data-intro-skip]')?.addEventListener('click', finish);
-    addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') finish();
-    });
-  }
-</script>
