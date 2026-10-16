@@ -134,9 +134,9 @@ const writeups = [
 
     {
       publicCases.length > 0 && (
-        <div class="grid">
+        <div class="grid cases">
           {publicCases.map((c) => (
-            <article class="repo glass reveal wide">
+            <article class="repo glass reveal">
               <a href={`/${lang}/projects/${c.slug}/`} class="cover" aria-label={c.title[lang]} />
               <h3>{c.title[lang]}</h3>
               <p>{c.summary[lang]}</p>
@@ -506,6 +506,10 @@ const writeups = [
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
     gap: 1.25rem;
+  }
+  .cases {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    margin-bottom: 1.5rem;
   }
   .repo {
     position: relative;

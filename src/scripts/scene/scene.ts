@@ -80,6 +80,14 @@ const finishShader = {
     }`,
 };
 
+const soundOn = () => {
+  try {
+    return localStorage.getItem('sound') === 'on';
+  } catch {
+    return false;
+  }
+};
+
 let audio: AudioContext | undefined;
 function blip() {
   audio ??= new AudioContext();
@@ -451,7 +459,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
       } catch {
         /* capture is optional; release paths below still restore color */
       }
-      if (localStorage.getItem('sound') === 'on') blip();
+      if (soundOn()) blip();
     }
   };
   const onPointerEnd = (e: PointerEvent) => {
@@ -544,7 +552,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
 
       const proj = _proj.copy(rig.position).project(camera);
       uSph.value.set((proj.x + 1) / 2, (proj.y + 1) / 2, (1.5 * scale) / (2 * HALF_H));
-      const sound = localStorage.getItem('sound') === 'on';
+      const sound = soundOn();
       const amp = sound ? 0.68 + 0.32 * (0.5 + 0.5 * Math.sin(uniforms.uTime.value * 3.1)) : 1;
       uHalo.value = (1 - corner * 0.6) * amp;
 
@@ -628,7 +636,7 @@ export function initScene(canvas: HTMLCanvasElement, mode: 'hero' | 'ambient') {
     if (composer && tier >= 1) composer.render(dt);
     else renderer.render(scene, camera);
 
-    if (hero && tier > 0) {
+    if (hero && !reduced && tier > 0) {
       warmup -= dt;
       if (warmup < 0) {
         fpsFrames++;

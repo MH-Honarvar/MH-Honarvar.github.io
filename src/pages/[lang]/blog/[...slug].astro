@@ -518,11 +518,14 @@ const crumbs = [
   }
   @media (max-width: 900px) {
     .layout {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+      min-width: 0;
     }
     .toc {
       order: -1;
       position: sticky;
+      min-width: 0;
+      max-width: 100%;
       top: 4.2rem;
       z-index: 5;
       padding: 0.65rem 0.85rem;
