@@ -50,7 +50,7 @@ const person = {
   '@type': 'Person',
   name,
   url: personId,
-  image: `https://github.com/${SITE.githubUser}.png`,
+  image: abs('/portrait.jpg'),
   knowsAbout: [
     ...toolbox.map((item) => item.name),
     lang === 'fa' ? 'رابط دوزبانه و راست‌به‌چپ' : 'Bilingual right-to-left interfaces',

@@ -72,7 +72,7 @@ const crumbs = [
       <h1 style={`view-transition-name: ${vt}`}>{post.data.title}</h1>
       {post.data.description && <p class="desc" data-pagefind-ignore>{post.data.description}</p>}
       <div class="meta" data-pagefind-ignore>
-        <img src={`https://github.com/${SITE.githubUser}.png?size=64`} alt={SITE.name[lang]} width="32" height="32" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av-fallback',textContent:this.dataset.i}))" data-i={SITE.name[lang].trim()[0]} />
+        <img src="/portrait.jpg" alt={SITE.name[lang]} width="32" height="32" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av-fallback',textContent:this.dataset.i}))" data-i={SITE.name[lang].trim()[0]} />
         <span>
           {tr('blog.by')} <a href={`/${lang}/about/`}><b>{SITE.name[lang]}</b></a>
           <br />

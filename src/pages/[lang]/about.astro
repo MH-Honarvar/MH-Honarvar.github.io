@@ -73,11 +73,13 @@ const words = story[lang].split(' ');
         {Array.from({ length: 6 }, (_, i) => <span class="orb" style={`--i:${i}`} aria-hidden="true" />)}
         <div class="blob">
           <img
-            src={`https://github.com/${SITE.githubUser}.png?size=320`}
+            src="/portrait.jpg"
             alt={SITE.name[lang]}
-            width="160"
-            height="160"
-            onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:this.alt.trim()[0],className:'initial'}))"
+            width="148"
+            height="148"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
           />
         </div>
       </div>
