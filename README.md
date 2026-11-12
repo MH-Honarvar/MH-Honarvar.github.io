@@ -1,6 +1,6 @@
 # mh-honarvar.github.io
 
-Bilingual personal site — Astro, TypeScript, and Three.js.
+سایت خودم. فارسی و English، با Astro و TypeScript و Three.js.
 
 https://mh-honarvar.github.io/
 
