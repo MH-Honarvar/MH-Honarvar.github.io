@@ -1,10 +1,8 @@
 # mh-honarvar.github.io
 
-سایت شخصی Mohammad Honarvar. فارسی و English.
+Bilingual personal site — Astro, TypeScript, and Three.js.
 
-Live: https://mh-honarvar.github.io/
-
-Stack: Astro, TypeScript, Three.js.
+https://mh-honarvar.github.io/
 
 ```sh
 npm install
