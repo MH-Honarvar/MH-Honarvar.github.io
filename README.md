@@ -1,6 +1,6 @@
 # mh-honarvar.github.io
 
-سایت شخصی Mohammad Honarvar. لندینگ دوزبانه (فارسی / English): صفحهٔ اول، type، و یک قدم بعدی.
+سایت شخصی Mohammad Honarvar. فارسی و English.
 
 Live: https://mh-honarvar.github.io/
 
