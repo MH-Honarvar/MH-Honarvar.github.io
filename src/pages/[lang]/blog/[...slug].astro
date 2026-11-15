@@ -119,13 +119,13 @@ const crumbs = [
         (newer || older) && (
           <nav class="pager">
             {older ? (
-              <a class="glass" href={older.url}>
+              <a href={older.url}>
                 <small>{tr('blog.prev')}</small>
                 {older.title}
               </a>
             ) : <span />}
             {newer && (
-              <a class="glass next" href={newer.url}>
+              <a class="next" href={newer.url}>
                 <small>{tr('blog.next')}</small>
                 {newer.title}
               </a>
@@ -230,16 +230,6 @@ const crumbs = [
     font-weight: 800;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
   }
-  .prose.focus-mode > :global(p),
-  .prose.focus-mode > :global(ul),
-  .prose.focus-mode > :global(ol),
-  .prose.focus-mode > :global(blockquote) {
-    transition: opacity 0.4s;
-    opacity: 0.55;
-  }
-  .prose.focus-mode > :global(.active) {
-    opacity: 1;
-  }
   .meta img {
     border-radius: 50%;
     border: 2px solid var(--accent);
@@ -321,17 +311,6 @@ const crumbs = [
   }
   .prose :global(p) {
     margin: 0 0 1.3rem;
-  }
-  .lang-en .prose > :global(p:first-of-type::first-letter) {
-    float: left;
-    font-size: 3.6em;
-    line-height: 0.9;
-    font-weight: 800;
-    margin: 0.08em 0.12em 0 0;
-    background: linear-gradient(140deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
   }
   .prose :global(h2),
   .prose :global(h3) {
@@ -466,14 +445,13 @@ const crumbs = [
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    padding: 1.1rem 1.3rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
     text-decoration: none;
     font-weight: 600;
-    transition: border-color 0.3s, transform 0.3s;
   }
   .pager a:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+    color: var(--accent2);
   }
   .pager small {
     color: var(--muted);
@@ -587,15 +565,6 @@ const crumbs = [
   const left = document.querySelector<HTMLElement>('[data-left]');
   const leftB = left?.querySelector('b') as HTMLElement;
   const total = Number(left?.dataset.left ?? 0);
-  const paras = prose ? ([...prose.querySelectorAll(':scope > p, :scope > ul, :scope > ol, :scope > blockquote')] as HTMLElement[]) : [];
-  if (paras.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    prose!.classList.add('focus-mode');
-    const po = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.target.classList.toggle('active', e.isIntersecting)),
-      { rootMargin: '-35% 0px -45% 0px' },
-    );
-    paras.forEach((p) => po.observe(p));
-  }
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 

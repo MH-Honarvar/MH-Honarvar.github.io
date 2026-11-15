@@ -164,7 +164,7 @@ pre .copy-btn:focus-visible {
 }
 
 .section {
-  padding-block: 5rem;
+  padding-block: 3.25rem;
 }
 .section-title {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
@@ -173,8 +173,8 @@ pre .copy-btn:focus-visible {
 }
 .section-lede {
   color: var(--muted);
-  margin: 0 0 2.5rem;
-  max-width: 60ch;
+  margin: 0 0 1.75rem;
+  max-width: 65ch;
 }
 
 .tag {

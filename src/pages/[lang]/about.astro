@@ -95,7 +95,7 @@ const words = story[lang].split(' ');
 
     {
       stats.length > 0 && (
-        <dl class="stats glass reveal">
+        <dl class="stats reveal">
           {stats.map(([n, label]) => (
             <div>
               <dt data-count={n}>{num(n)}</dt>
@@ -151,7 +151,7 @@ const words = story[lang].split(' ');
     <div class="doing">
       {
         doing.map((d) => (
-          <article class="do glass reveal" data-tilt>
+          <article class="do reveal">
             <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
               <path d={d.icon} />
             </svg>
@@ -183,7 +183,7 @@ const words = story[lang].split(' ');
     <div class="values">
       {
         values.map((v, i) => (
-          <article class="value glass reveal" style={`--d:${i * 80}ms`}>
+          <article class="value reveal">
             <span class="vnum">{num(i + 1).padStart(2, lang === 'fa' ? '۰' : '0')}</span>
             <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d={v.icon} /></svg>
             <h3>{v.title[lang]}</h3>
@@ -235,7 +235,7 @@ const words = story[lang].split(' ');
     <div class="faq">
       {
         faq.map((f) => (
-          <details class="glass reveal">
+          <details class="reveal">
             <summary>{f.q[lang]}</summary>
             <p>{f.a[lang]}</p>
           </details>
@@ -417,18 +417,12 @@ const words = story[lang].split(' ');
   }
   .doing {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-    gap: 1.2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
   }
   .do {
-    position: relative;
-    padding: 1.6rem;
-    overflow: hidden;
-    transition: transform 0.2s ease-out, border-color 0.3s;
-    background-image: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%);
-  }
-  .do:hover {
-    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
   }
   .do svg {
     fill: none;
@@ -519,14 +513,12 @@ const words = story[lang].split(' ');
   }
   .values {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-    gap: 1.2rem;
+    gap: 0;
   }
   .value {
     position: relative;
-    padding: 1.5rem;
-    overflow: hidden;
-    transition-delay: var(--d);
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
   }
   .vnum {
     position: absolute;
@@ -691,8 +683,11 @@ const words = story[lang].split(' ');
     gap: 0.8rem;
   }
   .faq details {
-    padding: 0 1.3rem;
-    border-radius: 1rem;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+  .faq details:last-child {
+    border-bottom: 1px solid var(--border);
   }
   .faq summary {
     cursor: pointer;
@@ -838,6 +833,9 @@ const words = story[lang].split(' ');
     .intro {
       flex-direction: column;
       text-align: center;
+    }
+    .doing {
+      grid-template-columns: 1fr;
     }
     .stats {
       grid-auto-flow: row;
