@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro';
+import { languages, t, type Lang } from '../../i18n/ui';
+import { getPosts, postSlug, postUrl } from '../../lib/blog';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const lang = Astro.params.lang as Lang;
+const tr = t(lang);
+const order = ['logistics-first-screen', 'three-languages-one-page', 'title-before-the-scene', 'one-next-step'];
+const bySlug = new Map((await getPosts(lang)).map((post) => [postSlug(post), post]));
+const posts = order.flatMap((slug) => {
+  const post = bySlug.get(slug);
+  return post ? [post] : [];
+});
+---
+
+<Base lang={lang} title={tr('field.title')} description={tr('field.lede')} motion={false}>
+  <section class="section container">
+    <h1 class="section-title">{tr('field.title')}</h1>
+    <p class="section-lede">{tr('field.lede')}</p>
+    <ul class="field-list">
+      {
+        posts.map((post) => (
+          <li>
+            <a class="glass" href={postUrl(post)}>
+              <strong>{post.data.title}</strong>
+              <span>{post.data.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .field-list {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+  .field-list a {
+    display: block;
+    padding: 1rem 1.15rem;
+    text-decoration: none;
+  }
+  .field-list strong {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .field-list span {
+    color: var(--muted);
+  }
+</style>

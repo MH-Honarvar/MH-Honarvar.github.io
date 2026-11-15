@@ -4,6 +4,7 @@ import Scene3D from '../../components/Scene3D.astro';
 import { languages, t, type Lang } from '../../i18n/ui';
 import { SITE } from '../../config';
 import { publicCases } from '../../content/cases';
+import { getPosts, postSlug, postUrl } from '../../lib/blog';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
 
@@ -12,6 +13,18 @@ const tr = t(lang);
 const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 const sn = (i: number) => num(i).padStart(2, lang === 'fa' ? '۰' : '0');
 const work = publicCases[0];
+const fieldOrder = ['logistics-first-screen', 'three-languages-one-page', 'title-before-the-scene', 'one-next-step'];
+const bySlug = new Map((await getPosts(lang)).map((post) => [postSlug(post), post]));
+const fieldPosts = fieldOrder.flatMap((slug) => {
+  const post = bySlug.get(slug);
+  return post ? [post] : [];
+});
+const homePosts = fieldPosts.slice(0, 3);
+const practice = [
+  { slug: 'logistics-first-screen', title: 'home.practice1', body: 'home.practice1Body' },
+  { slug: 'three-languages-one-page', title: 'home.practice2', body: 'home.practice2Body' },
+  { slug: 'title-before-the-scene', title: 'home.practice3', body: 'home.practice3Body' },
+] as const;
 ---
 
 <Base lang={lang} title={tr('meta.homeTitle')} description={tr('meta.homeDesc')} image={`/og/${lang}/home.png`} intro motion>
@@ -78,6 +91,41 @@ const work = publicCases[0];
       </section>
     )
   }
+
+  <section class="section container" id="writing">
+    <div class="head">
+      <h2 class="section-title reveal">{tr('home.fieldTitle')}</h2>
+      <a href={`/${lang}/field/`} class="all">{tr('home.fieldAll')}</a>
+    </div>
+    <ul class="field-list">
+      {
+        homePosts.map((post) => (
+          <li>
+            <a class="glass reveal" href={postUrl(post)}>
+              <strong>{post.data.title}</strong>
+              <span>{post.data.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="section container" id="practice">
+    <h2 class="section-title reveal">{tr('home.practiceTitle')}</h2>
+    <ul class="field-list">
+      {
+        practice.map((item) => (
+          <li>
+            <a class="glass reveal" href={`/${lang}/blog/${item.slug}/`}>
+              <strong>{tr(item.title)}</strong>
+              <span>{tr(item.body)}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 
   <section class="section container" id="contact">
     <div class="contact glass reveal">
@@ -470,5 +518,24 @@ const work = publicCases[0];
     display: flex;
     gap: 0.7rem;
     flex-wrap: wrap;
+  }
+  .field-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+  .field-list a {
+    display: block;
+    padding: 1rem 1.15rem;
+    text-decoration: none;
+  }
+  .field-list strong {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .field-list span {
+    color: var(--muted);
   }
 </style>
