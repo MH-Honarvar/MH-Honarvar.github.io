@@ -66,10 +66,12 @@ const crumbs = [
   <div id="read-progress"></div>
   <article class:list={['container post', `lang-${lang}`]} data-pagefind-body>
     <header>
-      <span class="aura" aria-hidden="true"></span>
       <Breadcrumbs lang={lang} crumbs={crumbs} />
       <a href={`/${lang}/blog/`} class="back" data-pagefind-ignore>{tr('blog.back')}</a>
-      <h1 style={`view-transition-name: ${vt}`}>{post.data.title}</h1>
+      <div class="title-row">
+        <h1 style={`view-transition-name: ${vt}`}>{post.data.title}</h1>
+        {hasTwin && <a class="twin" href={`/${other(lang)}/blog/${slug}/`}>{tr('switch')}</a>}
+      </div>
       {post.data.description && <p class="desc" data-pagefind-ignore>{post.data.description}</p>}
       <div class="meta" data-pagefind-ignore>
         <img src="/portrait.jpg" alt={SITE.name[lang]} width="32" height="32" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av-fallback',textContent:this.dataset.i}))" data-i={SITE.name[lang].trim()[0]} />
@@ -79,9 +81,6 @@ const crumbs = [
           <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
           · {minutes(post).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {tr('blog.minutes')}
         </span>
-      </div>
-      <div class="left glass" data-left={minutes(post)} data-label={tr('blog.left')} data-locale={lang === 'fa' ? 'fa-IR' : 'en-US'} aria-hidden="true" data-pagefind-ignore>
-        <span class="ring"></span><b></b>
       </div>
       <div class="tags" data-pagefind-ignore>
         {post.data.tags.map((tg) => <a class="tag" href={`/${lang}/blog/tags/${tg}/`}>#{tg}</a>)}
@@ -166,17 +165,6 @@ const crumbs = [
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--border);
   }
-  .aura {
-    position: absolute;
-    inset: -6rem -10rem auto;
-    height: 22rem;
-    z-index: -1;
-    background:
-      radial-gradient(40% 60% at 25% 40%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
-      radial-gradient(35% 50% at 70% 30%, color-mix(in srgb, var(--accent2) 16%, transparent), transparent 70%);
-    filter: blur(20px);
-    pointer-events: none;
-  }
   .crumbs {
     display: flex;
     flex-wrap: wrap;
@@ -198,17 +186,30 @@ const crumbs = [
     text-decoration: none;
     font-size: 0.9rem;
   }
+  .title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
   h1 {
-    font-size: clamp(2.2rem, 5.5vw, 3.8rem);
-    line-height: 1.15;
-    margin: 1rem 0 0.8rem;
+    font-size: clamp(2rem, 4.4vw, 3.1rem);
+    line-height: 1.2;
+    margin: 0.45rem 0 0.4rem;
     letter-spacing: -0.01em;
   }
+  .twin {
+    flex: none;
+    margin-top: 0.7rem;
+    color: var(--accent2);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
   .desc {
-    font-size: 1.2rem;
+    font-size: 1.12rem;
     color: var(--muted);
-    margin: 0 0 1.4rem;
-    max-width: 60ch;
+    margin: 0 0 0.9rem;
+    max-width: 65ch;
   }
   .meta {
     display: flex;
@@ -228,36 +229,6 @@ const crumbs = [
     color: #fff;
     font-weight: 800;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-  }
-  .left {
-    position: fixed;
-    bottom: 1.2rem;
-    inset-inline-start: 1.2rem;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.9rem 0.4rem 0.45rem;
-    padding-inline: 0.45rem 0.9rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    opacity: 0;
-    translate: 0 10px;
-    transition: opacity 0.3s, translate 0.3s;
-    pointer-events: none;
-  }
-  .left.show {
-    opacity: 1;
-    translate: 0 0;
-  }
-  .left .ring {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: conic-gradient(var(--accent) calc(var(--p, 0) * 360deg), var(--border) 0);
-    mask: radial-gradient(circle, transparent 7px, #000 8px);
-    -webkit-mask: radial-gradient(circle, transparent 7px, #000 8px);
   }
   .prose.focus-mode > :global(p),
   .prose.focus-mode > :global(ul),
@@ -341,7 +312,7 @@ const crumbs = [
     font-weight: 650;
   }
   .prose {
-    max-width: 70ch;
+    max-width: 65ch;
     font-size: 1.1rem;
     line-height: 1.85;
   }

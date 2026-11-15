@@ -42,11 +42,11 @@ export const publicCases: PublicCase[] = [
       {
         heading: { fa: 'حد این صفحه', en: 'The limit of this page' },
         body: {
-          fa: 'برند مال من نیست. ریپازیتوری‌های آن کار خصوصی می‌مانند و این صفحه به آن‌ها لینک نمی‌دهد.',
-          en: 'I do not own the brand. Those repositories stay private, and this page does not link to them.',
+          fa: 'برند مال من نیست. لندینگ زنده روی https://karkiatarabar.com/landing/ است و نسخهٔ همین صفحه روی https://mh-honarvar.github.io/karkia-landing-page/ .',
+          en: 'I do not own the brand. The live landing is https://karkiatarabar.com/landing/ and this page’s copy is https://mh-honarvar.github.io/karkia-landing-page/ .',
         },
       },
     ],
-    site: 'https://www.karkiatarabar.com/',
+    site: 'https://karkiatarabar.com/landing/',
   },
 ];

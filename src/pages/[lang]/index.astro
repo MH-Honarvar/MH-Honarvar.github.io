@@ -13,7 +13,16 @@ const tr = t(lang);
 const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 const sn = (i: number) => num(i).padStart(2, lang === 'fa' ? '۰' : '0');
 const work = publicCases[0];
-const fieldOrder = ['logistics-first-screen', 'three-languages-one-page', 'title-before-the-scene', 'one-next-step'];
+const fieldOrder = [
+  'bar-language-and-theme',
+  'quote-is-a-request',
+  'three-offices',
+  'the-port-stays',
+  'logistics-first-screen',
+  'three-languages-one-page',
+  'title-before-the-scene',
+  'one-next-step',
+];
 const bySlug = new Map((await getPosts(lang)).map((post) => [postSlug(post), post]));
 const fieldPosts = fieldOrder.flatMap((slug) => {
   const post = bySlug.get(slug);
@@ -32,7 +41,10 @@ const practice = [
   <div id="home-progress" aria-hidden="true"></div>
   <nav class="rail" aria-label={tr('rail.label')}>
     {work && <a href="#work"><span>{sn(1)}</span><em>{tr('home.work')}</em></a>}
-    <a href="#contact"><span>·</span><em>{tr('home.contactTitle')}</em></a>
+    <a href="#writing"><span>{sn(2)}</span><em>{tr('home.fieldTitle')}</em></a>
+    <a href="#practice"><span>{sn(3)}</span><em>{tr('home.practiceTitle')}</em></a>
+    <a href="#collab"><span>{sn(4)}</span><em>{tr('home.collabTitle')}</em></a>
+    <a href="#contact"><span>{sn(5)}</span><em>{tr('home.contactTitle')}</em></a>
   </nav>
   <section class="hero container">
     <div class="copy" data-depth>
@@ -43,6 +55,7 @@ const practice = [
         work && (
           <div class="actions reveal">
             <a class="btn primary" href={`/${lang}/projects/${work.slug}/`}>{tr('hero.cta')}</a>
+            <a class="btn" href={`/${lang}/field/`}>{tr('nav.field')}</a>
           </div>
         )
       }
@@ -97,34 +110,44 @@ const practice = [
       <h2 class="section-title reveal">{tr('home.fieldTitle')}</h2>
       <a href={`/${lang}/field/`} class="all">{tr('home.fieldAll')}</a>
     </div>
-    <ul class="field-list">
+    <ol class="writing-row">
       {
-        homePosts.map((post) => (
+        homePosts.map((post, i) => (
           <li>
-            <a class="glass reveal" href={postUrl(post)}>
+            <a class="reveal" href={postUrl(post)}>
+              <b>{sn(i + 1)}</b>
               <strong>{post.data.title}</strong>
-              <span>{post.data.description}</span>
             </a>
           </li>
         ))
       }
-    </ul>
+    </ol>
   </section>
 
   <section class="section container" id="practice">
     <h2 class="section-title reveal">{tr('home.practiceTitle')}</h2>
-    <ul class="field-list">
+    <ol class="practice-row">
       {
         practice.map((item) => (
           <li>
-            <a class="glass reveal" href={`/${lang}/blog/${item.slug}/`}>
+            <a class="reveal" href={`/${lang}/blog/${item.slug}/`}>
               <strong>{tr(item.title)}</strong>
               <span>{tr(item.body)}</span>
             </a>
           </li>
         ))
       }
-    </ul>
+    </ol>
+  </section>
+
+  <section class="section container" id="collab">
+    <div class="collab-bar reveal">
+      <div>
+        <h2 class="section-title">{tr('home.collabTitle')}</h2>
+        <p>{tr('home.collabBody')}</p>
+      </div>
+      <a class="btn" href={`/${lang}/services/`}>{tr('nav.services')}</a>
+    </div>
   </section>
 
   <section class="section container" id="contact">
@@ -261,14 +284,16 @@ const practice = [
   }
   .section {
     scroll-margin-top: 5.5rem;
+    margin-top: 4.5rem;
   }
   .hero {
-    min-height: calc(100vh - 6rem);
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     position: relative;
-    padding-bottom: 4.5rem;
+    padding-top: 14vh;
+    padding-bottom: 3rem;
     overflow-x: clip;
   }
   .eyebrow {
@@ -278,10 +303,10 @@ const practice = [
     margin: 0;
   }
   h1 {
-    font-size: clamp(2.15rem, 5.4vw, 4.35rem);
-    line-height: 1.08;
-    margin: 0.55rem 0 1rem;
-    max-width: 16ch;
+    font-size: clamp(1.85rem, 3.6vw, 2.7rem);
+    line-height: 1.2;
+    margin: 0.45rem 0 0.8rem;
+    max-width: 22ch;
     font-weight: 800;
   }
   :global(.split-word) {
@@ -314,10 +339,10 @@ const practice = [
     position: absolute;
     left: var(--hx, -999px);
     top: var(--hy, -999px);
-    width: 240px;
-    height: 240px;
+    width: 96px;
+    height: 96px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(circle, color-mix(in srgb, var(--accent2) 24%, transparent), transparent 68%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent2) 14%, transparent), transparent 70%);
     pointer-events: none;
     z-index: 0;
     opacity: 0;
@@ -331,24 +356,14 @@ const practice = [
   }
   :global(html.hero-stacked) .hero {
     justify-content: flex-end;
-    padding-top: 32vh;
+    padding-top: 16vh;
     padding-bottom: 5.75rem;
   }
   :global(html.hero-stacked) .copy {
     max-width: 100%;
   }
   :global(.hl) {
-    background: linear-gradient(100deg, var(--accent), var(--accent2), var(--accent));
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: sheen 5s linear infinite;
-  }
-  @keyframes sheen {
-    to {
-      background-position: -200% 0;
-    }
+    color: var(--accent2);
   }
   .scroll-hint {
     position: absolute;
@@ -519,23 +534,62 @@ const practice = [
     gap: 0.7rem;
     flex-wrap: wrap;
   }
-  .field-list {
+  .writing-row,
+  .practice-row {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.8rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
   }
-  .field-list a {
+  .writing-row a {
     display: block;
-    padding: 1rem 1.15rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
     text-decoration: none;
   }
-  .field-list strong {
+  .writing-row b {
     display: block;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
+    color: var(--accent2);
+    font-size: 0.75rem;
+    font-weight: 700;
   }
-  .field-list span {
+  .practice-row a {
+    display: block;
+    text-decoration: none;
+  }
+  .practice-row strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 1.05rem;
+  }
+  .practice-row span {
     color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .collab-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
+  }
+  .collab-bar h2 {
+    margin: 0;
+  }
+  .collab-bar p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    max-width: 46ch;
+  }
+  @media (max-width: 800px) {
+    .writing-row,
+    .practice-row {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
