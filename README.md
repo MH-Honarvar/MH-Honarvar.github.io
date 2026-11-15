@@ -1,6 +1,6 @@
 # mh-honarvar.github.io
 
-Personal site of Mohammad Honarvar (محمد هنرور). Persian and English, on separate locale routes.
+Landing pages in Persian and English.
 
 https://mh-honarvar.github.io/
 
