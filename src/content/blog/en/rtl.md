@@ -44,7 +44,7 @@ The font switch is not patched onto direction either. The global stylesheet has 
 
 A `90deg` gradient does not listen to page direction. The less-to-more ramp on the commit city is mirrored with `scaleX(-1)` for Persian. The origin of `scaleX` on the reading bar and the skill bar is physical, and right-to-left sets it to `right` in a separate rule. The intro canvas and the 3D scene read `document.dir` themselves. Add those lines at the end and each one fixes a spot while leaving the others.
 
-The blog search input still uses `padding-left`. I do not present that as finished right-to-left work. It shows that a physical property, even beside the rest of the layout, does not find the right edge on its own.
+The page’s own rule for the search input is `padding-inline-start`, so the extra gap follows the start of the line. Pagefind still places the icon with `left`, and in Persian that icon stays on the left edge. I do not present that icon as finished right-to-left work.
 
 On a narrow width the nav moves to the bottom of the screen, but in the document it stays in the header. Where it is seen and where Tab meets it are not the same. The focus note opens that up. It belongs here only because a visual move, if it was not thought through at the start, also scrambles reading order.
 

@@ -31,7 +31,7 @@ The reading progress bar uses `transform-origin: left`. On a right-to-left page 
 
 The less-to-more key on the commit city is a `linear-gradient(90deg)`. A gradient does not listen to page direction. Under `[dir='rtl']` that ramp is mirrored with `scaleX(-1)`, so the brighter end still reads as “more.” `inset-inline-end` already places the box. The color inside the box has a direction of its own.
 
-Blog search is a smaller exception. The Pagefind input uses `padding-left`, not `padding-inline-start`. Page direction does not move that gap to the right edge. The search icon stays on the left even when the rest of the page is right-to-left.
+Blog search is still a smaller exception, but not in the page’s own padding. The page rule is `padding-inline-start`, so the gap follows the start of the line. Pagefind draws the icon with `left`, and its own padding is physical. In Persian the icon stays on the left even when the rest of the page is right-to-left.
 
 ## Islands that should not flip
 
