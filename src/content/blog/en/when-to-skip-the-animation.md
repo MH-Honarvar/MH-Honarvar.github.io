@@ -27,9 +27,9 @@ The back-to-top control follows the same split. If the page is reduced, it calls
 
 Word splitting still runs for any element marked `data-split`, because that loop sits outside the library import. It wraps words, not letters, so a Persian join survives. Article titles are not marked. The blog index heading is. The lift itself, a `yPercent` of `110` with a stagger, stays inside the GSAP block and does not run when the libraries stay out.
 
-## Entrances that start invisible
+## The entrance arrives with the motion
 
-Blocks with the class `reveal` begin at opacity `0` and `translateY(30px)`. That is deliberate when GSAP is about to fade them in. It is a bug if GSAP never arrives. The stylesheet closes that hole. Under `html.no-motion`, and under `prefers-reduced-motion`, `.reveal` is opacity `1` with no transform. I would rather lose the entrance than leave a section waiting on a fade that will not happen.
+The resting state of `.reveal` is opacity `1`, with no transform. Opacity `0` and `translateY(30px)` apply only under `html.is-motion`, and that class is added after GSAP starts on the home page and the projects page. If the library does not arrive, the class is not added and the line stays visible. Reduced motion and `html.no-motion` keep that same opacity of `1`.
 
 View transitions are the same bargain at the edge of a navigation. The stylesheet runs a `0.28s` opacity animation on the root, and turns it off when reduced motion is set or when `no-motion` is on the root. On `pageswap`, a reduced page skips the transition immediately. A transition that is still going after `400ms` is skipped too. It may be brief. It may not become the page.
 

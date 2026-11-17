@@ -41,7 +41,7 @@ The animation lifts the words. It does not run when the system asks for less mot
 
 Lenis is not on every page. Article pages set the document to plain motion, so the script never imports Lenis or GSAP there. The import waits only on the home page and the projects page, because only those two are `rich`. The blog index and the about page stay `plain` and do not start that import. If `prefers-reduced-motion` is set, or the head script has already added `no-motion`, neither library is fetched. The back-to-top button then uses a plain `scrollTo`.
 
-GSAP counts the stat numbers and fades the `.reveal` blocks. Those blocks start at opacity 0 so the fade has somewhere to begin. Reduced motion turns that off in CSS: `.reveal` is visible. I would rather lose the entrance than make someone wait on a fade they did not ask for.
+GSAP counts the stat numbers and fades the `.reveal` blocks. Their resting opacity is `1`, and zero applies only under `html.is-motion`. Reduced motion keeps that same block visible in CSS. I would rather lose the entrance than make someone wait on a fade they did not ask for.
 
 The custom cursor and the card tilt check for a fine pointer and for reduced motion before they attach. A touch screen does not get a fake cursor.
 
