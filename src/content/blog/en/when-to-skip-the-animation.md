@@ -5,7 +5,7 @@ date: 2026-10-14
 tags: [performance, motion]
 ---
 
-Animation is easy to defend in the abstract and expensive in the file that actually arrives. A library has to be fetched. A starting state has to be invisible so the entrance has somewhere to begin. A scroll hijack has to be worth more than the wheel the reader already has. On this site those costs are gated. An article does not pay them. A reader who has asked for less motion does not pay them either.
+Animation is easy to defend in the abstract and expensive in the file that actually arrives. A library has to be fetched, and a scroll hijack has to be worth more than the wheel the reader already has. The line does not have to start invisible for an entrance to exist. On this site those costs are gated. An article does not pay them. A reader who has asked for less motion does not pay them either.
 
 The faces, the measure, and the decision not to split Persian into letters are in [Type, space, and the motion of a page](/en/blog/type-and-space/). This note is only about when the motion is allowed to start.
 
