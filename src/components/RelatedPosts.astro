@@ -20,7 +20,7 @@ const label = lang === 'fa' ? 'نوشته‌های مرتبط' : 'Related posts'
       <ul>
         {posts.map((post) => (
           <li>
-            <a class="glass" href={post.url}>{post.title}</a>
+            <a href={post.url}>{post.title}</a>
           </li>
         ))}
       </ul>
@@ -41,18 +41,18 @@ const label = lang === 'fa' ? 'نوشته‌های مرتبط' : 'Related posts'
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: 0.75rem;
   }
   .related a {
     display: block;
-    padding: 1rem 1.2rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
     text-decoration: none;
     font-weight: 600;
-    transition: border-color 0.3s, transform 0.3s;
+  }
+  .related li:last-child a {
+    border-bottom: 1px solid var(--border);
   }
   .related a:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+    color: var(--accent2);
   }
 </style>

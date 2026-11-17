@@ -103,6 +103,9 @@ export const topics: Topic[] = [
       en: 'A fast page, in these notes, means a static build, and not shipping a library the reader does not need in order to read. The scene is allowed in two places. Everywhere else that file is not downloaded.',
     },
     articles: [
+      { slug: 'scene-arrives-apart', fallback: { fa: 'صحنه جدا می‌آید', en: 'The scene arrives apart' } },
+      { slug: 'search-after-the-build', fallback: { fa: 'جست‌وجو بعد از ساخت است', en: 'Search comes after the build' } },
+      { slug: 'shortcut-beside-the-map', fallback: { fa: 'میانبر سوم کنار نقشه است', en: 'The third shortcut sits beside the map' } },
       { slug: 'static-pages-and-webgl', fallback: { fa: 'صفحه‌ی استاتیک، و وقتی صحنه هزینه‌اش را درمی‌آورد', en: 'A static page, and when the scene earns its keep' } },
       { slug: 'when-to-skip-the-animation', fallback: { fa: 'کی انیمیشن را نمی‌آوریم', en: 'When the animation stays out' } },
       { slug: 'what-a-static-page-owes-the-reader', fallback: { fa: 'صفحه‌ی استاتیک به خواننده چه بدهکار است', en: 'What a static page owes the reader' } },

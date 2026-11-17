@@ -85,7 +85,7 @@ const words = story[lang].split(' ');
       </div>
       <div>
         <p class="kicker">{tr('about.title')}</p>
-        <h1 id="author" data-split>{SITE.name[lang]}</h1>
+        <h1 id="author">{SITE.name[lang]}</h1>
         <p class="typed" aria-label={tr('about.roles').replaceAll('|', lang === 'fa' ? '، ' : ', ')}>
           <span data-roles={tr('about.roles')}>{tr('about.roles').split('|')[0]}</span><i aria-hidden="true"></i>
         </p>
@@ -118,7 +118,7 @@ const words = story[lang].split(' ');
       {words.map((w) => <span>{w} </span>)}
     </p>
 
-    <div class="now glass reveal">
+    <div class="now reveal">
       <h2><i class="live" aria-hidden="true"></i>{tr('about.nowTitle')}</h2>
       <div class="now-grid">
         {
@@ -195,14 +195,6 @@ const words = story[lang].split(' ');
 
     <h2 class="sub reveal">{tr('about.skills')}</h2>
     <div class="toolbox">
-      <div class="orbit" aria-hidden="true">
-        <span class="core">{SITE.name[lang].trim()[0]}</span>
-        {toolbox.map((tl, i) => (
-          <span class="sat" style={`--a:${(360 / toolbox.length) * i}deg`}>
-            <svg viewBox="0 0 24 24" width="22" height="22"><path d={tl.icon} /></svg>
-          </span>
-        ))}
-      </div>
       <ul class="tools">
         {
           toolbox.map((tl) => (
@@ -243,9 +235,8 @@ const words = story[lang].split(' ');
       }
     </div>
 
-    <div class="cta glass reveal">
-      <span class="mesh" aria-hidden="true"></span>
-      <h2 class="gradient-text">{tr('about.ctaTitle')}</h2>
+    <div class="cta reveal">
+      <h2>{tr('about.ctaTitle')}</h2>
       <p>{tr('about.ctaBody')}</p>
       <p class="clock">{tr('about.localTime')}: <b data-clock data-locale={locale}>--:--</b></p>
       <div class="contact">
@@ -460,14 +451,13 @@ const words = story[lang].split(' ');
     opacity: 1;
   }
   .now {
-    margin-top: 3rem;
-    padding: 1.5rem 1.6rem;
+    margin-top: 2rem;
   }
   .now h2 {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin: 0 0 1rem;
+    margin: 0 0 0.4rem;
     font-size: 1.15rem;
   }
   .live {
@@ -485,17 +475,15 @@ const words = story[lang].split(' ');
   }
   .now-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-    gap: 1rem;
   }
   .now-grid > * {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    padding: 1rem;
-    border-radius: 1rem;
-    border: 1px solid var(--border);
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--border);
     text-decoration: none;
+  }
     color: inherit;
     transition: border-color 0.2s, transform 0.2s;
   }
@@ -548,10 +536,7 @@ const words = story[lang].split(' ');
     font-size: 0.93rem;
   }
   .toolbox {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 2.5rem;
-    align-items: center;
+    display: block;
   }
   .orbit {
     position: relative;
@@ -791,35 +776,23 @@ const words = story[lang].split(' ');
     }
   }
   .cta {
-    position: relative;
-    margin-top: 3rem;
-    padding: clamp(1.8rem, 5vw, 3.2rem);
-    text-align: center;
-    overflow: hidden;
-  }
-  .cta::before {
-    content: '';
-    position: absolute;
-    inset: auto -20% -60%;
-    height: 120%;
-    background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%);
-    pointer-events: none;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    text-align: start;
   }
   .cta h2 {
-    position: relative;
-    font-size: clamp(1.7rem, 4vw, 2.6rem);
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.45rem;
+    font-size: 1.35rem;
   }
   .cta p {
-    position: relative;
     color: var(--muted);
-    margin: 0 auto 1.6rem;
+    margin: 0 0 1rem;
     max-width: 48ch;
   }
   .contact {
-    position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.8rem;
     flex-wrap: wrap;
   }

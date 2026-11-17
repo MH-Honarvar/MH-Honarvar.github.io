@@ -1,6 +1,6 @@
 ---
 title: The measure of a line
-description: "How this site sets the reading line: a 70ch article column, line-height 2 for Persian prose, and a drop cap that only English essays may use."
+description: "How this site sets the reading line: a 70ch article column, and line-height 2 for Persian prose."
 date: 2026-10-14
 tags: [typography, reading]
 ---
@@ -25,11 +25,9 @@ The faces behind that choice are the ones named in the type note. Vazirmatn come
 
 Inter’s files on this site are Latin and Latin-extended. Vazirmatn keeps an Arabic range for Persian and a Latin range for names inside a Persian sentence. The subset work is in the type note. It matters here because `ch` belongs to whichever face drew the zero. The article title uses a letter-spacing of `-0.01em` in both languages. I do not tighten it, and I do not add a second value for Persian. The air stays in the line-height.
 
-## The drop cap is an English habit
+## A paragraph gap is not a heading gap
 
-English articles float the first letter of the first paragraph. It is `3.6em`, weight `800`, and it takes the accent gradient. The selector is `.lang-en .prose > p:first-of-type::first-letter`. Persian articles do not match it. A dropped initial on a joining letter cuts the chain the same way a per-letter span does, and the float is `left`, which is the wrong edge for a right-to-left line. The opening of a Persian essay is the sentence, at the same size as the rest, with more air between the lines.
-
-Paragraphs under the prose block have a bottom margin of `1.3rem`. That gap is ordinary. It is not the heading gap. The drop cap is a single event at the start of an English essay. It is not repeated, and it is not a decoration both languages have to share. The English opening has a large letter. The Persian opening has a line-height of `2`.
+Paragraphs under the prose block have a bottom margin of `1.3rem`. That gap is ordinary. It is not the heading gap. The opening of an essay, in either language, is the sentence, at the same size as the rest.
 
 ## Headings are rests
 
@@ -51,7 +49,7 @@ The measure is the part of the page a person feels without a lab. I am not publi
 
 Leaving animation off this template is the subject of [When the animation stays out](/en/blog/when-to-skip-the-animation/). Why the essay does not download a WebGL scene is [A static page, and when the scene earns its keep](/en/blog/static-pages-and-webgl/). What that finished HTML file owes you, before any of this spacing, is [What a static page owes the reader](/en/blog/what-a-static-page-owes-the-reader/). The kind of work I take on, and what never becomes a public write-up, is the [collaboration](/en/services/) page.
 
-If you want the same facts from the stylesheet, start with the article column at `70ch`, then the Persian line-height of `2`, then the drop-cap selector that never matches a Persian article. The rest is spacing, so a heading can be a pause instead of another paragraph at a larger size.
+If you want the same facts from the stylesheet, start with the article column at `70ch`, then the Persian line-height of `2`. The rest is spacing, so a heading can be a pause instead of another paragraph at a larger size.
 
 ## Further reading
 

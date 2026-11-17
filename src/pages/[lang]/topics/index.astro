@@ -35,16 +35,21 @@ const crumbs = [
     <Breadcrumbs lang={lang} crumbs={crumbs} />
     <h1 class="section-title">{topicsIndex.title[lang]}</h1>
     <p class="section-lede">{topicsIndex.lede[lang]}</p>
-    <ul class="hubs">
+    <ol class="hubs">
       {
-        topics.map((topic) => (
+        topics.map((topic, i) => (
           <li>
-            <a href={`/${lang}/topics/${topic.id}/`}>{topic.title[lang]}</a>
-            <p>{topic.summary[lang]}</p>
+            <a href={`/${lang}/topics/${topic.id}/`}>
+              <b>{(i + 1).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US').padStart(2, lang === 'fa' ? '۰' : '0')}</b>
+              <span>
+                <strong>{topic.title[lang]}</strong>
+                {topic.summary[lang]}
+              </span>
+            </a>
           </li>
         ))
       }
-    </ul>
+    </ol>
     {
       loose.length > 0 && (
         <p class="aside">
@@ -61,9 +66,18 @@ const crumbs = [
 <style>
   .topics { max-width: 46rem; }
   .hubs { list-style: none; padding: 0; margin: 0; }
-  .hubs li { margin: 0 0 1.3rem; }
-  .hubs a { color: var(--accent2); font-size: 1.2rem; text-decoration: none; }
-  .hubs p { color: var(--muted); margin: 0.25rem 0 0; }
+  .hubs a {
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    gap: 0.8rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
+    text-decoration: none;
+  }
+  .hubs li:last-child a { border-bottom: 1px solid var(--border); }
+  .hubs b { color: var(--accent2); font-size: 0.8rem; font-weight: 700; padding-top: 0.2rem; }
+  .hubs strong { display: block; margin-bottom: 0.2rem; color: var(--fg); }
+  .hubs span { color: var(--muted); }
   .aside { color: var(--muted); margin: 0.2rem 0 0; }
   .aside a { color: var(--accent2); text-decoration: none; }
 </style>

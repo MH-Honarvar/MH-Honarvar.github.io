@@ -90,7 +90,7 @@ const crumbs = [
     <div class="layout">
       {
         toc.length > 1 && (
-          <nav class="toc glass" aria-label={tr('blog.toc')} data-pagefind-ignore>
+          <nav class="toc" aria-label={tr('blog.toc')} data-pagefind-ignore>
             <p>{tr('blog.toc')}</p>
             <span class="toc-track" aria-hidden="true"><span class="toc-fill" /></span>
             <ul>
@@ -252,7 +252,8 @@ const crumbs = [
     order: 2;
     position: sticky;
     top: 6rem;
-    padding: 1.2rem;
+    padding: 0.85rem 0 0;
+    border-top: 1px solid var(--border);
     font-size: 0.9rem;
   }
   .toc p {

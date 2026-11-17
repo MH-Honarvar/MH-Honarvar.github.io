@@ -100,7 +100,7 @@ const writeups = [
 >
   <section class="section container" data-pagefind-body>
     <Breadcrumbs lang={lang} crumbs={[{ name: tr('nav.home'), url: `/${lang}/` }, { name: tr('nav.projects'), url: `/${lang}/projects/` }]} />
-    <h1 class="section-title" data-split>{tr('projects.title')}</h1>
+    <h1 class="section-title">{tr('projects.title')}</h1>
     <p class="section-lede">{tr('projects.lede')}</p>
     {
       writeups.length > 0 && (
@@ -123,13 +123,12 @@ const writeups = [
       publicCases.length > 0 && (
         <div class="grid cases">
           {publicCases.map((c) => (
-            <article class="repo glass reveal">
-              <a href={`/${lang}/projects/${c.slug}/`} class="cover" aria-label={c.title[lang]} />
-              <h3>{c.title[lang]}</h3>
+            <article class="case-row reveal">
+              <h3><a href={`/${lang}/projects/${c.slug}/`}>{c.title[lang]}</a></h3>
               <p>{c.summary[lang]}</p>
               <div class="foot">
-                <a class="site" href={`/${lang}/projects/${c.slug}/`}>{tr('blog.read')}</a>
-                <a class="site" href={c.site}>{tr('projects.site')} ↗</a>
+                <a href={`/${lang}/projects/${c.slug}/`}>{tr('blog.read')}</a>
+                <a href={c.site}>{tr('projects.site')} ↗</a>
               </div>
             </article>
           ))}
@@ -138,39 +137,21 @@ const writeups = [
     }
 
     <div class="top reveal">
-      <dl class="pstats glass">
+      <dl class="pstats">
         <div><dt>{num(repos.length)}</dt><dd>{tr('projects.repos')}</dd></div>
         {filterLangs.length > 0 && <div><dt>{num(filterLangs.length)}</dt><dd>{tr('projects.langs')}</dd></div>}
         <div><dt class="sm">{lastLabel}</dt><dd>{tr('projects.lastCommit')}</dd></div>
       </dl>
       {
         langs.length > 0 && (
-          <div class="donut glass">
-            <svg viewBox="0 0 100 100" aria-hidden="true">
-              {arcs.map((a) => (
-                <circle
-                  r="42" cx="50" cy="50"
-                  style={`--c:${a.color}`}
-                  stroke-dasharray={`${a.len} ${donutC - a.len}`}
-                  stroke-dashoffset={a.off}
-                  data-name={a.name}
-                  data-pct={`${num(a.pct)}${pct}`}
-                />
-              ))}
-            </svg>
-            <div class="center" data-donut-center>
-              <b>{num(langs.length)}</b>
-              <small>{tr('projects.langs')}</small>
-            </div>
-            <ul>
-              {arcs.map((a) => (
-                <li style={`--c:${a.color}`} data-name={a.name}>
-                  <i />
-                  <span dir="ltr">{a.name}</span> <small>{num(a.pct)}{pct}</small>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <ul class="langs">
+            {arcs.map((a) => (
+              <li>
+                <span dir="ltr">{a.name}</span>
+                <small>{num(a.pct)}{pct}</small>
+              </li>
+            ))}
+          </ul>
         )
       }
     </div>
@@ -242,7 +223,7 @@ const writeups = [
             </svg>
           </button>
         </div>
-        <dl class="city-stats glass reveal">
+        <dl class="city-stats reveal">
           {cityStats.map(([v, label, sub]) => (
             <div>
               <dt>{v}</dt>
@@ -272,12 +253,46 @@ const writeups = [
   }
   .top {
     display: grid;
-    grid-template-columns: 1fr 1.3fr;
-    gap: 1.25rem;
+    gap: 0.5rem;
     margin-bottom: 1.5rem;
   }
-  .top:not(:has(.donut)) {
-    grid-template-columns: 1fr;
+  .case-row {
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .case-row h3 {
+    margin: 0 0 0.25rem;
+  }
+  .case-row h3 a,
+  .case-row .foot a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .case-row p {
+    margin: 0 0 0.45rem;
+    color: var(--muted);
+  }
+  .case-row .foot {
+    display: flex;
+    gap: 1rem;
+  }
+  .case-row .foot a {
+    color: var(--accent2);
+  }
+  .langs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .langs li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .langs small {
+    color: var(--muted);
   }
   .pstats {
     display: grid;
@@ -456,7 +471,7 @@ const writeups = [
     gap: 1.25rem;
   }
   .cases {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    display: block;
     margin-bottom: 1.5rem;
   }
   .repo {
@@ -861,20 +876,6 @@ const writeups = [
       else apply();
     }),
   );
-
-  const center = document.querySelector<HTMLElement>('[data-donut-center]');
-  const centerHTML = center?.innerHTML ?? '';
-  document.querySelectorAll<SVGCircleElement>('.donut circle').forEach((c) => {
-    const li = [...document.querySelectorAll<HTMLElement>('.donut li')].find((el) => el.dataset.name === c.dataset.name);
-    c.addEventListener('mouseenter', () => {
-      if (center) center.innerHTML = `<b>${c.dataset.pct}</b><small dir="ltr">${c.dataset.name}</small>`;
-      li?.classList.add('on');
-    });
-    c.addEventListener('mouseleave', () => {
-      if (center) center.innerHTML = centerHTML;
-      li?.classList.remove('on');
-    });
-  });
 
   const views = [...document.querySelectorAll<HTMLButtonElement>('[data-city-view]')];
   views.forEach((v) =>

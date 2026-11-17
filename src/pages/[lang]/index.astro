@@ -96,7 +96,7 @@ const practice = [
           <h2 class="section-title reveal"><span class="snum">{sn(1)}</span>{tr('home.work')}</h2>
           <a href={`/${lang}/projects/`} class="all">{tr('home.allProjects')}</a>
         </div>
-        <a href={`/${lang}/projects/${work.slug}/`} class="proj glass reveal" data-tilt>
+        <a href={`/${lang}/projects/${work.slug}/`} class="proj reveal">
           <h3>{work.title[lang]}</h3>
           <p>{work.summary[lang]}</p>
           <span class="all">{tr('hero.cta')}</span>
@@ -151,9 +151,9 @@ const practice = [
   </section>
 
   <section class="section container" id="contact">
-    <div class="contact glass reveal">
+    <div class="contact reveal">
       <div>
-        <h2 class="gradient-text">{tr('home.contactTitle')}</h2>
+        <h2 class="section-title">{tr('home.contactTitle')}</h2>
         <p>{tr('home.contactBody')}</p>
       </div>
       <div class="contact-actions">
@@ -458,26 +458,11 @@ const practice = [
     text-decoration: none;
   }
   .proj {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    max-width: 40rem;
-    padding: 1.6rem 1.5rem 1.4rem;
+    display: block;
+    max-width: 46rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
     text-decoration: none;
-    overflow: hidden;
-    transition: transform 0.2s ease-out, border-color 0.3s;
-    background-image: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent2) 22%, transparent), transparent 62%);
-  }
-  .proj::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent2) 18%, color-mix(in srgb, white 40%, var(--accent2)), var(--accent2) 82%, transparent);
-  }
-  .proj:hover {
-    border-color: color-mix(in srgb, var(--accent2) 60%, transparent);
   }
   .proj h3 {
     margin: 0 0 0.45rem;
@@ -499,37 +484,23 @@ const practice = [
     letter-spacing: 0.05em;
   }
   .contact {
-    position: relative;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
-    padding: clamp(1.6rem, 4vw, 2.6rem);
-    overflow: hidden;
-  }
-  .contact::before {
-    content: '';
-    position: absolute;
-    inset-block-start: -40%;
-    inset-inline-start: -10%;
-    inset-inline-end: 30%;
-    height: 180%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%);
-    pointer-events: none;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
   }
   .contact h2 {
-    position: relative;
-    margin: 0 0 0.3rem;
-    font-size: clamp(1.6rem, 3.5vw, 2.3rem);
+    margin: 0;
   }
   .contact p {
-    position: relative;
-    margin: 0;
+    margin: 0.35rem 0 0;
     color: var(--muted);
+    max-width: 46ch;
   }
   .contact-actions {
-    position: relative;
     display: flex;
     gap: 0.7rem;
     flex-wrap: wrap;

@@ -25,7 +25,7 @@ The first paint still has to choose a face. English text is set in Inter, a vari
 
 Both declare `font-display: swap`. The declaration is on the Inter faces in the site stylesheet, and on the Vazirmatn faces that the font package ships. Swap means the browser may draw with a fallback first and replace it when the file arrives. The line can move a little, because the measure of an article is `70ch` and `ch` follows the zero of the face that is currently in use. A small shift is the cost of showing the words during the load. Invisible text until the preferred file finishes is the cost I am not willing to charge.
 
-The article column, the Persian line-height of `2`, and the English drop cap that Persian pages do not use are written out in [The measure of a line](/en/blog/reading-measure-and-rhythm/). They belong in this debt because a static file that is unreadable is not a gift just because it was prebuilt. The HTML has to be type you can actually follow, in the language of the URL you opened.
+The article column and the Persian line-height of `2` are written out in [The measure of a line](/en/blog/reading-measure-and-rhythm/). They belong in this debt because a static file that is unreadable is not a gift just because it was prebuilt. The HTML has to be type you can actually follow, in the language of the URL you opened.
 
 ## Do not bill the essay for the hero
 

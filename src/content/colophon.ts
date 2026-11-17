@@ -61,10 +61,24 @@ export const colophonPage: {
         ],
       },
     },
+    {
+      heading: { fa: 'سه یادداشت از همین ساخت', en: 'Three notes from this build' },
+      body: {
+        fa: [
+          'صحنه جدا می‌آید، جست‌وجو بعد از ساخت است، و میانبر سوم کنار نوار و نقشه‌ی HTML است. هر سه از روی همین کد نوشته شده‌اند و لینکشان پایین صفحه است.',
+        ],
+        en: [
+          'The scene arrives on its own, search is built after the site, and the third shortcut sits beside the bar and the HTML map. All three are written from this code, and their links are at the bottom of this page.',
+        ],
+      },
+    },
   ],
   linksHeading: { fa: 'کنار همین ساخت', en: 'Beside this build' },
   links: [
     { path: '/projects/mh-honarvar.github.io/', label: { fa: 'همین سایت، به‌عنوان پروژه‌ی عمومی', en: 'This site, as a public project' } },
+    { path: '/blog/scene-arrives-apart/', label: { fa: 'صحنه جدا می‌آید', en: 'The scene arrives apart' } },
+    { path: '/blog/search-after-the-build/', label: { fa: 'جست‌وجو بعد از ساخت', en: 'Search after the build' } },
+    { path: '/blog/shortcut-beside-the-map/', label: { fa: 'میانبر سوم', en: 'The third shortcut' } },
     { path: '/blog/static-pages-and-webgl/', label: { fa: 'صفحه‌ی استاتیک و صحنه', en: 'A static page, and the scene' } },
     { path: '/topics/speed/', label: { fa: 'سرعت', en: 'Speed' } },
     { path: '/about/', label: { fa: 'درباره', en: 'About' } },
