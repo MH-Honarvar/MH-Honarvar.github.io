@@ -28,10 +28,12 @@ export const colophonPage: {
         fa: [
           'ساخت با Astro است و خروجی‌اش فایل استاتیک است. آداپتور سرور ندارد؛ هر آدرس، از جمله این صفحه، موقع ساخت نوشته می‌شود. سایت منتشرشده روی GitHub Pages است، همان دامنه‌ی mh-honarvar.github.io.',
           'جست‌وجوی داخل سایت یک نمایه‌ی استاتیک است که با خود ساخت در می‌آید. سرویس آمار نیست و از صفحه به جایی گزارش نمی‌فرستد.',
+          'Three با import() جدا می‌آید و فقط بوم خانه و شهر پروژه‌ها آن را شروع می‌کنند. صفحه‌ی نوشته آن بوم را ندارد، پس قطعه‌ی Three را دانلود نمی‌کند.',
         ],
         en: [
           'The build is Astro and the output is static files. There is no server adapter; each address, including this page, is written at build time. The published site is on GitHub Pages, the domain mh-honarvar.github.io.',
           'On-site search is a static index made with the build. It is not an analytics service, and the page does not report anywhere.',
+          'Three arrives through a separate import(), and only the home canvas and the projects city start it. An essay has neither canvas, so it does not download the Three chunk.',
         ],
       },
     },
