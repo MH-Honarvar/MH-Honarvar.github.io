@@ -18,7 +18,7 @@ const posts = await getPosts(lang);
 const copy = {
   fa: {
     title: t('fa')('nav.map'),
-    description: 'فهرست صفحه‌های فارسی برای گشتن آدم: خانه، درباره، همکاری، شناسنامه‌ی سایت، پروژه‌ها، سه موضوع، نوشته‌ها، و دو نمونه‌ی کار.',
+    description: 'فهرست صفحه‌های فارسی برای گشتن آدم: خانه، از کار، درباره، همکاری، شناسنامه‌ی سایت، پروژه‌ها، سه موضوع، نوشته‌ها، و دو نمونه‌ی کار.',
     lede: 'همین صفحه‌ها، گروه‌بندی‌شده، تا از یکی به دیگری بروی.',
     pages: 'صفحه‌ها',
     topics: 'موضوع‌ها',
@@ -27,7 +27,7 @@ const copy = {
   },
   en: {
     title: t('en')('nav.map'),
-    description: 'A human list of the English pages: home, about, collaboration, the colophon, projects, three topics, the notes, and two cases.',
+    description: 'A human list of the English pages: home, from the work, about, collaboration, the colophon, projects, three topics, the notes, and two cases.',
     lede: 'The same pages, grouped, so you can walk from one to the next.',
     pages: 'Pages',
     topics: 'Topics',
@@ -45,6 +45,7 @@ const groups = [
     heading: copy.pages,
     links: [
       { href: href('/'), label: tr('nav.home') },
+      { href: href('/field/'), label: tr('nav.field') },
       { href: href('/about/'), label: tr('about.title') },
       { href: href('/services/'), label: servicesPage.title[lang] },
       { href: href('/colophon/'), label: colophonPage.title[lang] },

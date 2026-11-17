@@ -11,7 +11,7 @@ This is the page I mean when I say there is an HTML map. It is not a dump of eve
 
 ## What the four groups contain
 
-The first group is pages. The labels come from the interface copy and from the page modules: Home, About me, the collaboration page, the colophon, and Projects. Collaboration is [How we collaborate](/en/services/). It is the same page the footer links to. It is not in the header. The header is home, blog, from the work, projects, and about.
+The first group is pages. The labels come from the interface copy and from the page modules: Home, From the work, About this work, the collaboration page, the colophon, and Cases and repositories. Collaboration is [How we collaborate](/en/services/). It is the same page the footer links to. It is not in the header. The header is home, blog, from the work, projects, and about.
 
 The second group is topics. The first link is the topics index. The three hubs come from `topicById`: Persian and RTL, Type and measure, and A fast page. Their paths are `/en/topics/rtl/`, `/en/topics/type/`, and `/en/topics/speed/`. [A fast page](/en/topics/speed/) is the cluster this map belongs with, in the sense that the map is a static document. `motion` is passed as false. The template does not mount a scene.
 
