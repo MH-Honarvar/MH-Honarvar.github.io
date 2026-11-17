@@ -43,7 +43,7 @@ If two tags were joined just by swapping the locale prefix, a Persian archive wo
 
 ## The palette holds both trees and does not merge the page
 
-`Base.astro` fills the command palette index from both languages while the page is built: the fixed pages, and every post title. Each row keeps its own language and its own URL. The dialog is `dir="ltr"`. A result link uses `dir="auto"`, so a Persian title keeps its own direction inside a list whose dialog is Latin.
+`Base.astro` fills the command palette index from both languages while the page is built: the fixed pages, and every post title. Each row keeps its own language and its own URL. The dialog follows the language of the page. It does not set `dir="ltr"`. A result link uses `dir="auto"`, so a Persian title keeps its own direction.
 
 That index is not a live translation of one page. It is two trees, already built, sitting side by side. Choosing a row goes to that language’s address. It does not flip `dir` on the page you are on. A post with no twin still appears under its own language. The palette does not claim `hreflang`. It only links.
 

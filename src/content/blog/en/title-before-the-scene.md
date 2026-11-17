@@ -13,7 +13,7 @@ This is not the Karkia landing. That page is static and has no 3D scene. Here th
 
 The title comes from the page’s type, not from a texture WebGL draws. The button is a link. Its destination is the work page, not a point on the canvas. The click is not tied to the renderer being ready.
 
-The particles and the intro, when they are there, are a layer beside the title. The title itself is described more closely in [the note on this site’s first moment](/en/blog/first-screen/). This note is only the boundary: the scene is decoration behind the words, not a substitute for them.
+The intro, when it is there, is a CSS line over the page. The title itself is described more closely in [the note on this site’s first moment](/en/blog/first-screen/). This note is only the boundary: the scene is decoration behind the words, not a substitute for them.
 
 ## When less motion is requested
 

@@ -27,7 +27,7 @@ Buttons are 600, on a pill radius, with the primary one on the accent gradient. 
 
 ## Space uses the inline axis
 
-Margins that mean “the start of the line” are `margin-inline` and `padding-inline`, not `left` and `right`. The header, the breadcrumbs, the table of contents, and the stat dividers use the inline start, so a right-to-left page does not need an override for every gap. The skill ticker on the home page is `direction: ltr` on purpose. That exception is local.
+Margins that mean “the start of the line” are `margin-inline` and `padding-inline`, not `left` and `right`. The header, the breadcrumbs, the table of contents, and the stat dividers use the inline start, so a right-to-left page does not need an override for every gap.
 
 The reading measure on an article is about seventy characters. The home lede is shorter. Those numbers live in the component CSS. If a line feels long in Persian, the fix is the measure or the line-height, not a smaller font that loses the dots.
 

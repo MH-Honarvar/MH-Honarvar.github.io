@@ -36,18 +36,18 @@ The [collaboration](/en/services/) page states the same limit for contact. The o
 
 The header puts the mark first, then home, blog, from the work, projects, and about, then the tools. The nav is flex, and in a right-to-left document it lines up from the right. Spacing that means “the start of the line” uses `margin-inline` and `inset-inline-start`. The skip link is pinned to that same edge. If those had been `left`, Persian would need a second rule for every gap.
 
-The pieces that must not flip were separated at the start, not after a complaint. Repository names, languages, stars, activity cells, and code blocks use `dir="ltr"`. The `⌘K` button does too. The palette and the terminal are Latin dialogs. These islands are not patches. Latin was never meant to be mirrored.
+The pieces that must not flip were separated at the start, not after a complaint. Repository names, languages, and code blocks use `dir="ltr"`. The `⌘K` button does too. The terminal is a Latin dialog, with `dir="ltr"`. The command palette follows the language of the page. These islands are not patches. Latin was never meant to be mirrored.
 
 The font switch is not patched onto direction either. The global stylesheet has both `:lang(fa)` and `html[lang|='fa']`. Both match `fa-IR`, because the document language is not exactly `fa`. An exact `html[lang='fa']` would miss this document. If that were the only selector, Vazirmatn would stay behind and Inter would sit in front of the Persian.
 
 ## Where direction arrives late, it shows
 
-A `90deg` gradient does not listen to page direction. The less-to-more ramp on the commit city is mirrored with `scaleX(-1)` for Persian. The origin of `scaleX` on the reading bar and the skill bar is physical, and right-to-left sets it to `right` in a separate rule. The intro canvas and the 3D scene read `document.dir` themselves. Add those lines at the end and each one fixes a spot while leaving the others.
+A `90deg` gradient does not listen to page direction. The less-to-more ramp on the commit city is mirrored with `scaleX(-1)` for Persian. The origin of `scaleX` on the reading bar and the timeline fill is physical, and right-to-left sets it to `right` in a separate rule. The hero scene reads `document.dir` itself. The intro line uses a `[dir='ltr']` rule. Add those lines at the end and each one fixes a spot while leaving the others.
 
 The page’s own rule for the search input is `padding-inline-start`, so the extra gap follows the start of the line. Pagefind still places the icon with `left`, and in Persian that icon stays on the left edge. I do not present that icon as finished right-to-left work.
 
 On a narrow width the nav moves to the bottom of the screen, but in the document it stays in the header. Where it is seen and where Tab meets it are not the same. The focus note opens that up. It belongs here only because a visual move, if it was not thought through at the start, also scrambles reading order.
 
-A Persian digit does not come from `dir` either. Stats and dates are formatted with `fa-IR` or the `persian` calendar. A GitHub star on a card, inside the Latin island, stays a raw number. A late rule that said “make every figure Persian” would have erased that difference.
+A Persian digit does not come from `dir` either. Stats and dates are formatted with `fa-IR` or the `persian` calendar. Stars are not drawn on the card.
 
 If one thing stays, it is this: right-to-left is not a late patch. The route, the direction, the type, and the limit on a private card are part of the first layout.

@@ -1,6 +1,6 @@
 ---
 title: Persian digits are not a font feature
-description: Persian digits here are fa-IR characters drawn by Vazirmatn. Inter omits that range, OpenType never swaps the figures, and GitHub stars stay Latin.
+description: Persian digits here are fa-IR characters drawn by Vazirmatn. Inter omits that range, and OpenType never swaps the figures.
 date: 2026-10-14
 tags: [numerals, rtl]
 ---
@@ -25,29 +25,29 @@ On `html` the default stack is Inter, then Vazirmatn, then the system UI. `html:
 
 Vazirmatn comes from `@fontsource-variable/vazirmatn`. One of its ranges is the Arabic block, from `U+0600`. Persian digits, `U+06F0` through `U+06F9`, live in that block. Inter in `fonts.css` is two files, Latin and Latin-extended. Neither reaches the Arabic block. Inter cannot draw a Persian digit, even if one showed up on an English page. The glyph falls through to Vazirmatn or to the system font.
 
-Latin digits, `U+0030` through `U+0039`, sit in the Latin range of both families. On a Persian page Vazirmatn is first, so a Latin digit inside a repository name usually comes from Vazirmatn’s Latin, not from Inter. A more specific family wins where one is set. The command palette starts with `ui-monospace` and keeps Vazirmatn behind it. The intro canvas asks for Vazirmatn first in both languages. Share images use the separate file `Vazirmatn-Bold.ttf`, not the variable face on the page.
+Latin digits, `U+0030` through `U+0039`, sit in the Latin range of both families. On a Persian page Vazirmatn is first, so a Latin digit inside a repository name usually comes from Vazirmatn’s Latin, not from Inter. A more specific family wins where one is set. The terminal starts with `ui-monospace` and keeps Vazirmatn behind it. The hero scene copies the computed font of the heading, so Vazirmatn leads on a Persian page and Inter leads on an English page. Share images use the separate file `Vazirmatn-Bold.ttf`, not the variable face on the page.
 
 Weight, line-height, and motion are in [Type, space, and the motion of a page](/en/blog/type-and-space/). This page does not repeat them.
 
 ## Not every number is Persian
 
-Stars and forks on a project card are raw JavaScript numbers, inside `dir="ltr"`. They do not pass through `toLocaleString`. Repository names, languages, topics, and the `⌘K` button are left-to-right islands too. A code block in an article sets `direction: ltr`.
+Repository names and language names use `dir="ltr"`. The `⌘K` button does too. A code block in an article sets `direction: ltr`. Stars and forks are not drawn on the card.
 
-Direction and digit shape are two decisions. A left-to-right island can still hold a Persian digit if the string was formatted first. Month labels on the home activity strip are built with `fa-IR-u-ca-persian` and then placed in a grid with `dir="ltr"`. The month label is Persian. The week columns do not mirror.
+Direction and digit shape are two decisions. A left-to-right island can still hold a Persian digit if the string was formatted first. `formatMonth` builds a project's span with `fa-IR-u-ca-persian`. Those words sit in the card text. The home page has no activity grid.
 
-Language percentages go through `num`, so on a Persian page they are Persian. The same page shows a star count in Latin digits beside them. That split is not one global rule applied halfway. Each place that builds a number decides the format there.
+Language percentages on the projects page go through `num`, so on a Persian page they are Persian. The contribution total on the about page uses the same formatter. Each place that builds a number decides the format there.
 
 ## The calendar and the figure are not the same choice
 
-`formatDate` formats a post date with `fa-IR`. In current `Intl` that locale is both the Solar Hijri calendar and Persian digits. `formatMonth` and the home activity strip are more explicit: `fa-IR-u-ca-persian`. The busiest day on the projects page passes `calendar: 'persian'` to `Intl`.
+`formatDate` formats a post date with `fa-IR`. In current `Intl` that locale is both the Solar Hijri calendar and Persian digits. `formatMonth` is more explicit: `fa-IR-u-ca-persian`. The busiest day on the projects page passes `calendar: 'persian'` to `Intl`.
 
 The clock on the about page is an `Intl.DateTimeFormat` in the page locale, with `timeZone: 'Asia/Tehran'`. The label is “my time in Tehran.” The clock asks for `font-variant-numeric: tabular-nums`, and the home stat numbers ask for the same. That is a request for equal-width figures. The characters themselves still come from `Intl`. The global stylesheet has no OpenType feature that swaps Latin and Persian digits.
 
 ## A digit on the canvas, apart from the Latin grid
 
-The commit city writes the busiest day’s count with `Intl.NumberFormat` in the page locale and puts it on a sprite. When the page is Persian, dates in that scene also pass `calendar: 'persian'`. The activity cells are a different object, and they stay `dir="ltr"`. One view can carry a Persian digit on a label and still keep week columns from mirroring.
+The commit city writes the busiest day’s count with `Intl.NumberFormat` in the page locale and puts it on a sprite. When the page is Persian, dates in that scene also pass `calendar: 'persian'`. The commit city is a canvas, not a grid of cells with `dir="ltr"`.
 
-Home stats and language percentages call `toLocaleString` with default grouping. Post cards turn grouping off with `useGrouping: false`. A large contribution total on the home page gets a separator. The reading time on a card does not. Both are Persian digits when the page is Persian. The difference is the separator, not the font.
+About stats, the projects totals, and the minutes on the blog index call `toLocaleString` with default grouping. They are Persian digits when the page is Persian.
 
 Share images do not build these figures. They load Vazirmatn Bold and set direction on the SVG by themselves. If a post title already contains a digit, that is the character written in the markdown, not a fresh `fa-IR` format. The page’s stats never reach that PNG.
 

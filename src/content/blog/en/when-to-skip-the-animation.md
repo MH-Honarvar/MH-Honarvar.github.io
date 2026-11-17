@@ -1,6 +1,6 @@
 ---
 title: When the animation stays out
-description: GSAP and Lenis stay unloaded on articles and whenever reduced motion is set. The home intro can be skipped at once, before the particles finish.
+description: GSAP and Lenis stay unloaded on articles and whenever reduced motion is set. The home intro is a CSS line, and a click or Escape dismisses it at once.
 date: 2026-10-14
 tags: [performance, motion]
 ---
@@ -37,13 +37,13 @@ The article does not dim its paragraphs. Nothing drops to opacity `0.55`, becaus
 
 ## The intro is optional from the first frame
 
-The intro exists on the home page only. The layout renders it when the page asks, and the home page is the page that asks. It is a transparent layer over the document, not a plate covering the heading. The heading is already in the HTML. Two lines of the name are drawn as particles on a canvas, in accent colors, after `document.fonts.load` resolves for Vazirmatn and Inter at the weights the drawing uses. If that load rejects, the drawing still continues. The particles run for a little over a second unless something stops them.
+The intro exists on the home page only. The layout renders it when the page asks, and the home page is the page that asks. It is a full-screen layer with the page color, `--bg`, not a canvas and not particles. A one-pixel line in the center scales from zero to full width in `0.9s`. On a right-to-left page the origin is the right edge. On a left-to-right page it is the left. `document.fonts.load` is not part of this layer.
 
-Something can stop them at once. A skip button is in the layer from the start, with pointer events of its own, and it does not wait for the font or for the first frame of particles. Escape calls the same finish. Finish marks the session, fades the layer, and tells the rest of the page the intro is over so entrances may begin. The node is removed after the fade, on a `900ms` timer. You do not have to watch the particles arrive.
+A click on the layer, or Escape, ends it. Finish marks the session, adds the class `out`, and tells the rest of the page the intro is over so entrances may begin. The node is removed after the fade, on a `700ms` timer. If nobody clicks, the same ending starts itself after `980ms`. There is no separate skip button.
 
-An inline script removes the intro before the canvas is built if `sessionStorage` already has `intro-seen`, or if `prefers-reduced-motion` matches. A return in the same session does not replay it. A query of `intro=1` clears the flag so the layer can be seen again on purpose. That switch is for looking at the intro, not a gate in front of the heading.
+An inline script removes the intro before the line runs if `sessionStorage` already has `intro-seen`, or if `prefers-reduced-motion` matches. A return in the same session does not replay it. A query of `intro=1` clears the flag so the layer can be seen again on purpose. That switch is for looking at the intro, not a gate in front of the heading.
 
-The intro is a 2D canvas, not Three.js.
+The intro is not Three.js, and it is not a canvas. It is a CSS line. The hero scene is a different thing, and the next section is about that.
 
 ## Where a scene is still allowed to start
 

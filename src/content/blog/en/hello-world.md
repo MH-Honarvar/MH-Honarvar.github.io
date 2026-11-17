@@ -20,7 +20,7 @@ GSAP and Lenis load only when the page asks for rich motion, the reading-progres
 
 ## Two shortcuts, both from the keyboard
 
-`Ctrl` and `K` open the command palette. Its index is filled at build time from both languages: the fixed pages and the post titles. Each row keeps its own address. The dialog is left-to-right. A Persian title inside a result keeps its own direction with `dir="auto"`. Keyboard selection uses the `sel` class, not the global focus ring. The palette input has no `outline`.
+`Ctrl` and `K` open the command palette. Its index is filled at build time from both languages: the fixed pages and the post titles. Each row keeps its own address. The dialog follows the language of the page. A Persian title inside a result keeps its own direction with `dir="auto"`. Keyboard selection uses the `sel` class, not the global focus ring. The palette input has no `outline`.
 
 The `` ` `` key opens a terminal. That dialog is `dir="ltr"`. `help` means something there. These shortcuts do not replace the menu. The menu is still in the header, and Tab reaches it in document order. Why that order has to match Persian reading is in [Focus starts where the reading starts](/en/blog/focus-and-rtl/).
 

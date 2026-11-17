@@ -25,13 +25,13 @@ The projects page has a different scene, the commit city. A canvas there carries
 
 `prefers-reduced-motion` removes the home canvas before the import. The fallback is a CSS gradient, the same wash the other pages use as their only background. The renderer is created in a try block. If it throws, the function returns and the gradient remains.
 
-Quality is tiered. A narrow screen or a machine with few cores stays on the lowest tier: no transmission pass and no bloom. A desktop hero can use bloom, and it drops a tier if a frame runs long. Pixel ratio is capped per tier. None of that belongs on an article, because the article never starts it.
+Quality is tiered. A narrow screen or a machine with few cores stays on the lowest tier: the glass stays, and bloom does not. A desktop hero can use bloom, and it drops a tier if a frame runs long. Pixel ratio is capped per tier. None of that belongs on an article, because the article never starts it.
 
 ## The intro is a moment, not a gate
 
-The first visit can still play the name, as particles, over the home page. It used to be a solid plate for about two and a half seconds, sitting on the heading. Crawlers that run the script met the same wait, because they have no `sessionStorage` from a previous visit.
+The first visit draws a one-pixel line across the home page. It used to be a solid plate, sitting on the heading. Crawlers that run the script meet the line, because they have no `sessionStorage` from a previous visit.
 
-The plate is gone. The heading is in the document, under a transparent layer, and it is the same line as before. A skip control is visible at once. It does not wait for the font or for the particles. Escape skips it too. The pass is shorter. Reduced motion, or a return in the same session, removes the intro before it runs.
+The plate is gone. The heading is in the document. A click on the layer dismisses it, and Escape does the same. Neither waits for a font. Reduced motion, or a return in the same session, removes the intro before the line runs.
 
 ## When the scene is worth it
 

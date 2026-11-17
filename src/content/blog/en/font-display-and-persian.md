@@ -37,7 +37,7 @@ I do not ask the font to change digits. A Persian digit is produced as a `fa-IR`
 
 `swap` does not hide the text. A fallback face is used at once, and the real face replaces it later. The line may jump a little, because an article’s measure is in `ch`, and the zero in Inter, in Vazirmatn, and in the system face are not the same width. That jump is the cost of reading the sentence while the file is still on the way. Invisible text until the preferred file finishes is the cost I will not charge.
 
-The home intro fits this fact, though the intro is not this note. The particle drawing waits at most 120 milliseconds on `document.fonts.load`, then starts with whatever face is present. The home heading is not in that race. The heading is read with the page’s own font swap, whether or not the particles have started.
+The home intro does not wait on `document.fonts.load`. The heading is read with the page’s own font swap. The intro is a CSS line, and it is not this note.
 
 I am not attaching a lab score to any of this. I do not have a number for how long the font load takes, and I am not going to make one. The claim that is visible in the stylesheet is smaller: two families, the subsets the pages actually use, and `swap` instead of hidden text.
 

@@ -15,7 +15,7 @@ The first focusable thing in `body` is the skip link. Its `href` is `#main`, and
 
 It returns on `:focus`, not only on `:focus-visible`. Until it is focused it cannot be seen, because there is nowhere to click it. After the jump, focus moves to `#main` and the header is skipped.
 
-When the home intro is on, the “Skip intro” button comes after the skip link in the document and before the header. On screen it sits at the bottom, on the end edge, with `inset-inline-end`. Where it is seen and where Tab meets it are not the same place. That exception is a temporary control, not the pattern for the menu.
+The home intro, when it is on, is not a button in the tab order. A click on the layer or Escape dismisses it. That layer is not the pattern for the menu.
 
 ## The ring is around the element itself
 

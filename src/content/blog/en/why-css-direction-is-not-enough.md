@@ -27,7 +27,7 @@ That part of the layout really does finish with one property. The rest of the pa
 
 ## Transform origin and gradients stay physical
 
-The reading progress bar uses `transform-origin: left`. On a right-to-left page a separate rule sets the origin to `right`, both for an article and for the bar on the home page. The skill bar on the about page, and the fill on the timeline, follow the same pattern. `scaleX` starts from a physical edge. `dir` does not move that edge. Without the second rule, the bar would grow from the left while the line is read from the right.
+The reading progress bar uses `transform-origin: left`. On a right-to-left page a separate rule sets the origin to `right`, both for an article and for the bar on the home page. The fill on the about timeline follows the same pattern. `scaleX` starts from a physical edge. `dir` does not move that edge. Without the second rule, the bar would grow from the left while the line is read from the right.
 
 The less-to-more key on the commit city is a `linear-gradient(90deg)`. A gradient does not listen to page direction. Under `[dir='rtl']` that ramp is mirrored with `scaleX(-1)`, so the brighter end still reads as “more.” `inset-inline-end` already places the box. The color inside the box has a direction of its own.
 
@@ -35,15 +35,15 @@ Blog search is still a smaller exception, but not in the page’s own padding. T
 
 ## Islands that should not flip
 
-A code block sets `direction: ltr` and `text-align: left`. Its language label is placed with `left`, not with `inset-inline-start`. Repository names, language chips, topics, stars, forks, and the cells of the activity strip use `dir="ltr"`. The moving skill ticker on the home page is `direction: ltr` as well, so it does not reverse with the page.
+A code block sets `direction: ltr` and `text-align: left`. Its language label is placed with `left`, not with `inset-inline-start`. Repository names and language chips use `dir="ltr"`.
 
-The command palette is a `dialog` with `dir="ltr"`, even when the page itself is Persian. The `⌘K` button is the same. These are not mirrored Persian sentences. They are commands, Latin names, and a keyboard shortcut. A search result link uses `dir="auto"`, so a Persian title keeps its own direction while the dialog stays Latin.
+The command palette follows the language of the page. It does not set `dir="ltr"`. The `⌘K` button does. The terminal dialog is the Latin one. A search result link uses `dir="auto"`, so a Persian title keeps its own direction.
 
 Digits have their own island, but the split is the formatter, not direction. [Persian digits are not a font feature](/en/blog/persian-numerals-and-fonts/) opens that difference: `fa-IR` builds the character, and `dir` only places the line.
 
 ## Canvas and the scene do not inherit CSS direction
 
-The opening intro is a `canvas`. It sets the drawing context from `document.dir`: `rtl` when the document is right-to-left, otherwise `ltr`. A CSS property does not reach the pixels. Without that line, the name on the canvas sits against the page, even if `html` is correct. The font family on that canvas asks for Vazirmatn first in both languages. Canvas direction and the font choice are two separate lines.
+The intro on the home page is not a canvas. It is a CSS line. The hero scene draws the heading onto a canvas and sets that context from `document.dir`: `rtl` when the document is right-to-left, otherwise `ltr`. The font on that canvas is the computed font of the `h1`, so a Persian page leads with Vazirmatn and an English page leads with Inter.
 
 The 3D scene reads `document.dir` too. Canvas text in the scene takes its direction from that, and the camera’s side of the page changes with the sign of the direction. A `dir` on the document does not mirror a WebGL graph. The scene code has to decide which edge is the start.
 
