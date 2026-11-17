@@ -11,7 +11,7 @@ This is the page I mean when I say there is an HTML map. It is not a dump of eve
 
 ## What the four groups contain
 
-The first group is pages. The labels come from the interface copy and from the page modules: Home, About me, the collaboration page, the colophon, and Projects. Collaboration is [How we collaborate](/en/services/). It is the same page the footer links to. It is not in the header. The header is home, blog, projects, and about.
+The first group is pages. The labels come from the interface copy and from the page modules: Home, About me, the collaboration page, the colophon, and Projects. Collaboration is [How we collaborate](/en/services/). It is the same page the footer links to. It is not in the header. The header is home, blog, from the work, projects, and about.
 
 The second group is topics. The first link is the topics index. The three hubs come from `topicById`: Persian and RTL, Type and measure, and A fast page. Their paths are `/en/topics/rtl/`, `/en/topics/type/`, and `/en/topics/speed/`. [A fast page](/en/topics/speed/) is the cluster this map belongs with, in the sense that the map is a static document. `motion` is passed as false. The template does not mount a scene.
 
@@ -23,7 +23,7 @@ The fourth group is cases. One link is the study of this site, the repository `m
 
 The notes group is the language’s blog, not a hand-picked `noteSlugs` array. [The link you send is one language](/en/blog/sharing-in-two-languages/), this page’s essay, and [Up to three notes that share a tag](/en/blog/the-next-article/) are files in `src/content/blog/en`, so they are on `/en/map/`. A post that exists only in the other folder is not on this map.
 
-The command palette is a different index. `Base.astro` fills it with home, blog, projects, about, collaboration, and every post in both languages. The map, the colophon, and the topic pages are not in that array. Search keeps twelve hits and puts this language first, so the other language appears only when this language has not already filled the list. The footer links GitHub, Telegram, collaboration, and the feed. The map is not among those links. The terminal command `open map` does go to `/${lang}/map/`. You can also open [/en/map/](/en/map/) directly, or follow a link, including the one in this sentence.
+The command palette is a different index. `Base.astro` fills it with home, blog, projects, about, collaboration, and every post in both languages. The map, the colophon, and the topic pages are in that array. Search keeps twelve hits and puts this language first, so the other language appears only when this language has not already filled the list. The footer links GitHub, Telegram, collaboration, and the feed. The map is not among those links. The terminal command `open map` does go to `/${lang}/map/`. You can also open [/en/map/](/en/map/) directly, or follow a link, including the one in this sentence.
 
 [The canonical address is the page itself](/en/blog/two-language-urls/) explains when a blog post may name the other language. The map is simpler, because both language files are the same Astro page. The template does not pass `alternate`. The layout default is true, and the page is not `noindex`. The head therefore includes `hreflang` for this language, `hreflang` for the other, and `x-default` on the Persian map URL. `og:locale` is `en_US` here and `fa_IR` on `/fa/map/`. `og:locale:alternate` follows the same default. The language control swaps the `/en/` prefix for `/fa/` and opens the Persian map, because `altPath` is not overridden.
 
