@@ -9,7 +9,7 @@ A Persian page drawn in English and then mirrored still looks mirrored. Spacing 
 
 ## Two trees, one site
 
-`src/pages/[lang]/` builds every public page twice. Home, blog, projects, and about each receive `lang` as `fa` or `en`. Copy is chosen while the static page is built, from `src/i18n/ui.ts` and from `src/content/blog/fa` and `src/content/blog/en`. It is not a dictionary the browser swaps after load.
+`src/pages/[lang]/` builds every public page twice. Home, blog, from the work, projects, about, collaboration, the map, the colophon, and the topics each receive `lang` as `fa` or `en`. Copy is chosen while the static page is built, from `src/i18n/ui.ts` and from `src/content/blog/fa` and `src/content/blog/en`. It is not a dictionary the browser swaps after load.
 
 That split is the point. A string can be short in English and long in Persian. A heading can break on different words. If both languages shared one HTML file and only a `dir` switch, the line lengths would fight. Here they never share the file.
 

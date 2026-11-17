@@ -11,7 +11,7 @@ The direction cluster is [the right-to-left topic](/en/topics/rtl/). The longer 
 
 ## Two files, not one document with a switch
 
-`src/pages/[lang]/` builds home, blog, projects, about, and collaboration separately for `fa` and `en`. Posts live in `src/content/blog/fa` and `src/content/blog/en`. The filename is the slug. `getStaticPaths` collects the other language’s slugs. `hasTwin` means that name is there.
+`src/pages/[lang]/` builds home, blog, from the work, projects, about, collaboration, the map, the colophon, and the topics separately for `fa` and `en`. Posts live in `src/content/blog/fa` and `src/content/blog/en`. The filename is the slug. `getStaticPaths` collects the other language’s slugs. `hasTwin` means that name is there.
 
 Interface copy is chosen from `src/i18n/ui.ts` while the page is built. The browser does not later turn one HTML file into the other language. The language control replaces the `/fa/` or `/en/` prefix. A post with a twin opens the translation. A post without one gets an `altPath` of the other blog index, and `alternate` is false.
 
