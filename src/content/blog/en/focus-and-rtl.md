@@ -25,7 +25,7 @@ The ring is not everywhere. The command palette input sets `outline: none`, and 
 
 ## Document order is the reading order
 
-The header runs: mark, then home, blog, projects, and about, then the tools. The nav is `display: flex` without `row-reverse`. In a right-to-left document, the flex start is the right edge. The first link, home, sits where reading starts. Tab takes that same path.
+The header runs: mark, then home, blog, from the work, projects, and about, then the tools. The nav is `display: flex` without `row-reverse`. In a right-to-left document, the flex start is the right edge. The first link, home, sits where reading starts. Tab takes that same path.
 
 `aria-current="page"` is set on the active link. It announces state. It does not move the link.
 

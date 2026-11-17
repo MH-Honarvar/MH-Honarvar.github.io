@@ -34,7 +34,7 @@ The [collaboration](/en/services/) page states the same limit for contact. The o
 
 ## The start edge, not a last-minute mirror
 
-The header puts the mark first, then home, blog, projects, and about, then the tools. The nav is flex, and in a right-to-left document it lines up from the right. Spacing that means “the start of the line” uses `margin-inline` and `inset-inline-start`. The skip link is pinned to that same edge. If those had been `left`, Persian would need a second rule for every gap.
+The header puts the mark first, then home, blog, from the work, projects, and about, then the tools. The nav is flex, and in a right-to-left document it lines up from the right. Spacing that means “the start of the line” uses `margin-inline` and `inset-inline-start`. The skip link is pinned to that same edge. If those had been `left`, Persian would need a second rule for every gap.
 
 The pieces that must not flip were separated at the start, not after a complaint. Repository names, languages, stars, activity cells, and code blocks use `dir="ltr"`. The `⌘K` button does too. The palette and the terminal are Latin dialogs. These islands are not patches. Latin was never meant to be mirrored.
 
