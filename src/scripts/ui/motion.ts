@@ -143,16 +143,6 @@ const introEl = document.getElementById('intro');
 if (introEl && !introEl.classList.contains('out')) addEventListener('introout', startEntrances, { once: true });
 else startEntrances();
 
-const progress = document.getElementById('read-progress');
-if (progress) {
-  const update = () => {
-    const h = document.documentElement.scrollHeight - innerHeight;
-    progress.style.transform = `scaleX(${h > 0 ? scrollY / h : 0})`;
-  };
-  addEventListener('scroll', update, { passive: true });
-  update();
-}
-
 const canTilt = !reduced && matchMedia('(hover: hover) and (pointer: fine)').matches;
 document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
   if (!canTilt) return;
