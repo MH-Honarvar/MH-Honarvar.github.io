@@ -1,7 +1,7 @@
 ---
 import Base from '../../../layouts/Base.astro';
-import { languages, t, type Lang } from '../../../i18n/ui';
-import { getPosts, postUrl } from '../../../lib/blog';
+import { formatDate, languages, t, type Lang } from '../../../i18n/ui';
+import { getPosts, minutes, postUrl } from '../../../lib/blog';
 import { tagIntro } from '../../../lib/tags';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
@@ -44,9 +44,12 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 
     {
       tags.length > 0 && (
-        <p class="tag-row">
-          {tags.map(([tg, n]) => (
-            <a class="tag" href={`/${lang}/blog/tags/${tg}/`}>#{tg} {num(n)}</a>
+        <p class="tag-line">
+          {tags.map(([tg, n], i) => (
+            <>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              <a href={`/${lang}/blog/tags/${tg}/`}>#{tg} <small>{num(n)}</small></a>
+            </>
           ))}
         </p>
       )
@@ -54,19 +57,51 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
 
     {
       posts.length ? (
-        <ol class="notes">
-          {posts.map((post, i) => (
-            <li>
-              <a href={postUrl(post)}>
-                <b>{num(i + 1).padStart(2, lang === 'fa' ? '۰' : '0')}</b>
-                <span>
-                  <strong>{post.data.title}</strong>
-                  {post.data.description}
-                </span>
-              </a>
-            </li>
-          ))}
-        </ol>
+        <div class="archive">
+          <section>
+            <h2>{tr('blog.fresh')}</h2>
+            <ol class="notes">
+              {posts.slice(0, 3).map((post, i) => (
+                <li>
+                  <a href={postUrl(post)}>
+                    <b>{num(i + 1).padStart(2, lang === 'fa' ? '۰' : '0')}</b>
+                    <span>
+                      <strong>{post.data.title}</strong>
+                      <em>{post.data.description}</em>
+                      <small>
+                        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
+                        {' · '}
+                        {num(minutes(post))} {tr('blog.minutes')}
+                      </small>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </section>
+          {posts.length > 3 && (
+            <section>
+              <h2>{tr('blog.archive')}</h2>
+              <ol class="notes">
+                {posts.slice(3).map((post, i) => (
+                  <li>
+                    <a href={postUrl(post)}>
+                      <b>{num(i + 4).padStart(2, lang === 'fa' ? '۰' : '0')}</b>
+                      <span>
+                        <strong>{post.data.title}</strong>
+                        <small>
+                          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
+                          {' · '}
+                          {num(minutes(post))} {tr('blog.minutes')}
+                        </small>
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+        </div>
       ) : (
         <div class="empty glass">
           <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
@@ -105,11 +140,30 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
   .search-wrap:focus-within .search-hint {
     opacity: 0;
   }
-  .tag-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+  .tag-line {
     margin: 0 0 1.5rem;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+  .tag-line a {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .tag-line a:hover,
+  .tag-line a:focus-visible {
+    color: var(--accent2);
+  }
+  .tag-line small {
+    color: var(--muted);
+  }
+  .archive.away {
+    display: none;
+  }
+  .archive h2 {
+    margin: 1.4rem 0 0.15rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
   }
   .empty {
     padding: 3rem 1.5rem;
@@ -155,8 +209,17 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     margin-bottom: 0.2rem;
     color: var(--fg);
   }
-  .notes span {
+  .notes em,
+  .notes small {
+    display: block;
     color: var(--muted);
+    font-style: normal;
+  }
+  .notes em {
+    margin-bottom: 0.35rem;
+  }
+  .notes small {
+    font-size: 0.8rem;
   }
   :global(#search .pagefind-ui) {
     --pagefind-ui-scale: 0.9;
@@ -170,7 +233,7 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
   }
   :global(#search .pagefind-ui__search-input) {
     font-weight: 500;
-    padding-left: 4.6rem;
+    padding-inline-start: 4.6rem;
   }
   :global(#search .pagefind-ui__search-input:focus) {
     outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
@@ -194,9 +257,23 @@ const num = (n: number) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');
     js.onload = () => {
       // @ts-expect-error injected by pagefind-ui.js
       new window.PagefindUI({ element: el, showSubResults: true, showImages: false, translations: { placeholder: el.dataset.placeholder } });
+      const archive = document.querySelector('.archive');
+      const bind = (input: HTMLInputElement) => {
+        if (input.dataset.bound) return;
+        input.dataset.bound = '1';
+        const sync = () => archive?.classList.toggle('away', input.value.trim().length > 0);
+        input.addEventListener('input', sync);
+        sync();
+      };
+      const hook = () => {
+        const input = el.querySelector('input');
+        if (input instanceof HTMLInputElement) bind(input);
+      };
+      new MutationObserver(hook).observe(el, { childList: true, subtree: true });
+      hook();
       if (!query) return;
       const input = el.querySelector('input');
-      if (!input) return;
+      if (!(input instanceof HTMLInputElement)) return;
       input.value = query;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     };

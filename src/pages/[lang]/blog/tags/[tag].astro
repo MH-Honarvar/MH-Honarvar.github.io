@@ -1,8 +1,8 @@
 ---
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
-import { languages, other, t, type Lang } from '../../../../i18n/ui';
-import { getPosts, postUrl } from '../../../../lib/blog';
+import { formatDate, languages, other, t, type Lang } from '../../../../i18n/ui';
+import { getPosts, minutes, postUrl } from '../../../../lib/blog';
 import { pairedTag, tagIndexable, tagIntro } from '../../../../lib/tags';
 
 export async function getStaticPaths() {
@@ -55,7 +55,11 @@ const crumbs = [
             <b>{(i + 1).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US').padStart(2, lang === 'fa' ? '۰' : '0')}</b>
             <span>
               <strong>{post.data.title}</strong>
-              {post.data.description}
+              <small>
+                <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
+                {' · '}
+                {(minutes(post)).toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US')} {tr('blog.minutes')}
+              </small>
             </span>
           </a>
         </li>
@@ -109,7 +113,9 @@ const crumbs = [
     margin-bottom: 0.2rem;
     color: var(--fg);
   }
-  .notes span {
+  .notes small {
+    display: block;
     color: var(--muted);
+    font-size: 0.8rem;
   }
 </style>
