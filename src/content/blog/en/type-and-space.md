@@ -39,7 +39,7 @@ The animation lifts the words. It does not run when the system asks for less mot
 
 ## What is allowed to move
 
-Lenis is not on every page. Article pages set the document to plain motion, so the script never imports Lenis or GSAP there. On home, the blog index, projects, and about, the import still waits. If `prefers-reduced-motion` is set, or the head script has already added `no-motion`, neither library is fetched. The back-to-top button then uses a plain `scrollTo`.
+Lenis is not on every page. Article pages set the document to plain motion, so the script never imports Lenis or GSAP there. The import waits only on the home page and the projects page, because only those two are `rich`. The blog index and the about page stay `plain` and do not start that import. If `prefers-reduced-motion` is set, or the head script has already added `no-motion`, neither library is fetched. The back-to-top button then uses a plain `scrollTo`.
 
 GSAP counts the stat numbers and fades the `.reveal` blocks. Those blocks start at opacity 0 so the fade has somewhere to begin. Reduced motion turns that off in CSS: `.reveal` is visible. I would rather lose the entrance than make someone wait on a fade they did not ask for.
 

@@ -11,7 +11,7 @@ The faces, the measure, and the decision not to split Persian into letters are i
 
 ## The document carries a flag
 
-The layout sets `data-motion` to `rich` or `plain`. Article pages pass motion off, so an essay is `plain`. The blog index, the home page, the projects page, and the about page leave the default, which is `rich`. The collaboration page is plain as well. Plain is not a visual theme. It is a refusal to import the animation libraries.
+The layout sets `data-motion` to `rich` or `plain`. The default, in the layout props, is `plain`. The home page and the projects page pass motion on, so those two are `rich`. The blog index and the about page keep that default. Article pages pass motion off. The collaboration page is plain as well. Plain is not a visual theme. It is a refusal to import the animation libraries.
 
 A small script in the head checks `prefers-reduced-motion`. If it matches, the root element receives the class `no-motion` before the body is parsed. The motion module then treats the page as reduced when that class is present or when the media query matches on its own. Both checks exist because one of them can be true before the other has been observed.
 
