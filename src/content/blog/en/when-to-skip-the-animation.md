@@ -33,7 +33,7 @@ Blocks with the class `reveal` begin at opacity `0` and `translateY(30px)`. That
 
 View transitions are the same bargain at the edge of a navigation. The stylesheet runs a `0.28s` opacity animation on the root, and turns it off when reduced motion is set or when `no-motion` is on the root. On `pageswap`, a reduced page skips the transition immediately. A transition that is still going after `400ms` is skipped too. It may be brief. It may not become the page.
 
-The article has a quieter opt-out. Paragraphs outside a central band dim to opacity `0.55` only when reduced motion is not set. [The measure of a line](/en/blog/reading-measure-and-rhythm/) is where that column is specified. The dimming is motion, and motion can be declined.
+The article does not dim its paragraphs. Nothing drops to opacity `0.55`, because that state is not on the page. The reading column does not depend on it. [The measure of a line](/en/blog/reading-measure-and-rhythm/) is still where that column is specified.
 
 ## The intro is optional from the first frame
 

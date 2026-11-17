@@ -41,7 +41,7 @@ The table of contents is a sticky column, `240px`, with a gap of `3rem` from the
 
 A bar at the top of the viewport, `3px` tall, scales from the prose block’s rectangle. Its transform origin is the left in a left-to-right page and the right when `dir` is `rtl`, so the bar grows from the start of the line. A separate chip reports minutes left. It reads the prose block’s position, not a library’s scroll position. Article pages set motion to plain, which means the document carries `data-motion="plain"`. The motion script is still imported by the layout, but GSAP and Lenis are fetched only when motion is rich and the reader has not asked for less. On an essay those modules stay out. The bar is a `scaleX` on a native scroll listener. That is the whole path.
 
-There is one optical change, and it is refused when it should be. If `prefers-reduced-motion` is not set, the prose receives a focus class. Paragraphs, lists, and quotes sit at opacity `0.55` until they cross a band in the middle of the viewport, where they return to full opacity. The band is an intersection observer with a root margin of `-35% 0px -45% 0px`. When reduced motion is set, the class is never added. Every block stays at full strength. I would rather lose the dimming than ask someone to track a fade they did not request.
+The page does not dim paragraphs. Paragraphs, lists, and quotes stay at full opacity for the whole scroll. There is no observer for a band in the middle of the viewport. Declining motion keeps GSAP and Lenis out, and it does not change the strength of the line.
 
 ## What the line is for
 
